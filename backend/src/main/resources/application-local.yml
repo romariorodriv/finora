@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:h2:file:./data/finora;MODE=PostgreSQL;AUTO_SERVER=TRUE}
+    username: ${DB_USERNAME:${DB_USER:sa}}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate.ddl-auto: update
+  h2.console.enabled: true
+app:
+  demo-data: ${DEMO_DATA:true}
+  frontend-url: ${FRONTEND_BASE_URL:http://localhost:4200}
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:4200}
+  gmail:
+    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/api/v1/integrations/gmail/callback}

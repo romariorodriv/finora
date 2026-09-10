@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate.ddl-auto: ${JPA_DDL_AUTO:validate}
+  h2.console.enabled: false
+app:
+  jwt-secret: ${JWT_SECRET}
+  demo-data: ${DEMO_DATA:false}
+  frontend-url: ${FRONTEND_BASE_URL}
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN}
+  gmail:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
+    token-encryption-key: ${TOKEN_ENCRYPTION_KEY}

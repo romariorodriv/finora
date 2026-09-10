@@ -18,14 +18,16 @@ services:
       - "8080:8080"
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/finora
-      DB_USER: finora
+      DB_USERNAME: finora
       DB_PASSWORD: finora_local
+      JPA_DDL_AUTO: update
       JWT_SECRET: cambia-este-secreto-antes-de-produccion-123456789
       DEMO_DATA: "true"
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:8080/api/integrations/gmail/callback}
-      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:8080}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:8080/api/v1/integrations/gmail/callback}
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:4200}
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:4200}
       TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY:-finora-local-demo-key-change-me}
       GMAIL_INITIAL_SYNC_DAYS: ${GMAIL_INITIAL_SYNC_DAYS:-30}
     depends_on:

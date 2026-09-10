@@ -2,20 +2,25 @@ spring:
   application.name: finora
   datasource:
     url: ${DB_URL:jdbc:h2:file:./data/finora;MODE=PostgreSQL;AUTO_SERVER=TRUE}
-    username: ${DB_USER:sa}
+    username: ${DB_USERNAME:${DB_USER:sa}}
     password: ${DB_PASSWORD:}
   jpa:
-    hibernate.ddl-auto: update
+    hibernate.ddl-auto: ${JPA_DDL_AUTO:update}
     open-in-view: false
-  h2.console.enabled: true
+  h2.console.enabled: ${H2_CONSOLE_ENABLED:false}
 server.port: ${PORT:8080}
 app:
   jwt-secret: ${JWT_SECRET:finora-demo-secret-change-in-production-2026-strong}
   demo-data: ${DEMO_DATA:true}
-  frontend-url: ${FRONTEND_BASE_URL:http://localhost:8080}
+  frontend-url: ${FRONTEND_BASE_URL:http://localhost:4200}
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:4200}
   gmail:
     client-id: ${GOOGLE_CLIENT_ID:}
     client-secret: ${GOOGLE_CLIENT_SECRET:}
-    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/api/integrations/gmail/callback}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/api/v1/integrations/gmail/callback}
     token-encryption-key: ${TOKEN_ENCRYPTION_KEY:finora-local-demo-key-change-me}
     initial-sync-days: ${GMAIL_INITIAL_SYNC_DAYS:30}
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

@@ -1,0 +1,157 @@
+<section *ngIf="!auth.user" class="auth">
+  <div class="auth-copy">
+    <div class="brand">F</div>
+    <p class="eyebrow">INTELIGENCIA FINANCIERA PERSONAL</p>
+    <h1>Finora</h1>
+    <p>Convierte tus alertas bancarias en una vista simple de tu dinero.</p>
+  </div>
+
+  <div class="login-card">
+    <div class="auth-tabs">
+      <button [class.active]="authMode === 'login'" (click)="authMode = 'login'">Ingresar</button>
+      <button [class.active]="authMode === 'register'" (click)="authMode = 'register'">Crear cuenta</button>
+    </div>
+
+    <form *ngIf="authMode === 'login'" (ngSubmit)="login()">
+      <h2>Bienvenido</h2>
+      <label>Correo <input name="email" type="email" [(ngModel)]="loginForm.email" required></label>
+      <label>Contraseña <input name="password" type="password" [(ngModel)]="loginForm.password" required></label>
+      <button class="primary" type="submit">Ingresar</button>
+    </form>
+
+    <form *ngIf="authMode === 'register'" (ngSubmit)="register()">
+      <h2>Crea tu cuenta</h2>
+      <label>Nombre <input name="name" [(ngModel)]="registerForm.name" required></label>
+      <label>Correo <input name="registerEmail" type="email" [(ngModel)]="registerForm.email" required></label>
+      <label>Contraseña <input name="registerPassword" type="password" minlength="8" [(ngModel)]="registerForm.password" required></label>
+      <button class="primary" type="submit">Crear cuenta</button>
+    </form>
+
+    <p class="form-error" *ngIf="error">{{ error }}</p>
+    <div class="demo-hint"><b>Cuenta de prueba</b><span>demo&#64;finora.pe · Demo1234</span></div>
+  </div>
+</section>
+
+<div *ngIf="auth.user" class="app">
+  <aside>
+    <a class="logo"><span class="brand">F</span><b>finora</b></a>
+    <nav>
+      <button [class.active]="view === 'dashboard'" (click)="go('dashboard')">Resumen</button>
+      <button [class.active]="view === 'movements'" (click)="go('movements')">Movimientos</button>
+      <button [class.active]="view === 'import'" (click)="go('import')">Importar</button>
+      <button [class.active]="view === 'assistant'" (click)="go('assistant')">Asistente</button>
+    </nav>
+    <button class="logout" (click)="logout()">Cerrar sesión</button>
+  </aside>
+
+  <main>
+    <header>
+      <div>
+        <p>Hola, {{ auth.user.name.split(' ')[0] }}</p>
+        <h2>{{ view === 'dashboard' ? 'Tu resumen' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Importar gastos' : 'Asistente financiero' }}</h2>
+      </div>
+      <div class="avatar">{{ auth.user.name[0] }}</div>
+    </header>
+
+    <section *ngIf="view === 'dashboard'" class="view">
+      <div class="month-row"><b>{{ dashboard?.month }}</b></div>
+      <div class="metrics">
+        <article class="metric hero">
+          <span>Gastos del mes</span>
+          <strong>{{ money(dashboard?.expenses) }}</strong>
+          <small>Promedio diario {{ money(dashboard?.dailyAverage) }}</small>
+        </article>
+        <article class="metric"><span>Disponible</span><strong>{{ money(dashboard?.balance) }}</strong><small>Ingresos menos gastos</small></article>
+        <article class="metric"><span>Proyección mensual</span><strong>{{ money(dashboard?.projection) }}</strong><small>Al ritmo actual</small></article>
+      </div>
+
+      <div class="grid">
+        <article class="panel">
+          <h3>¿A dónde se fue tu dinero?</h3>
+          <div class="category-row" *ngFor="let item of categoryEntries()">
+            <span>{{ item[0] }}</span>
+            <progress max="100" [value]="dashboard?.expenses ? item[1] / dashboard!.expenses * 100 : 0"></progress>
+            <b>{{ money(item[1]) }}</b>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h3>Ritmo de gasto</h3>
+          <div class="bars">
+            <div class="bar" *ngFor="let item of dailyEntries()" [style.height.%]="barHeight(item[1])" [title]="money(item[1])"></div>
+          </div>
+        </article>
+
+        <article class="panel wide">
+          <h3>Últimos movimientos</h3>
+          <div class="tx" *ngFor="let tx of dashboard?.transactions">
+            <span>{{ tx.description }} <small>{{ tx.category }} · {{ tx.source }}</small></span>
+            <b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : '-' }} {{ money(tx.amount) }}</b>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section *ngIf="view === 'movements'" class="view two">
+      <form class="panel" (ngSubmit)="saveTransaction()">
+        <h3>{{ editingId ? 'Editar movimiento' : 'Agregar movimiento' }}</h3>
+        <div class="type-toggle">
+          <button type="button" [class.active]="txForm.type === 'EXPENSE'" (click)="txForm.type = 'EXPENSE'">Gasto</button>
+          <button type="button" [class.active]="txForm.type === 'INCOME'" (click)="txForm.type = 'INCOME'">Ingreso</button>
+        </div>
+        <label>Descripción <input name="description" [(ngModel)]="txForm.description" required></label>
+        <label>Monto <input name="amount" type="number" step="0.01" [(ngModel)]="txForm.amount" required></label>
+        <label>Fecha <input name="date" type="date" [(ngModel)]="txForm.date" required></label>
+        <label>Categoría <select name="category" [(ngModel)]="txForm.category"><option *ngFor="let c of categories">{{ c }}</option></select></label>
+        <label class="check"><input name="recurring" type="checkbox" [(ngModel)]="txForm.recurring"> Es recurrente</label>
+        <button class="primary" type="submit">{{ editingId ? 'Actualizar' : 'Guardar' }}</button>
+        <button class="ghost" type="button" *ngIf="editingId" (click)="cancelEdit()">Cancelar</button>
+      </form>
+
+      <article class="panel">
+        <h3>Todos tus movimientos</h3>
+        <div class="tx" *ngFor="let tx of transactions">
+          <span>{{ tx.description }} <small>{{ tx.category }} · {{ tx.date }}</small></span>
+          <b [class.income]="tx.type === 'INCOME'">{{ money(tx.amount) }}</b>
+          <button class="ghost" (click)="editTransaction(tx)">Editar</button>
+          <button class="danger" (click)="deleteTransaction(tx.id)">Eliminar</button>
+        </div>
+      </article>
+    </section>
+
+    <section *ngIf="view === 'import'" class="view two">
+      <article class="panel">
+        <h3>Gmail</h3>
+        <p>{{ gmail?.connected ? gmail?.email : gmail?.configured ? 'Gmail no conectado' : 'Configura Google Cloud para conectar Gmail' }}</p>
+        <button class="primary" *ngIf="!gmail?.connected && gmail?.configured" (click)="connectGmail()">Conectar Gmail</button>
+        <button class="primary" *ngIf="gmail?.connected" (click)="syncGmail()">Sincronizar ahora</button>
+        <button class="danger" *ngIf="gmail?.connected" (click)="disconnectGmail()">Desconectar</button>
+        <div class="sync" *ngIf="syncResult">
+          {{ syncResult.messagesFound }} encontrados · {{ syncResult.transactionsCreated }} movimientos · {{ syncResult.duplicatesSkipped }} duplicados
+        </div>
+      </article>
+
+      <form class="panel" (ngSubmit)="importEmail()">
+        <h3>Prueba el detector</h3>
+        <label>Remitente <input name="sender" [(ngModel)]="importForm.sender"></label>
+        <label>Contenido <textarea name="content" rows="6" [(ngModel)]="importForm.content"></textarea></label>
+        <button class="primary" type="submit">Detectar movimiento</button>
+      </form>
+    </section>
+
+    <section *ngIf="view === 'assistant'" class="assistant">
+      <div class="messages">
+        <div class="message" [class.user]="m.role === 'user'" *ngFor="let m of messages">{{ m.text }}</div>
+      </div>
+      <div class="suggestions">
+        <button *ngFor="let s of suggestions" (click)="ask(s)">{{ s }}</button>
+      </div>
+      <form class="chat" (ngSubmit)="ask()">
+        <input name="chat" [(ngModel)]="chatInput" placeholder="Pregúntame sobre tus gastos">
+        <button>Enviar</button>
+      </form>
+    </section>
+  </main>
+</div>
+
+<div class="toast" *ngIf="toast">{{ toast }}</div>
