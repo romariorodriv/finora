@@ -20,13 +20,19 @@ public class PeruBankParser implements BankEmailParser {
           + ".*?\\bBCP\\s+en\\s+(.{2,80}?)" + MERCHANT_END,
       Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
   private static final Pattern GENERIC_MERCHANT = Pattern.compile(
-      "(?:\\ben|establecimiento|comercio)\\s+([^\\r\\n]{2,80}?)" + MERCHANT_END,
+      "(?:\\ben|establecimiento|comercio|nombre\\s+del\\s+comercio)\\s*:?\\s+([^\\r\\n]{2,80}?)" + MERCHANT_END,
       Pattern.CASE_INSENSITIVE);
   private static final Pattern INVALID_MERCHANT = Pattern.compile(
       "^(?:(?:https?|www)(?:\\b|[.:/])|por\\s+tu\\s+seguridad\\b|te\\s+enviamos\\b|"
           + "datos\\s+de\\s+(?:la|tu)\\s+operaci[oó]n\\b|"
           + "tu\\s+\\S*(?:guardadito|wardadito)\\s+caja\\s+de\\s+ahorro\\b)",
       Pattern.CASE_INSENSITIVE);
+  private static final Pattern REJECTED_OPERATION = Pattern.compile(
+      "(?:se\\s+rechaz[oó]\\s+tu\\s+compra|compra\\s+(?:fue\\s+)?rechazada|"
+          + "operaci[oó]n\\s+rechazada|transacci[oó]n\\s+rechazada|pago\\s+rechazado|"
+          + "fondos\\s+insuficientes|saldo\\s+insuficiente|no\\s+tienes\\s+saldo\\s+suficiente|"
+          + "no\\s+se\\s+pudo\\s+realizar)",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
   @Override
   public boolean supports(String sender, String content) {
@@ -55,7 +61,8 @@ public class PeruBankParser implements BankEmailParser {
     String rawMerchant = extractMerchant(sender, text);
     String merchant = normalizeMerchant(rawMerchant);
     return new Parsed("Consumo en " + merchant, amount, "PEN", LocalDate.now(), merchant,
-        categorize(merchant), isValidMerchant(rawMerchant) ? .95 : .80);
+        categorize(merchant), isValidMerchant(rawMerchant) ? .95 : .80,
+        REJECTED_OPERATION.matcher(text).find() ? OperationStatus.REJECTED : OperationStatus.COMPLETED);
   }
 
   String normalizeMerchant(String rawMerchant) {

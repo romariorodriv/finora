@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class PeruBankParserTest {
   private static final String BCP_SENDER = "notificaciones@notificacionesbcp.com.pe";
@@ -19,6 +21,7 @@ class PeruBankParserTest {
     assertEquals("PedidosYa", parsed.merchant());
     assertEquals("Comida", parsed.category());
     assertEquals("Consumo en PedidosYa", parsed.description());
+    assertEquals(BankEmailParser.OperationStatus.COMPLETED, parsed.status());
   }
 
   @Test
@@ -40,6 +43,38 @@ class PeruBankParserTest {
     BankEmailParser.Parsed parsed = parse("18.90", "DLC*Spotify");
     assertEquals("Spotify", parsed.merchant());
     assertEquals("Suscripciones", parsed.category());
+    assertEquals(BankEmailParser.OperationStatus.COMPLETED, parsed.status());
+  }
+
+  @Test
+  void detectsRejectedPurchaseFromSubjectAndKeepsParsedMerchant() {
+    BankEmailParser.Parsed parsed = parser.parse(BCP_SENDER,
+        "Se rechazó tu compra por fondos insuficientes - Servicio de Notificaciones BCP\n"
+            + "Monto: S/ 32.90\nNombre del comercio: DLC*Spotify\nMotivo de rechazo: Fondos Insuficientes");
+
+    assertEquals(BankEmailParser.OperationStatus.REJECTED, parsed.status());
+    assertEquals(new BigDecimal("32.90"), parsed.amount());
+    assertEquals("Spotify", parsed.merchant());
+  }
+
+  @Test
+  void detectsRejectedPurchaseFromBody() {
+    BankEmailParser.Parsed parsed = parser.parse(BCP_SENDER,
+        "Compra por S/ 32.90 en DLC*Spotify. Lo sentimos, fondos insuficientes.");
+
+    assertEquals(BankEmailParser.OperationStatus.REJECTED, parsed.status());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "COMPRA RECHAZADA", "Operación Rechazada", "TRANSACCIÓN RECHAZADA", "pago rechazado",
+      "SALDO INSUFICIENTE", "No tienes saldo suficiente", "NO SE PUDO REALIZAR"
+  })
+  void detectsRejectedPhrasesRegardlessOfCase(String phrase) {
+    BankEmailParser.Parsed parsed = parser.parse(BCP_SENDER,
+        phrase + ". Monto S/ 32.90. Nombre del comercio: DLC*Spotify");
+
+    assertEquals(BankEmailParser.OperationStatus.REJECTED, parsed.status());
   }
 
   @Test
