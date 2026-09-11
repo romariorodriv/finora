@@ -74,39 +74,80 @@
         <p class="setup-note" *ngIf="!gmail.configured">La conexión estará disponible cuando finalice la configuración de Sarela.</p>
       </article>
 
-      <div class="metrics">
+      <article *ngIf="gmail?.connected" class="gmail-update" aria-live="polite">
+        <div>
+          <b>Movimientos de Gmail</b>
+          <span>{{ gmailUpdateStatus || ('Última actualización: ' + lastSyncLabel()) }}</span>
+        </div>
+        <button class="ghost compact" type="button" (click)="syncGmail()" [disabled]="syncingGmail">
+          {{ syncingGmail ? 'Actualizando...' : 'Actualizar movimientos' }}
+        </button>
+      </article>
+
+      <div class="metrics primary-metrics">
         <article class="metric hero"><span>Gastos del mes</span><strong>{{ money(dashboard?.expenses) }}</strong><small>Total registrado</small></article>
         <article class="metric"><span>Ingresos del mes</span><strong>{{ money(dashboard?.income) }}</strong><small>Entradas registradas</small></article>
         <article class="metric"><span>Balance</span><strong [class.negative]="(dashboard?.balance || 0) < 0">{{ money(dashboard?.balance) }}</strong><small>Ingresos menos gastos</small></article>
-        <article class="metric"><span>Promedio diario</span><strong>{{ money(dashboard?.dailyAverage) }}</strong><small>Gasto por día</small></article>
       </div>
-      <p class="projection">Proyección del mes: <b>{{ money(dashboard?.projection) }}</b></p>
+      <div class="secondary-summary">
+        <span>Promedio diario <b>{{ money(dashboard?.dailyAverage) }}</b></span>
+        <span>Proyección del mes <b>{{ money(dashboard?.projection) }}</b></span>
+      </div>
 
-      <div class="grid">
-        <article class="panel">
+      <article class="panel spending-panel">
+        <div class="panel-heading">
+          <div>
+            <h3>Tus gastos este mes</h3>
+            <p class="section-copy">Cuánto gastaste cada día.</p>
+            <strong class="chart-total">{{ money(dashboard?.expenses) }}</strong>
+          </div>
+          <div class="range-control" aria-label="Periodo del gráfico">
+            <button type="button" [class.active]="selectedSpendingRange === 7" (click)="selectSpendingRange(7)">7 días</button>
+            <button type="button" [class.active]="selectedSpendingRange === 30" (click)="selectSpendingRange(30)">30 días</button>
+            <button type="button" disabled title="Disponible cuando haya datos de meses anteriores">3 meses</button>
+          </div>
+        </div>
+        <div class="chart-frame" *ngIf="dashboard?.expenses; else noDaily">
+          <canvas #spendingChart role="img" aria-label="Gráfico de gastos diarios del periodo seleccionado"></canvas>
+        </div>
+        <ng-template #noDaily><div class="empty chart-empty">Aún no hay gastos para mostrar.</div></ng-template>
+      </article>
+
+      <div class="analytics-grid">
+        <article class="panel category-panel">
           <h3>¿En qué se está yendo tu dinero?</h3>
-          <p class="section-copy">Tus categorías con mayor gasto este mes.</p>
-          <div class="empty" *ngIf="categoryEntries().length === 0">Tus categorías aparecerán cuando registres movimientos.</div>
-          <div class="category-row" *ngFor="let item of categoryEntries()">
-            <span>{{ item[0] }}</span>
-            <progress max="100" [value]="dashboard?.expenses ? item[1] / dashboard!.expenses * 100 : 0"></progress>
-            <b>{{ money(item[1]) }}</b>
+          <p class="section-copy">Distribución por categoría este mes.</p>
+          <div class="category-visual" *ngIf="categoryDistribution().length; else noCategories">
+            <div class="donut-frame">
+              <canvas #categoryChart role="img" aria-label="Gráfico de distribución de gastos por categoría"></canvas>
+              <div class="donut-total"><b>{{ money(dashboard?.expenses) }}</b><span>Gastado</span></div>
+            </div>
+            <div class="category-legend" aria-label="Detalle por categoría">
+              <div *ngFor="let item of categoryDistribution()">
+                <i [style.background]="item.color" aria-hidden="true"></i>
+                <span>{{ item.name }}</span>
+                <b>{{ item.percentage | number:'1.0-0' }}%</b>
+                <small>{{ money(item.value) }}</small>
+              </div>
+            </div>
           </div>
+          <ng-template #noCategories><div class="empty chart-empty">Tus categorías aparecerán cuando registres movimientos.</div></ng-template>
         </article>
-        <article class="panel spending-pace">
-          <h3>Ritmo de gasto</h3>
-          <p class="section-copy">Cómo se distribuyen tus gastos durante el mes.</p>
-          <div class="bars" *ngIf="dailyEntries().length; else noDaily">
-            <div class="bar" *ngFor="let item of dailyEntries()" [style.height.%]="barHeight(item[1])" [title]="money(item[1])"></div>
-          </div>
-          <ng-template #noDaily><div class="empty">Aún no hay gastos para mostrar.</div></ng-template>
-        </article>
-        <article class="panel wide">
+
+        <section class="insight-panel">
+          <p class="eyebrow dark">SARELA ENCONTRÓ</p>
+          <h3>Una señal para este mes</h3>
+          <p>{{ financialInsight() }}</p>
+        </section>
+      </div>
+
+      <div class="grid dashboard-bottom">
+        <article class="panel wide recent-panel">
           <h3>Movimientos recientes</h3>
           <p class="section-copy">Tus últimas compras, pagos e ingresos.</p>
           <div class="empty" *ngIf="!dashboard?.transactions?.length">Tus movimientos más recientes aparecerán aquí.</div>
           <div class="tx" *ngFor="let tx of dashboard?.transactions">
-            <span>{{ tx.description }} <small>{{ tx.category }} · {{ tx.date }}</small></span>
+            <span><strong>{{ movementTitle(tx) }}</strong><small>{{ tx.category }} · {{ movementDate(tx.date) }}</small></span>
             <b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : '-' }} {{ money(tx.amount) }}</b>
           </div>
         </article>
