@@ -30,7 +30,7 @@ public class ImportService {
     if (!parser.supports(r.sender(), content)) {
       throw new ApiException(422, "IMPORT_UNSUPPORTED_EMAIL", "No parece una notificación bancaria compatible");
     }
-    BankEmailParser.Parsed parsed = parser.parse(content);
+    BankEmailParser.Parsed parsed = parser.parse(r.sender(), content);
     Transaction t = new Transaction();
     t.userId = userId;
     t.description = parsed.description();
