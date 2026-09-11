@@ -17,6 +17,12 @@ import { finalize } from 'rxjs';
 import { ApiService } from './core/services/api.service';
 import { AuthService } from './core/services/auth.service';
 import {
+  calculateCategoryDistribution,
+  calculateDailySpending,
+  CategorySpendingPoint,
+  generateFinancialInsight
+} from './core/dashboard.utils';
+import {
   AssistantAnswer,
   DashboardResponse,
   GmailStatus,
@@ -36,19 +42,6 @@ Chart.register(
   PointElement,
   Tooltip
 );
-
-interface DailySpendingPoint {
-  date: string;
-  label: string;
-  value: number;
-}
-
-interface CategorySpendingPoint {
-  name: string;
-  value: number;
-  percentage: number;
-  color: string;
-}
 
 @Component({
   selector: 'app-root',
@@ -288,42 +281,21 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     return `S/ ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
-  categoryEntries(): [string, number][] {
-    return Object.entries(this.dashboard?.categories || {}).sort((a, b) => Number(b[1]) - Number(a[1]));
-  }
-
   selectSpendingRange(range: 7 | 30): void {
     this.selectedSpendingRange = range;
     this.renderSpendingChart();
   }
 
+  hasDailySpending(): boolean {
+    return Boolean(this.dashboard && this.dashboard.expenses > 0 && Object.keys(this.dashboard.daily).length > 0);
+  }
+
   categoryDistribution(): CategorySpendingPoint[] {
-    const entries = this.categoryEntries().map(([name, value]) => ({ name, value: Number(value) }));
-    const total = entries.reduce((sum, item) => sum + item.value, 0);
-    const visible = entries.slice(0, 5);
-    const remainder = entries.slice(5).reduce((sum, item) => sum + item.value, 0);
-    if (remainder > 0) {
-      const existingOther = visible.find(item => item.name.toLocaleLowerCase('es') === 'otros');
-      if (existingOther) {
-        existingOther.value += remainder;
-      } else {
-        visible.push({ name: 'Otros', value: remainder });
-      }
-    }
-    return visible.map((item, index) => ({
-      ...item,
-      percentage: total ? item.value / total * 100 : 0,
-      color: this.chartColors[index]
-    }));
+    return calculateCategoryDistribution(this.dashboard?.categories ?? {}, this.chartColors);
   }
 
   financialInsight(): string {
-    const categories = this.categoryDistribution();
-    if (!categories.length || !this.dashboard?.expenses) {
-      return 'No tenemos suficientes movimientos todavía para darte una recomendación.';
-    }
-    const largest = categories[0];
-    return `${largest.name} es tu mayor categoría y representa el ${Math.round(largest.percentage)}% de tus gastos del mes.`;
+    return generateFinancialInsight(this.categoryDistribution(), this.dashboard?.expenses ?? 0);
   }
 
   movementTitle(tx: TransactionResponse): string {
@@ -386,22 +358,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.api.gmailStatus().subscribe({ next: s => this.gmail = s, error: e => this.showToast(this.message(e)) });
   }
 
-  private dailySpendingPoints(): DailySpendingPoint[] {
-    if (!this.dashboard?.month) {
-      return [];
-    }
-    const [year, month] = this.dashboard.month.split('-').map(Number);
-    const now = new Date();
-    const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
-    const finalDay = isCurrentMonth ? now.getDate() : new Date(year, month, 0).getDate();
-    const initialDay = Math.max(1, finalDay - this.selectedSpendingRange + 1);
-    return Array.from({ length: finalDay - initialDay + 1 }, (_, index) => {
-      const day = initialDay + index;
-      const date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      return { date, label: String(day), value: Number(this.dashboard?.daily?.[date] || 0) };
-    });
-  }
-
   private renderDashboardCharts(): void {
     if (this.view !== 'dashboard' || !this.dashboard) {
       return;
@@ -414,7 +370,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.spendingCanvas || !this.dashboard) {
       return;
     }
-    const points = this.dailySpendingPoints();
+    const points = calculateDailySpending(this.dashboard.daily, this.selectedSpendingRange);
     this.spendingChart?.destroy();
     this.spendingChart = new Chart(this.spendingCanvas.nativeElement, {
       type: 'line',

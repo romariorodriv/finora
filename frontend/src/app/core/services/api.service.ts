@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { normalizeDashboard } from '../dashboard.utils';
 import { environment } from '../../../environments/environment';
 import {
   AssistantAnswer,
@@ -23,7 +24,7 @@ export class ApiService {
   }
 
   dashboard(): Observable<DashboardResponse> {
-    return this.http.get<DashboardResponse>(`${this.baseUrl}/dashboard`);
+    return this.http.get<DashboardResponse>(`${this.baseUrl}/dashboard`).pipe(map(normalizeDashboard));
   }
 
   transactions(): Observable<TransactionResponse[]> {

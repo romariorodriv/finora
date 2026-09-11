@@ -32,8 +32,8 @@ export interface DashboardResponse {
   projection: number;
   categories: Record<string, number>;
   daily: Record<string, number>;
-  transactions: TransactionResponse[];
-  recurring: TransactionResponse[];
+  transactions?: TransactionResponse[];
+  recurring?: TransactionResponse[];
 }
 
 export interface GmailStatus {

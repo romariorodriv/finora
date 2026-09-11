@@ -113,6 +113,7 @@ header h2 { margin: 4px 0; font-size: 22px; }
 .negative { color: var(--danger); }
 .secondary-summary { display: flex; justify-content: flex-end; gap: 24px; margin: 12px 2px 18px; color: var(--muted); font-size: 13px; }
 .secondary-summary b { color: var(--ink); margin-left: 5px; }
+.dashboard-loading { min-height: 128px; display: grid; place-items: center; }
 
 .gmail-update { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 14px; padding: 11px 14px; border: 1px solid #bfe4cf; border-radius: 6px; background: #e9f7ef; }
 .gmail-update div { display: grid; gap: 3px; }
