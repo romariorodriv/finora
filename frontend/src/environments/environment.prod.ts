@@ -1,3 +1,4 @@
 export const environment = {
-  apiBaseUrl: 'https://api.DOMINIO.com/api/v1'
+  production: true,
+  apiBaseUrl: 'https://api-sarela.pgoapp.com/api/v1'
 };

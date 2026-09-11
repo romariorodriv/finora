@@ -1,5 +1,5 @@
 spring:
-  application.name: finora
+  application.name: sarela
   datasource:
     url: ${DB_URL:jdbc:h2:file:./data/finora;MODE=PostgreSQL;AUTO_SERVER=TRUE}
     username: ${DB_USERNAME:${DB_USER:sa}}

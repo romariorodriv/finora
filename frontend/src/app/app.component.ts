@@ -21,8 +21,9 @@ import {
 export class AppComponent implements OnInit {
   view: 'dashboard' | 'movements' | 'import' | 'assistant' = 'dashboard';
   authMode: 'login' | 'register' = 'login';
-  loginForm = { email: 'demo@finora.pe', password: 'Demo1234' };
-  registerForm = { name: '', email: '', password: '' };
+  readonly showDevTools = false;
+  loginForm = { email: '', password: '' };
+  registerForm = { name: '', email: '', password: '', confirmPassword: '' };
   txForm: TransactionRequest = this.emptyTransaction();
   editingId: number | null = null;
   importForm = {
@@ -51,7 +52,7 @@ export class AppComponent implements OnInit {
     const gmailParam = new URLSearchParams(location.search).get('gmail');
     if (gmailParam) {
       history.replaceState({}, '', location.pathname);
-      this.view = 'import';
+      this.view = 'dashboard';
       this.showToast(gmailParam === 'connected' ? 'Gmail conectado correctamente' : 'No se autorizó la conexión');
     }
   }
@@ -60,18 +61,28 @@ export class AppComponent implements OnInit {
     this.error = '';
     this.auth.login(this.loginForm.email, this.loginForm.password).subscribe({
       next: () => this.loadApp(),
-      error: e => this.error = this.message(e)
+      error: e => {
+        console.error('Login failed', e);
+        this.error = this.authMessage(e, 'login');
+      }
     });
   }
 
   register(): void {
     this.error = '';
+    if (this.registerForm.password !== this.registerForm.confirmPassword) {
+      this.error = 'Las contraseñas no coinciden.';
+      return;
+    }
     this.auth.register(this.registerForm.name, this.registerForm.email, this.registerForm.password).subscribe({
       next: () => {
         this.showToast('Tu cuenta está lista');
         this.loadApp();
       },
-      error: e => this.error = this.message(e)
+      error: e => {
+        console.error('Registration failed', e);
+        this.error = this.authMessage(e, 'register');
+      }
     });
   }
 
@@ -207,6 +218,16 @@ export class AppComponent implements OnInit {
     return Math.max(8, Number(value) / max * 100);
   }
 
+  lastSyncLabel(): string {
+    if (!this.gmail?.lastSyncAt) {
+      return 'Aún no has actualizado tus movimientos';
+    }
+    return new Intl.DateTimeFormat('es-PE', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    }).format(new Date(this.gmail.lastSyncAt));
+  }
+
   private loadApp(): void {
     this.loadDashboard();
     this.loadCategories();
@@ -255,6 +276,22 @@ export class AppComponent implements OnInit {
   }
 
   private message(error: any): string {
-    return error?.error?.message || error?.message || 'No pudimos completar la acción';
+    if (error?.status === 0) {
+      return 'No pudimos conectarnos con Sarela. Intenta nuevamente.';
+    }
+    return error?.error?.message || 'Algo salió mal. Intenta nuevamente.';
+  }
+
+  private authMessage(error: any, mode: 'login' | 'register'): string {
+    if (error?.status === 0) {
+      return 'No pudimos conectarnos con Sarela. Intenta nuevamente.';
+    }
+    if (mode === 'login' && error?.status === 401) {
+      return 'No pudimos iniciar sesión. Revisa tu correo y contraseña.';
+    }
+    if (mode === 'register' && (error?.status === 409 || error?.error?.code === 'EMAIL_ALREADY_REGISTERED')) {
+      return 'Ya existe una cuenta con este correo.';
+    }
+    return 'Algo salió mal. Intenta nuevamente.';
   }
 }

@@ -1,4 +1,4 @@
-# Configurar Gmail en Finora
+# Configurar Gmail en Sarela
 
 ## 1. Crear el proyecto de Google
 
@@ -18,7 +18,7 @@ URI de redirección autorizada exacta:
 http://localhost:8080/api/integrations/gmail/callback
 ```
 
-Finora solicita únicamente `gmail.readonly`: puede leer mensajes, pero no modificar ni eliminar correos.
+Sarela solicita únicamente `gmail.readonly`: puede leer mensajes, pero no modificar ni eliminar correos.
 
 ## 3. Definir variables en Windows PowerShell
 
@@ -39,10 +39,10 @@ Las variables desaparecen al cerrar esa terminal. No publiques los secretos ni l
 ## 4. Probar
 
 1. Abre `http://localhost:8080`.
-2. Inicia sesión con `demo@finora.pe` / `Demo1234` o crea una cuenta.
-3. En **Importar**, pulsa **Conectar Gmail**.
+2. Inicia sesión o crea una cuenta.
+3. En **Conexión Gmail**, pulsa **Conectar Gmail**.
 4. Autoriza la cuenta.
-5. De regreso en Finora, pulsa **Sincronizar ahora**.
+5. De regreso en Sarela, pulsa **Actualizar movimientos**.
 
 La primera sincronización revisa 30 días. Puedes cambiarlo con `GMAIL_INITIAL_SYNC_DAYS`.
 
@@ -52,4 +52,3 @@ La primera sincronización revisa 30 días. Puedes cambiarlo con `GMAIL_INITIAL_
 - `GMAIL_NOT_CONFIGURED`: faltan `GOOGLE_CLIENT_ID` o `GOOGLE_CLIENT_SECRET`.
 - La app no está verificada: agrega tu Gmail como usuario de prueba mientras desarrollas.
 - No aparecen gastos: confirma que existan notificaciones bancarias recientes y revisa el remitente/contenido que reconoce `PeruBankParser`.
-

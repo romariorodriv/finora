@@ -7,7 +7,7 @@ import java.util.*;
 public class ApiController {
   @GetMapping({"/api/health", "/api/v1/health"})
   public Map<String, Object> health() {
-    return Map.of("status", "UP", "app", "Finora MVP");
+    return Map.of("status", "UP", "app", "Sarela");
   }
 
   @GetMapping({"/api/categories", "/api/v1/categories"})

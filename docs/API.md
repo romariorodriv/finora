@@ -1,4 +1,4 @@
-# API de Finora
+# API de Sarela
 
 Todas las rutas privadas usan `Authorization: Bearer <jwt>`.
 
@@ -16,4 +16,3 @@ Todas las rutas privadas usan `Authorization: Bearer <jwt>`.
 | DELETE | `/api/integrations/gmail` | Revocar y desconectar |
 | POST | `/api/import/email` | Probar texto manualmente |
 | POST | `/api/assistant` | Consultar asistente financiero |
-

@@ -1,6 +1,6 @@
-# Arquitectura de Finora Complete
+# Arquitectura de Sarela
 
-Finora usa un monolito modular Spring Boot: es simple de ejecutar como MVP, pero los módulos tienen límites claros para poder separarlos más adelante.
+Sarela usa un monolito modular Spring Boot: es simple de ejecutar como MVP, pero los módulos tienen límites claros para poder separarlos más adelante.
 
 ```mermaid
 flowchart TD
@@ -21,7 +21,7 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     participant U as Usuario
-    participant F as Finora
+    participant F as Sarela
     participant G as Google
     U->>F: Conectar Gmail
     F->>G: OAuth con gmail.readonly

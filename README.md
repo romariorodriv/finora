@@ -1,6 +1,6 @@
-# Finora Complete
+# Sarela
 
-Finora ahora está separada en dos aplicaciones:
+Sarela está separada en dos aplicaciones:
 
 ```text
 Angular frontend
@@ -15,7 +15,7 @@ Spring Boot REST API
 ## Estructura
 
 ```text
-finora-complete/
+sarela/
 ├── backend/      Spring Boot REST API
 ├── frontend/     Angular web app
 ├── docs/
@@ -102,8 +102,3 @@ Configura Google siguiendo [docs/GMAIL_SETUP.md](docs/GMAIL_SETUP.md). Para desa
 GOOGLE_REDIRECT_URI=http://localhost:8080/api/v1/integrations/gmail/callback
 FRONTEND_BASE_URL=http://localhost:4200
 ```
-
-## Cuenta Demo
-
-- Correo: `demo@finora.pe`
-- Contraseña: `Demo1234`

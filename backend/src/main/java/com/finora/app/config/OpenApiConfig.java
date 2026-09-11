@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @OpenAPIDefinition(
-    info = @Info(title = "Finora API", version = "v1", description = "Spring Boot REST API for Finora"),
+    info = @Info(title = "Sarela API", version = "v1", description = "API REST de finanzas personales de Sarela"),
     security = @SecurityRequirement(name = "bearerAuth")
 )
 @SecurityScheme(

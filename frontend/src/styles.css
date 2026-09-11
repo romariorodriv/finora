@@ -4,12 +4,14 @@
   --paper: #f4f7f4;
   --white: #fff;
   --green: #37e38a;
+  --mint: #78e6b0;
   --deep: #0f3d30;
   --line: #e3eae5;
   --danger: #c94b4b;
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; font-family: Arial, sans-serif; color: var(--ink); background: var(--paper); }
+body { margin: 0; font-family: Inter, Arial, sans-serif; color: var(--ink); background: var(--paper); }
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 2px solid #55b991; outline-offset: 2px; }
