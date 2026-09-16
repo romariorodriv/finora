@@ -1,6 +1,7 @@
 import {
-  calculateCategoryDistribution,
   calculateDailySpending,
+  calculateMerchantDistribution,
+  calculateMacroCategoryDistribution,
   generateFinancialInsight,
   normalizeDashboard
 } from './dashboard.utils';
@@ -14,7 +15,16 @@ describe('dashboard transformations', () => {
     balance: -7263.62,
     dailyAverage: 660.33,
     projection: 19809.90,
-    categories: { Comida: 38.90, Suscripciones: 131.60, Otros: 7093.12 },
+    categories: { Alimentacion: 38.90, Servicios: 131.60, Otros: 7093.12 },
+    macroCategories: [
+      { macroCategory: 'OTROS', label: 'Otros', total: 7093.12, percentage: 97.65 },
+      { macroCategory: 'SERVICIOS', label: 'Servicios', total: 131.60, percentage: 1.81 },
+      { macroCategory: 'ALIMENTACION', label: 'Alimentacion', total: 38.90, percentage: .54 }
+    ],
+    merchants: [
+      { merchant: 'Tambo', label: 'Tambo', total: 275.84, percentage: 28 },
+      { merchant: '__OTHER_MERCHANTS__', label: 'Otros comercios', total: 374.22, percentage: 38 }
+    ],
     daily: { '2026-09-10': 271.60, '2026-09-09': 32.90 }
   };
   const colors = ['#0f3d30', '#276f5b', '#48b88e'];
@@ -38,10 +48,19 @@ describe('dashboard transformations', () => {
   });
 
   it('converts categories and generates an insight from real totals', () => {
-    const categories = calculateCategoryDistribution(fixture.categories, colors);
+    const categories = calculateMacroCategoryDistribution(fixture.macroCategories, colors);
 
-    expect(categories.map(item => item.name)).toEqual(['Otros', 'Suscripciones', 'Comida']);
+    expect(categories.map(item => item.name)).toEqual(['Otros', 'Servicios', 'Alimentacion']);
     expect(categories.map(item => item.value)).toEqual([7093.12, 131.60, 38.90]);
     expect(generateFinancialInsight(categories, fixture.expenses)).toContain('todavia no pudo clasificar');
+  });
+
+  it('converts merchant donut data without mixing it with categories', () => {
+    const merchants = calculateMerchantDistribution(fixture.merchants, colors);
+
+    expect(merchants.map(item => item.name)).toEqual(['Tambo', 'Otros comercios']);
+    expect(merchants[0].merchant).toBe('Tambo');
+    expect(merchants[1].merchant).toBe('__OTHER_MERCHANTS__');
+    expect(merchants.map(item => item.percentage)).toEqual([28, 38]);
   });
 });

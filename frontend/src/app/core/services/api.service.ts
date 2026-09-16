@@ -12,6 +12,7 @@ import {
   GmailAuthUrl,
   GmailStatus,
   GmailSyncResponse,
+  MerchantDetailResponse,
   TransactionRequest,
   TransactionResponse
 } from '../models/api.models';
@@ -36,6 +37,16 @@ export class ApiService {
         ...detail,
         total: Number(detail.total),
         subcategories: (detail.subcategories ?? []).map(item => ({ ...item, total: Number(item.total) })),
+        transactions: detail.transactions ?? []
+      }))
+    );
+  }
+
+  merchantDetail(merchant: string): Observable<MerchantDetailResponse> {
+    return this.http.get<MerchantDetailResponse>(`${this.baseUrl}/dashboard/merchants/${encodeURIComponent(merchant)}`).pipe(
+      map(detail => ({
+        ...detail,
+        total: Number(detail.total),
         transactions: detail.transactions ?? []
       }))
     );

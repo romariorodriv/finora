@@ -9,6 +9,7 @@ export interface DailySpendingPoint {
 export interface CategorySpendingPoint {
   name: string;
   macroCategory?: string;
+  merchant?: string;
   value: number;
   percentage: number;
   color: string;
@@ -24,6 +25,11 @@ export function normalizeDashboard(response: DashboardResponse): DashboardRespon
     projection: Number(response.projection),
     categories: response.categories ?? {},
     macroCategories: (response.macroCategories ?? []).map(item => ({
+      ...item,
+      total: Number(item.total),
+      percentage: Number(item.percentage)
+    })),
+    merchants: (response.merchants ?? []).map(item => ({
       ...item,
       total: Number(item.total),
       percentage: Number(item.percentage)
@@ -76,6 +82,21 @@ export function calculateMacroCategoryDistribution(
     .map((item, index) => ({
       name: item.label,
       macroCategory: item.macroCategory,
+      value: Number(item.total),
+      percentage: Number(item.percentage),
+      color: colors[index % colors.length]
+    }));
+}
+
+export function calculateMerchantDistribution(
+  merchants: { merchant: string; label: string; total: number; percentage: number }[] | undefined,
+  colors: string[]
+): CategorySpendingPoint[] {
+  return (merchants ?? [])
+    .filter(item => Number(item.total) > 0)
+    .map((item, index) => ({
+      name: item.label,
+      merchant: item.merchant,
       value: Number(item.total),
       percentage: Number(item.percentage),
       color: colors[index % colors.length]

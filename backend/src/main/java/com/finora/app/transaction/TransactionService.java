@@ -1,6 +1,7 @@
 package com.finora.app.transaction;
 
 import com.finora.app.category.CategoryClassifier;
+import com.finora.app.merchant.MerchantNormalizer;
 import com.finora.app.shared.error.ApiException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,7 +62,7 @@ public class TransactionService {
     t.date = r.date();
     t.category = r.category();
     t.type = r.type() == null || r.type().isBlank() ? "EXPENSE" : r.type();
-    t.merchant = r.merchant();
+    t.merchant = MerchantNormalizer.normalize(r.merchant() == null || r.merchant().isBlank() ? r.description() : r.merchant());
     t.recurring = r.recurring();
     if ("EXPENSE".equals(t.type)) {
       CategoryClassifier.Classification category = classifier.classify(t.merchant, t.description, t.category);

@@ -1,5 +1,6 @@
 package com.finora.app.importer;
 
+import com.finora.app.merchant.MerchantNormalizer;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Locale;
@@ -110,44 +111,9 @@ public class PeruBankParser implements BankEmailParser {
 
   String normalizeMerchant(String rawMerchant) {
     if (!isValidMerchant(rawMerchant)) {
-      return "Comercio no identificado";
+      return MerchantNormalizer.UNKNOWN;
     }
-    String merchant = rawMerchant.strip().replaceAll("\\s+", " ");
-    String normalized = merchant.toUpperCase(Locale.ROOT);
-    if (normalized.contains("PEDIDOSYA")) {
-      return "PedidosYa";
-    }
-    if (normalized.contains("RAPPI")) {
-      return "Rappi";
-    }
-    if (normalized.matches(".*\\bUBER\\b.*")) {
-      return "Uber";
-    }
-    if (normalized.contains("CABIFY")) {
-      return "Cabify";
-    }
-    if (normalized.contains("SPOTIFY")) {
-      return "Spotify";
-    }
-    if (normalized.matches(".*\\bMETRO\\b.*")) {
-      return "Metro";
-    }
-    if (normalized.contains("PLAZA VEA")) {
-      return "Plaza Vea";
-    }
-    if (normalized.contains("TOTTUS")) {
-      return "Tottus";
-    }
-    if (normalized.contains("WONG")) {
-      return "Wong";
-    }
-    if (normalized.contains("PRIMAX")) {
-      return "Primax";
-    }
-    if (normalized.contains("REPSOL")) {
-      return "Repsol";
-    }
-    return merchant;
+    return MerchantNormalizer.normalize(rawMerchant);
   }
 
   boolean isValidMerchant(String candidate) {

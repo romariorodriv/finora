@@ -6,6 +6,7 @@ import { ApiService } from './core/services/api.service';
 import { AuthService } from './core/services/auth.service';
 import {
   calculateDailySpending,
+  calculateMerchantDistribution,
   calculateMacroCategoryDistribution,
   CategorySpendingPoint,
   DailySpendingPoint,
@@ -17,6 +18,7 @@ import {
   FeedbackRequest,
   GmailStatus,
   GmailSyncResponse,
+  MerchantDetailResponse,
   TransactionRequest,
   TransactionResponse
 } from './core/models/api.models';
@@ -54,8 +56,11 @@ export class AppComponent implements OnInit {
   gmailUpdateStatus = '';
   selectedSpendingRange: 7 | 30 = 30;
   selectedCategory?: CategoryDetailResponse;
+  selectedMerchant?: MerchantDetailResponse;
   loadingCategory = false;
-  private readonly chartColors = ['#0f3d30', '#276f5b', '#48b88e', '#78e6b0', '#a9d9bf', '#c0d4cc', '#8fb6a6'];
+  loadingMerchant = false;
+  private readonly chartColors = ['#0f3d30', '#2f7d62', '#6fc39b', '#b6d7c4', '#dfe8e2'];
+  private readonly merchantColors = ['#173c34', '#5f927d', '#9ec7b2', '#d3e2d9', '#eef2ef', '#c8d4cc'];
 
   constructor(public readonly auth: AuthService, private readonly api: ApiService) {}
 
@@ -105,6 +110,7 @@ export class AppComponent implements OnInit {
     this.dashboard = undefined;
     this.transactions = [];
     this.selectedCategory = undefined;
+    this.selectedMerchant = undefined;
   }
 
   go(view: typeof this.view): void {
@@ -272,13 +278,16 @@ export class AppComponent implements OnInit {
     return calculateMacroCategoryDistribution(this.dashboard?.macroCategories, this.chartColors);
   }
 
-  donutStyle(): Record<string, string> {
-    const categories = this.categoryDistribution();
-    if (!categories.length) {
+  merchantDistribution(): CategorySpendingPoint[] {
+    return calculateMerchantDistribution(this.dashboard?.merchants, this.merchantColors);
+  }
+
+  donutStyle(items: CategorySpendingPoint[]): Record<string, string> {
+    if (!items.length) {
       return {};
     }
     let cursor = 0;
-    const stops = categories.map(item => {
+    const stops = items.map(item => {
       const start = cursor;
       cursor += item.percentage;
       return `${item.color} ${start}% ${cursor}%`;
@@ -305,8 +314,37 @@ export class AppComponent implements OnInit {
     });
   }
 
+  openMerchant(item: CategorySpendingPoint): void {
+    if (!item.merchant || item.merchant === '__OTHER_MERCHANTS__') {
+      return;
+    }
+    this.loadingMerchant = true;
+    this.api.merchantDetail(item.merchant).pipe(finalize(() => this.loadingMerchant = false)).subscribe({
+      next: detail => this.selectedMerchant = detail,
+      error: e => this.showToast(this.message(e))
+    });
+  }
+
   closeCategory(): void {
     this.selectedCategory = undefined;
+  }
+
+  closeMerchant(): void {
+    this.selectedMerchant = undefined;
+  }
+
+  closeDrawer(): void {
+    this.selectedCategory = undefined;
+    this.selectedMerchant = undefined;
+  }
+
+  transactionCount(): number {
+    return this.dashboard?.transactions?.filter(tx => tx.type === 'EXPENSE').length ?? 0;
+  }
+
+  averageTicket(): number {
+    const count = this.transactionCount();
+    return count ? Number(this.dashboard?.expenses ?? 0) / count : 0;
   }
 
   movementTitle(tx: TransactionResponse): string {

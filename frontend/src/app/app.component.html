@@ -53,11 +53,11 @@
       <div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div>
     </header>
 
-    <section *ngIf="view === 'dashboard'" class="view">
+    <section *ngIf="view === 'dashboard'" class="view dashboard-view">
       <div class="dashboard-intro">
         <div>
-          <p class="eyebrow dark">RESUMEN DEL MES</p>
-          <h1>Esto es lo que esta pasando con tu dinero.</h1>
+          <h1>Hola, {{ auth.user.name.split(' ')[0] }}</h1>
+          <p>Aqui tienes un resumen de tus gastos este mes.</p>
         </div>
         <b>{{ dashboard?.month }}</b>
       </div>
@@ -85,49 +85,22 @@
       </article>
 
       <div class="metrics primary-metrics" *ngIf="dashboard; else dashboardLoading">
-        <article class="metric hero"><span>Gastos del mes</span><strong>{{ money(dashboard.expenses) }}</strong><small>Total registrado</small></article>
-        <article class="metric"><span>Ingresos del mes</span><strong>{{ money(dashboard.income) }}</strong><small>Entradas registradas</small></article>
-        <article class="metric"><span>Balance</span><strong [class.negative]="dashboard.balance < 0">{{ money(dashboard.balance) }}</strong><small>Ingresos menos gastos</small></article>
+        <article class="metric hero"><span>Gasto total</span><strong>{{ money(dashboard.expenses) }}</strong><small>Este mes</small></article>
+        <article class="metric"><span>Transacciones</span><strong>{{ transactionCount() }}</strong><small>Gastos registrados</small></article>
+        <article class="metric"><span>Ticket promedio</span><strong>{{ money(averageTicket()) }}</strong><small>Por movimiento</small></article>
+        <article class="metric insight-kpi"><span>Insight breve</span><strong>{{ financialInsightTitle() }}</strong><small>{{ financialInsight() }}</small></article>
       </div>
       <ng-template #dashboardLoading><div class="empty dashboard-loading">Cargando tu resumen...</div></ng-template>
-      <div class="secondary-summary">
-        <span>Promedio diario <b>{{ money(dashboard?.dailyAverage) }}</b></span>
-        <span>Proyeccion del mes <b>{{ money(dashboard?.projection) }}</b></span>
-      </div>
-
-      <article class="panel spending-panel">
-        <div class="panel-heading">
-          <div>
-            <h3>Tus gastos este mes</h3>
-            <p class="section-copy">Cuanto gastaste cada dia.</p>
-            <strong class="chart-total">{{ money(dashboard?.expenses) }}</strong>
-          </div>
-          <div class="range-control" aria-label="Periodo del grafico">
-            <button type="button" [class.active]="selectedSpendingRange === 7" (click)="selectSpendingRange(7)">7 dias</button>
-            <button type="button" [class.active]="selectedSpendingRange === 30" (click)="selectSpendingRange(30)">30 dias</button>
-            <button type="button" disabled title="Disponible cuando haya datos de meses anteriores">3 meses</button>
-          </div>
-        </div>
-        <div class="chart-frame native-line" *ngIf="hasDailySpending(); else noDaily">
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Grafico de gastos diarios">
-            <polyline [attr.points]="linePoints()"></polyline>
-          </svg>
-          <div class="line-labels">
-            <span *ngFor="let point of dailyPoints()">{{ point.label }}<b>{{ money(point.value) }}</b></span>
-          </div>
-        </div>
-        <ng-template #noDaily><div class="empty chart-empty">{{ dashboard ? 'Aun no hay gastos para mostrar.' : 'Cargando tus gastos...' }}</div></ng-template>
-      </article>
 
       <div class="analytics-grid">
         <article class="panel category-panel">
-          <h3>En que se esta yendo tu dinero?</h3>
-          <p class="section-copy">Distribucion por macro categoria este mes.</p>
+          <h3>Tus gastos por categoria</h3>
+          <p class="section-copy">Distribucion de tu gasto este mes.</p>
           <div class="category-visual" *ngIf="categoryDistribution().length; else noCategories">
-            <button class="donut-frame native-donut" type="button" [ngStyle]="donutStyle()" aria-label="Distribucion de gastos por macro categoria">
-              <span class="donut-total"><b>{{ money(dashboard?.expenses) }}</b><small>Gastado</small></span>
+            <button class="donut-frame native-donut" type="button" [ngStyle]="donutStyle(categoryDistribution())" aria-label="Distribucion de gastos por categoria">
+              <span class="donut-total"><b>{{ money(dashboard?.expenses) }}</b><small>gastado</small></span>
             </button>
-            <div class="category-legend" aria-label="Detalle por macro categoria">
+            <div class="category-legend" aria-label="Detalle por categoria">
               <button type="button" *ngFor="let item of categoryDistribution()" (click)="openCategory(item)">
                 <i [style.background]="item.color" aria-hidden="true"></i>
                 <span>{{ item.name }}</span>
@@ -139,30 +112,52 @@
           <ng-template #noCategories><div class="empty chart-empty">{{ dashboard ? 'Tus categorias apareceran cuando registres movimientos.' : 'Cargando tus categorias...' }}</div></ng-template>
         </article>
 
-        <section class="insight-panel">
-          <p class="eyebrow dark">SARELA ENCONTRO</p>
-          <h3>{{ financialInsightTitle() }}</h3>
-          <p>{{ financialInsight() }}</p>
-        </section>
+        <article class="panel category-panel">
+          <h3>Donde estas gastando?</h3>
+          <p class="section-copy">Tus comercios con mayor gasto este mes.</p>
+          <div class="category-visual" *ngIf="merchantDistribution().length; else noMerchants">
+            <button class="donut-frame native-donut" type="button" [ngStyle]="donutStyle(merchantDistribution())" aria-label="Distribucion de gastos por comercio">
+              <span class="donut-total"><b>{{ money(dashboard?.expenses) }}</b><small>gastado</small></span>
+            </button>
+            <div class="category-legend merchant-legend" aria-label="Detalle por comercio">
+              <button type="button" *ngFor="let item of merchantDistribution()" (click)="openMerchant(item)" [disabled]="item.merchant === '__OTHER_MERCHANTS__'">
+                <i [style.background]="item.color" aria-hidden="true">{{ item.name[0] }}</i>
+                <span>{{ item.name }}</span>
+                <b>{{ item.percentage | number:'1.0-0' }}%</b>
+                <small>{{ money(item.value) }}</small>
+              </button>
+            </div>
+          </div>
+          <ng-template #noMerchants><div class="empty chart-empty">{{ dashboard ? 'Tus comercios apareceran cuando registres movimientos.' : 'Cargando tus comercios...' }}</div></ng-template>
+        </article>
       </div>
 
-      <article class="feedback-card">
-        <div>
-          <h3>Estamos construyendo Sarela contigo</h3>
-          <p>Cuentanos que te sirvio, que no entendiste o que te gustaria tener.</p>
-        </div>
-        <button class="ghost" type="button" (click)="openFeedback()">Dar feedback</button>
-      </article>
+      <section class="insight-panel">
+        <p class="eyebrow dark">INSIGHT DE SARELA</p>
+        <h3>{{ financialInsightTitle() }}</h3>
+        <p>{{ financialInsight() }}</p>
+      </section>
 
       <div class="grid dashboard-bottom">
-        <article class="panel wide recent-panel">
-          <h3>Movimientos recientes</h3>
-          <p class="section-copy">Tus ultimas compras, pagos e ingresos.</p>
+        <article class="panel recent-panel">
+          <h3>Ultimas transacciones</h3>
+          <p class="section-copy">Fecha, comercio, categoria y monto.</p>
           <div class="empty" *ngIf="!dashboard?.transactions?.length">Tus movimientos mas recientes apareceran aqui.</div>
           <div class="tx" *ngFor="let tx of dashboard?.transactions">
-            <span><strong>{{ movementTitle(tx) }}</strong><small>{{ tx.category }} · {{ movementDate(tx.date) }}</small></span>
-            <b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : '-' }} {{ money(tx.amount) }}</b>
+            <span><strong>{{ movementDate(tx.date) }} | {{ movementTitle(tx) }}</strong><small>{{ tx.category || tx.macroCategory || 'Otros' }}</small></span>
+            <b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : '-' }}{{ money(tx.amount) }}</b>
           </div>
+        </article>
+
+        <article class="feedback-card dashboard-feedback">
+          <div>
+            <h3>Tu opinion cuenta</h3>
+            <p>Que tan bien entendiste tus gastos este mes?</p>
+          </div>
+          <div class="mini-rating" aria-label="Rating de feedback">
+            <span *ngFor="let value of [1,2,3,4,5]">{{ value }}</span>
+          </div>
+          <button class="ghost" type="button" (click)="openFeedback()">Responder</button>
         </article>
       </div>
     </section>
@@ -186,7 +181,7 @@
         <h3>Todos tus movimientos</h3>
         <div class="empty" *ngIf="transactions.length === 0">Aun no tienes movimientos registrados.</div>
         <div class="tx tx-actions" *ngFor="let tx of transactions">
-          <span>{{ tx.description }} <small>{{ tx.category }} · {{ tx.date }}</small></span>
+          <span>{{ tx.description }} <small>{{ tx.category }} - {{ tx.date }}</small></span>
           <b [class.income]="tx.type === 'INCOME'">{{ money(tx.amount) }}</b>
           <button class="ghost compact" (click)="editTransaction(tx)">Editar</button>
           <button class="danger compact" (click)="deleteTransaction(tx.id)">Eliminar</button>
@@ -263,10 +258,10 @@
   </main>
 </div>
 
-<div class="drawer-backdrop" *ngIf="selectedCategory" (click)="closeCategory()"></div>
+<div class="drawer-backdrop" *ngIf="selectedCategory || selectedMerchant" (click)="closeDrawer()"></div>
 <aside class="category-drawer" *ngIf="selectedCategory" aria-label="Detalle de categoria">
   <button class="drawer-close" type="button" (click)="closeCategory()">Cerrar</button>
-  <p class="eyebrow dark">DETALLE</p>
+  <p class="eyebrow dark">DETALLE DE CATEGORIA</p>
   <h2>{{ selectedCategory.label }}</h2>
   <strong>{{ money(selectedCategory.total) }} este mes</strong>
   <h3>Distribucion</h3>
@@ -276,7 +271,19 @@
   </div>
   <h3>Movimientos</h3>
   <div class="drawer-tx" *ngFor="let tx of selectedCategory.transactions">
-    <span><b>{{ movementTitle(tx) }}</b><small>{{ tx.category }} · {{ movementDate(tx.date) }}</small></span>
+    <span><b>{{ movementTitle(tx) }}</b><small>{{ movementDate(tx.date) }} - {{ tx.description }}</small></span>
+    <strong>{{ money(tx.amount) }}</strong>
+  </div>
+</aside>
+
+<aside class="category-drawer" *ngIf="selectedMerchant" aria-label="Detalle de comercio">
+  <button class="drawer-close" type="button" (click)="closeMerchant()">Cerrar</button>
+  <p class="eyebrow dark">DETALLE DE COMERCIO</p>
+  <h2>{{ selectedMerchant.label }}</h2>
+  <strong>{{ money(selectedMerchant.total) }} este mes</strong>
+  <h3>Movimientos</h3>
+  <div class="drawer-tx" *ngFor="let tx of selectedMerchant.transactions">
+    <span><b>{{ movementDate(tx.date) }} | {{ movementTitle(tx) }}</b><small>{{ tx.description }} - {{ tx.category }}</small></span>
     <strong>{{ money(tx.amount) }}</strong>
   </div>
 </aside>

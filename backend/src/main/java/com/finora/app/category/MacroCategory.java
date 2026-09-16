@@ -1,12 +1,10 @@
 package com.finora.app.category;
 
 public enum MacroCategory {
-  DIA_A_DIA("Dia a dia"),
-  MOVILIDAD("Movilidad"),
-  HOGAR("Hogar"),
-  BIENESTAR("Bienestar"),
-  ESTILO_DE_VIDA("Estilo de vida"),
-  FINANZAS("Finanzas"),
+  ALIMENTACION("Alimentacion"),
+  TRANSPORTE("Transporte"),
+  SALUD("Salud"),
+  SERVICIOS("Servicios"),
   OTROS("Otros");
 
   private final String label;

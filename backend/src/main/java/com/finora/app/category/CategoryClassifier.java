@@ -13,15 +13,14 @@ public class CategoryClassifier {
 
   private static final Classification OTHER = new Classification(MacroCategory.OTROS, "Otros");
   private static final List<Rule> RULES = List.of(
-      new Rule(MacroCategory.DIA_A_DIA, "Delivery", List.of("pedidosya", "rappi")),
-      new Rule(MacroCategory.DIA_A_DIA, "Supermercado", List.of("metro", "wong", "plaza vea", "tottus")),
-      new Rule(MacroCategory.MOVILIDAD, "Taxi / apps", List.of("uber", "cabify")),
-      new Rule(MacroCategory.MOVILIDAD, "Combustible", List.of("primax", "repsol", "petroperu", "petroper")),
-      new Rule(MacroCategory.ESTILO_DE_VIDA, "Suscripciones",
-          List.of("spotify", "netflix", "prime video", "primevideo", "paramount")),
-      new Rule(MacroCategory.HOGAR, "Internet / celular", List.of("claro", "movistar", "win internet")),
-      new Rule(MacroCategory.BIENESTAR, "Farmacia", List.of("inkafarma", "mifarma")),
-      new Rule(MacroCategory.FINANZAS, "Seguros", List.of("rimac", "pacifico seguros")));
+      new Rule(MacroCategory.ALIMENTACION, "Alimentacion",
+          List.of("tambo", "oxxo", "pedidosya", "pedidos ya", "rappi", "metro", "wong", "plaza vea", "tottus")),
+      new Rule(MacroCategory.TRANSPORTE, "Transporte",
+          List.of("uber", "cabify", "primax", "repsol", "petroperu", "petroper", "grif")),
+      new Rule(MacroCategory.SALUD, "Salud",
+          List.of("inkafarma", "mifarma", "clinica", "farmacia", "botica")),
+      new Rule(MacroCategory.SERVICIOS, "Servicios",
+          List.of("claro", "movistar", "entel", "win internet", "luz", "agua", "internet")));
 
   public Classification classify(String merchant, String description) {
     String text = normalize((merchant == null ? "" : merchant) + " " + (description == null ? "" : description));
@@ -44,24 +43,18 @@ public class CategoryClassifier {
 
   public MacroCategory macroFromSubcategory(String subcategory) {
     String normalized = normalize(subcategory);
-    if (List.of("supermercado", "restaurantes", "delivery", "comida").contains(normalized)) {
-      return MacroCategory.DIA_A_DIA;
+    if (List.of("alimentacion", "supermercado", "restaurantes", "delivery", "comida", "dia a dia").contains(normalized)) {
+      return MacroCategory.ALIMENTACION;
     }
     if (List.of("combustible", "taxi / apps", "taxi apps", "transporte", "estacionamiento")
         .contains(normalized)) {
-      return MacroCategory.MOVILIDAD;
+      return MacroCategory.TRANSPORTE;
     }
-    if (List.of("servicios", "internet / celular", "internet celular", "casa").contains(normalized)) {
-      return MacroCategory.HOGAR;
+    if (List.of("salud", "farmacia", "deporte", "cuidado personal", "bienestar").contains(normalized)) {
+      return MacroCategory.SALUD;
     }
-    if (List.of("salud", "farmacia", "deporte", "cuidado personal").contains(normalized)) {
-      return MacroCategory.BIENESTAR;
-    }
-    if (List.of("entretenimiento", "suscripciones", "compras", "viajes", "educacion").contains(normalized)) {
-      return MacroCategory.ESTILO_DE_VIDA;
-    }
-    if (List.of("comisiones", "seguros", "intereses").contains(normalized)) {
-      return MacroCategory.FINANZAS;
+    if (List.of("servicios", "internet / celular", "internet celular", "casa", "hogar").contains(normalized)) {
+      return MacroCategory.SERVICIOS;
     }
     if ("otros".equals(normalized)) {
       return MacroCategory.OTROS;

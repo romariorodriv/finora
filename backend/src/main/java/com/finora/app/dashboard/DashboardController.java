@@ -23,4 +23,10 @@ public class DashboardController {
       @RequestParam(required = false) Integer year, @RequestParam(required = false) Integer month) {
     return service.categoryDetail((Long) a.getPrincipal(), macroCategory, year, month);
   }
+
+  @GetMapping("/merchants/{merchant}")
+  public DashboardResponse.MerchantDetail merchantDetail(Authentication a, @PathVariable String merchant,
+      @RequestParam(required = false) Integer year, @RequestParam(required = false) Integer month) {
+    return service.merchantDetail((Long) a.getPrincipal(), merchant, year, month);
+  }
 }

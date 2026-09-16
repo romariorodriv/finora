@@ -14,6 +14,7 @@ public record DashboardResponse(
     BigDecimal projection,
     Map<String, BigDecimal> categories,
     List<CategorySummary> macroCategories,
+    List<MerchantSummary> merchants,
     String insightTitle,
     String insightBody,
     Map<LocalDate, BigDecimal> daily,
@@ -21,12 +22,19 @@ public record DashboardResponse(
     List<TransactionResponse> recurring
 ) {
   public record CategorySummary(String macroCategory, String label, BigDecimal total, double percentage) {}
+  public record MerchantSummary(String merchant, String label, BigDecimal total, double percentage) {}
   public record SubcategorySummary(String name, BigDecimal total) {}
   public record CategoryDetail(
       String macroCategory,
       String label,
       BigDecimal total,
       List<SubcategorySummary> subcategories,
+      List<TransactionResponse> transactions
+  ) {}
+  public record MerchantDetail(
+      String merchant,
+      String label,
+      BigDecimal total,
       List<TransactionResponse> transactions
   ) {}
 }

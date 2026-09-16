@@ -44,8 +44,8 @@ class ImportServiceTest {
     assertEquals(new BigDecimal("19.00"), transaction.getValue().amount);
     assertEquals("PedidosYa", transaction.getValue().merchant);
     assertEquals("EXPENSE", transaction.getValue().type);
-    assertEquals("DIA_A_DIA", transaction.getValue().macroCategory);
-    assertEquals("Delivery", transaction.getValue().category);
+    assertEquals("ALIMENTACION", transaction.getValue().macroCategory);
+    assertEquals("Alimentacion", transaction.getValue().category);
   }
 
   @Test

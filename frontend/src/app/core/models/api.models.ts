@@ -33,6 +33,7 @@ export interface DashboardResponse {
   projection: number;
   categories: Record<string, number>;
   macroCategories?: MacroCategorySummary[];
+  merchants?: MerchantSummary[];
   insightTitle?: string;
   insightBody?: string;
   daily: Record<string, number>;
@@ -42,6 +43,13 @@ export interface DashboardResponse {
 
 export interface MacroCategorySummary {
   macroCategory: string;
+  label: string;
+  total: number;
+  percentage: number;
+}
+
+export interface MerchantSummary {
+  merchant: string;
   label: string;
   total: number;
   percentage: number;
@@ -57,6 +65,13 @@ export interface CategoryDetailResponse {
   label: string;
   total: number;
   subcategories: SubcategorySummary[];
+  transactions: TransactionResponse[];
+}
+
+export interface MerchantDetailResponse {
+  merchant: string;
+  label: string;
+  total: number;
   transactions: TransactionResponse[];
 }
 
