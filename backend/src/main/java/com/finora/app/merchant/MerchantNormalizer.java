@@ -23,6 +23,9 @@ public final class MerchantNormalizer {
     if (normalized.contains("PEDIDOSYA") || normalized.contains("PEDIDOS YA")) {
       return "PedidosYa";
     }
+    if (normalized.matches(".*\bROKYS\b.*")) {
+      return "Rokys";
+    }
     if (normalized.matches(".*\\bRAPPI\\b.*")) {
       return "Rappi";
     }
@@ -62,11 +65,45 @@ public final class MerchantNormalizer {
     if (normalized.contains("PRIMAX")) {
       return "Primax";
     }
+    if (normalized.contains("SERVICENTRO")) {
+      return "Servicentro";
+    }
+    if (normalized.contains("PEAJE")) {
+      return "Peaje";
+    }
     if (normalized.contains("REPSOL")) {
       return "Repsol";
     }
     if (normalized.contains("SPOTIFY")) {
       return "Spotify";
+    }
+    if (normalized.contains("NETFLIX")) {
+      return "Netflix";
+    }
+    if (normalized.contains("PARAMOUNT+") || normalized.contains("PARAMOUNT PLUS")
+        || normalized.contains("PARAMOUNTPLUS")) {
+      return "Paramount+";
+    }
+    if (normalized.contains("PRIME VIDEO")) {
+      return "Prime Video";
+    }
+    if (normalized.contains("DISNEY+") || normalized.contains("DISNEY PLUS")) {
+      return "Disney+";
+    }
+    if (normalized.contains("HBO MAX") || normalized.contains("MAX.COM")) {
+      return "Max";
+    }
+    if (normalized.contains("YOUTUBE PREMIUM")) {
+      return "YouTube Premium";
+    }
+    if (normalized.contains("APPLE MUSIC")) {
+      return "Apple Music";
+    }
+    if (normalized.contains("ICLOUD")) {
+      return "iCloud";
+    }
+    if (normalized.contains("GOOGLE ONE")) {
+      return "Google One";
     }
     return merchant.isBlank() ? UNKNOWN : merchant;
   }

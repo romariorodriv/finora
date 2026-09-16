@@ -5,6 +5,7 @@ public enum MacroCategory {
   TRANSPORTE("Transporte"),
   SALUD("Salud"),
   SERVICIOS("Servicios"),
+  SUSCRIPCIONES("Suscripciones"),
   OTROS("Otros");
 
   private final String label;

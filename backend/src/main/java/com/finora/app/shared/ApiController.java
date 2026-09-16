@@ -12,6 +12,6 @@ public class ApiController {
 
   @GetMapping({"/api/categories", "/api/v1/categories"})
   public List<String> categories() {
-    return List.of("Alimentacion", "Transporte", "Salud", "Servicios", "Otros");
+    return List.of("Alimentacion", "Transporte", "Salud", "Servicios", "Suscripciones", "Otros");
   }
 }

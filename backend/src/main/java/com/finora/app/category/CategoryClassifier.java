@@ -14,15 +14,23 @@ public class CategoryClassifier {
   private static final Classification OTHER = new Classification(MacroCategory.OTROS, "Otros");
   private static final List<Rule> RULES = List.of(
       new Rule(MacroCategory.ALIMENTACION, "Alimentacion",
-          List.of("tambo", "oxxo", "pedidosya", "pedidos ya", "rappi", "metro", "wong", "plaza vea", "tottus")),
+          List.of("tambo", "oxxo", "rokys", "pedidosya", "pedidos ya", "rappi", "metro", "wong", "plaza vea", "tottus")),
       new Rule(MacroCategory.TRANSPORTE, "Transporte",
-          List.of("uber", "cabify", "primax", "repsol", "petroperu", "petroper", "grif")),
+          List.of("uber", "cabify", "servicentro", "primax", "repsol", "petroperu", "petroper", "grif", "peaje")),
       new Rule(MacroCategory.SALUD, "Salud",
           List.of("inkafarma", "mifarma", "clinica", "farmacia", "botica")),
       new Rule(MacroCategory.SERVICIOS, "Servicios",
-          List.of("claro", "movistar", "entel", "win internet", "luz", "agua", "internet")));
+          List.of("claro", "movistar", "entel", "win internet", "luz", "agua", "internet")),
+      new Rule(MacroCategory.SUSCRIPCIONES, "Suscripciones",
+          List.of("spotify", "netflix", "paramount+", "paramount plus", "paramountplus",
+              "prime video", "disney+", "disney plus", "hbo max", "max.com",
+              "youtube premium", "apple music", "icloud", "google one")));
 
   public Classification classify(String merchant, String description) {
+    String normalizedMerchant = normalize(merchant);
+    if ("max".equals(normalizedMerchant)) {
+      return new Classification(MacroCategory.SUSCRIPCIONES, "Suscripciones");
+    }
     String text = normalize((merchant == null ? "" : merchant) + " " + (description == null ? "" : description));
     for (Rule rule : RULES) {
       if (rule.tokens().stream().anyMatch(text::contains)) {
@@ -55,6 +63,9 @@ public class CategoryClassifier {
     }
     if (List.of("servicios", "internet / celular", "internet celular", "casa", "hogar").contains(normalized)) {
       return MacroCategory.SERVICIOS;
+    }
+    if ("suscripciones".equals(normalized)) {
+      return MacroCategory.SUSCRIPCIONES;
     }
     if ("otros".equals(normalized)) {
       return MacroCategory.OTROS;

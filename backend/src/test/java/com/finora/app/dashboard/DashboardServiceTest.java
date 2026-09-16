@@ -110,8 +110,27 @@ class DashboardServiceTest {
     assertEquals(new BigDecimal("20.00"), dashboard.categories().get("Transporte"));
     assertEquals(new BigDecimal("15.00"), dashboard.categories().get("Salud"));
     assertEquals(new BigDecimal("10.00"), dashboard.categories().get("Alimentacion"));
-    assertEquals(new BigDecimal("5.00"), dashboard.categories().get("Otros"));
+    assertEquals(new BigDecimal("5.00"), dashboard.categories().get("Suscripciones"));
     assertTrue(!dashboard.categories().containsKey("Servicios"));
+  }
+
+  @Test
+  void nullHistoricalMacroCategoryIsReclassifiedAsSubscriptionOnRead() {
+    List<Transaction> tx = List.of(
+        legacy("Spotify", "5.00", null, "Suscripciones"),
+        legacy("PARAMOUNT+", "9.00", null, "Otros"),
+        legacy("EBN*PRIME VIDEO", "12.00", null, "Otros"),
+        legacy("NETFLIX.COM", "18.00", null, "Otros"));
+    when(repository.findByUserIdAndDateBetweenOrderByDateDesc(7L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+        .thenReturn(tx);
+
+    DashboardResponse dashboard = service.dashboard(7L, 2026, 9);
+    DashboardResponse.CategoryDetail detail = service.categoryDetail(7L, "SUSCRIPCIONES", 2026, 9);
+
+    assertEquals(new BigDecimal("44.00"), dashboard.categories().get("Suscripciones"));
+    assertEquals("SUSCRIPCIONES", dashboard.macroCategories().get(0).macroCategory());
+    assertEquals(4, detail.transactions().size());
+    assertTrue(!dashboard.categories().containsKey("Otros"));
   }
 
   private Transaction legacy(String merchant, String amount, String macroCategory) {

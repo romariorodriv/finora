@@ -41,6 +41,34 @@ class CategoryClassifierTest {
     assertNormalizedCategory("CLARO POSTPAGO", MacroCategory.SERVICIOS);
   }
 
+  @Test
+  void classifiesFoodAndTransportRulesKeptByTheTaxonomy() {
+    assertNormalizedCategory("ROKYS SAN MIGUEL", MacroCategory.ALIMENTACION);
+    assertNormalizedCategory("SERVICENTRO PANAMERICANA", MacroCategory.TRANSPORTE);
+    assertNormalizedCategory("PEAJE VILLA", MacroCategory.TRANSPORTE);
+  }
+
+  @Test
+  void normalizesAndClassifiesSubscriptionPlatforms() {
+    assertNormalizedMerchantCategory("DLC*SPOTIFY", "Spotify");
+    assertNormalizedMerchantCategory("NETFLIX.COM", "Netflix");
+    assertNormalizedMerchantCategory("PARAMOUNT PLUS", "Paramount+");
+    assertNormalizedMerchantCategory("EBN*PRIME VIDEO", "Prime Video");
+    assertNormalizedMerchantCategory("DISNEY PLUS", "Disney+");
+    assertNormalizedMerchantCategory("HBO MAX", "Max");
+    assertNormalizedMerchantCategory("MAX.COM", "Max");
+    assertNormalizedMerchantCategory("YOUTUBE PREMIUM", "YouTube Premium");
+    assertNormalizedMerchantCategory("APPLE MUSIC", "Apple Music");
+    assertNormalizedMerchantCategory("ICLOUD", "iCloud");
+    assertNormalizedMerchantCategory("GOOGLE ONE", "Google One");
+  }
+
+  @Test
+  void doesNotClassifyAmbiguousGoogleDescriptorsAsSubscriptions() {
+    assertNormalizedCategory("GOOGLE CHATGPT", MacroCategory.OTROS);
+    assertNormalizedCategory("GOOGLE STORE", MacroCategory.OTROS);
+  }
+
   private void assertCategory(String merchant, MacroCategory macroCategory, String subcategory) {
     CategoryClassifier.Classification result = classifier.classify(merchant, "Compra");
     assertEquals(macroCategory, result.macroCategory());
@@ -51,5 +79,13 @@ class CategoryClassifierTest {
     String normalized = MerchantNormalizer.normalize(rawMerchant);
     CategoryClassifier.Classification result = classifier.classify(normalized, "Compra");
     assertEquals(macroCategory, result.macroCategory());
+  }
+
+  private void assertNormalizedMerchantCategory(String rawMerchant, String expectedMerchant) {
+    String normalized = MerchantNormalizer.normalize(rawMerchant);
+    assertEquals(expectedMerchant, normalized);
+    CategoryClassifier.Classification result = classifier.classify(normalized, "Compra");
+    assertEquals(MacroCategory.SUSCRIPCIONES, result.macroCategory());
+    assertEquals("Suscripciones", result.subcategory());
   }
 }
