@@ -1,8 +1,8 @@
 package com.finora.app.importer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
@@ -21,6 +21,7 @@ class PeruBankParserTest {
     assertEquals("PedidosYa", parsed.merchant());
     assertEquals("Comida", parsed.category());
     assertEquals("Consumo en PedidosYa", parsed.description());
+    assertEquals(BankEmailParser.MovementType.EXPENSE, parsed.type());
     assertEquals(BankEmailParser.OperationStatus.COMPLETED, parsed.status());
   }
 
@@ -55,6 +56,7 @@ class PeruBankParserTest {
     assertEquals(BankEmailParser.OperationStatus.REJECTED, parsed.status());
     assertEquals(new BigDecimal("32.90"), parsed.amount());
     assertEquals("Spotify", parsed.merchant());
+    assertEquals(BankEmailParser.MovementType.EXPENSE, parsed.type());
   }
 
   @Test
@@ -63,6 +65,102 @@ class PeruBankParserTest {
         "Compra por S/ 32.90 en DLC*Spotify. Lo sentimos, fondos insuficientes.");
 
     assertEquals(BankEmailParser.OperationStatus.REJECTED, parsed.status());
+  }
+
+  @Test
+  void classifiesConfirmedWardaditoWithdrawalAsCompletedSavingsMovement() {
+    BankEmailParser.Parsed parsed = parser.parse(BCP_SENDER,
+        "Realizaste un retiro de tu wardadito.\n"
+            + "Realizaste un retiro de S/ 22.00 en tu wardadito caja de ahorro.");
+
+    assertEquals(new BigDecimal("22.00"), parsed.amount());
+    assertEquals("Wardadito", parsed.merchant());
+    assertEquals("Retiro de Wardadito", parsed.description());
+    assertEquals("Ahorro", parsed.category());
+    assertEquals(BankEmailParser.MovementType.SAVINGS_WITHDRAWAL, parsed.type());
+    assertEquals(BankEmailParser.OperationStatus.COMPLETED, parsed.status());
+  }
+
+  @Test
+  void classifiesWardaditoDepositAsCompletedSavingsDeposit() {
+    BankEmailParser.Parsed parsed = parser.parse(BCP_SENDER,
+        "Realizaste un aporte voluntario a tu wardadito.\n"
+            + "Realizaste un aporte voluntario de S/ 100.00 a tu wardadito caja de ahorro.");
+
+    assertEquals(new BigDecimal("100.00"), parsed.amount());
+    assertEquals("Wardadito", parsed.merchant());
+    assertEquals("Aporte a Wardadito", parsed.description());
+    assertEquals(BankEmailParser.MovementType.SAVINGS_DEPOSIT, parsed.type());
+    assertEquals(BankEmailParser.OperationStatus.COMPLETED, parsed.status());
+  }
+
+  @Test
+  void classifiesTransferToOtherBankAsTransfer() {
+    BankEmailParser.Parsed parsed = parser.parse(BCP_SENDER,
+        "Constancia de Transferencia a Otros Bancos - Servicio de Notificaciones BCP\n"
+            + "Importe: S/ 15432.10");
+
+    assertEquals(new BigDecimal("15432.10"), parsed.amount());
+    assertEquals(BankEmailParser.MovementType.TRANSFER, parsed.type());
+    assertEquals(BankEmailParser.OperationStatus.COMPLETED, parsed.status());
+  }
+
+  @Test
+  void classifiesTransferBetweenOwnAccountsAsTransfer() {
+    BankEmailParser.Parsed parsed = parser.parse(BCP_SENDER,
+        "Constancia de Transferencia Entre mis Cuentas - Servicio de Notificaciones BCP\n"
+            + "Monto: S/ 1828.78");
+
+    assertEquals(new BigDecimal("1828.78"), parsed.amount());
+    assertEquals(BankEmailParser.MovementType.TRANSFER, parsed.type());
+    assertEquals(BankEmailParser.OperationStatus.COMPLETED, parsed.status());
+  }
+
+  @Test
+  void classifiesAtmWithdrawalAsCashWithdrawal() {
+    BankEmailParser.Parsed parsed = parser.parse(BCP_SENDER,
+        "Realizaste un retiro en un cajero automatico BCP - Servicio de Notificaciones BCP\n"
+            + "Retiro de S/ 1800.00 en cajero BCP.");
+
+    assertEquals(new BigDecimal("1800.00"), parsed.amount());
+    assertEquals(BankEmailParser.MovementType.CASH_WITHDRAWAL, parsed.type());
+    assertEquals(BankEmailParser.OperationStatus.COMPLETED, parsed.status());
+  }
+
+  @Test
+  void classifiesRefundAsRefundMovement() {
+    BankEmailParser.Parsed parsed = parser.parse(BCP_SENDER,
+        "Realizamos una devolucion de una operacion a tu Tarjeta de Debito BCP - Servicio de Notificaciones BCP\n"
+            + "Monto: S/ 96.00");
+
+    assertEquals(new BigDecimal("96.00"), parsed.amount());
+    assertEquals(BankEmailParser.MovementType.REFUND, parsed.type());
+    assertNotEquals(BankEmailParser.MovementType.EXPENSE, parsed.type());
+    assertEquals(BankEmailParser.OperationStatus.REFUNDED, parsed.status());
+  }
+
+  @Test
+  void doesNotRecognizeSodimacPromotionWithAmount() {
+    assertFalse(parser.tryParse(BCP_SENDER,
+        "STOP: Esto te va a tentar en Sodimac Angamos\nCompra tu SOAT y participa por S/ 1000").isPresent());
+  }
+
+  @Test
+  void doesNotRecognizeDiscountPromotion() {
+    assertFalse(parser.tryParse(BCP_SENDER,
+        "Te pasamos el dato para renovar tu bano sin gastar de mas Hasta 50% de descuento").isPresent());
+  }
+
+  @Test
+  void doesNotRecognizePromotionContainingKnownMerchant() {
+    assertFalse(parser.tryParse(BCP_SENDER,
+        "Tu proxima compra favorita podria estar aqui\nPedidosYa tiene ofertas desde S/ 20").isPresent());
+  }
+
+  @Test
+  void doesNotRecognizeAmbiguousAmountWithoutSupportedFinancialPattern() {
+    assertFalse(parser.tryParse("promos@retail.pe",
+        "Oferta especial en INTERBANK por S/ 1000 para clientes seleccionados").isPresent());
   }
 
   @ParameterizedTest
@@ -79,14 +177,15 @@ class PeruBankParserTest {
 
   @Test
   void rejectsUrlAsMerchant() {
-    BankEmailParser.Parsed parsed = parser.parse("", "Realizaste un consumo de S/ 10.00 en https://example.com.");
+    BankEmailParser.Parsed parsed = parser.parse(BCP_SENDER,
+        "Realizaste un consumo de S/ 10.00 con tu Tarjeta de Debito BCP en https://example.com.");
     assertNotEquals("https", parsed.merchant());
     assertEquals("Comercio no identificado", parsed.merchant());
   }
 
   @Test
   void rejectsSavingsAccountAndFollowingCopy() {
-    BankEmailParser.Parsed parsed = parser.parse("",
+    BankEmailParser.Parsed parsed = parser.parse(BCP_SENDER,
         "Realizaste un consumo de S/ 10.00 en tu wardadito caja de ahorro. Te enviamos más información.");
     assertEquals("Comercio no identificado", parsed.merchant());
     assertNotEquals("Consumo en tu wardadito caja de ahorro. Te enviamos", parsed.description());
@@ -100,8 +199,8 @@ class PeruBankParserTest {
   }
 
   @Test
-  void recognizesBcpFromSenderWithoutBankNameInBody() {
-    assertTrue(parser.supports(BCP_SENDER, "Realizaste una compra por S/ 8.50"));
+  void bcpSenderAloneDoesNotMakeEmailSupported() {
+    assertFalse(parser.supports(BCP_SENDER, "Realizaste una compra por S/ 8.50"));
   }
 
   @Test

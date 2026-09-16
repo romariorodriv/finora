@@ -24,6 +24,6 @@ public class ImportedMessage {
     public Instant createdAt = Instant.now();
     public Instant updatedAt = Instant.now();
 
-    public enum Status { RECEIVED, PROCESSING, IMPORTED, REVIEW_REQUIRED, REJECTED, FAILED }
+    public enum Status { RECEIVED, PROCESSING, IMPORTED, REVIEW_REQUIRED, IGNORED, REJECTED, FAILED }
     public ImportedMessage() {}
 }

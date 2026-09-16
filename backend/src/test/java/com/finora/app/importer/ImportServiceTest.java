@@ -58,4 +58,67 @@ class ImportServiceTest {
     verify(repository, never()).existsByUserIdAndExternalId(any(), any());
     verify(repository, never()).save(any());
   }
+
+  @Test
+  void wardaditoWithdrawalIsPersistedAsNonAccountingMovement() {
+    when(repository.existsByUserIdAndExternalId(7L, "wardadito-message")).thenReturn(false);
+
+    service.importBankEmail(7L, new ImportDtos.BankEmailRequest(
+        "notificaciones@notificacionesbcp.com.pe",
+        "Realizaste un retiro de tu wardadito.",
+        "Realizaste un retiro de S/ 22.00 en tu wardadito caja de ahorro.",
+        "wardadito-message"));
+
+    ArgumentCaptor<Transaction> transaction = ArgumentCaptor.forClass(Transaction.class);
+    verify(repository).save(transaction.capture());
+    assertEquals("SAVINGS_WITHDRAWAL", transaction.getValue().type);
+    assertEquals("Retiro de Wardadito", transaction.getValue().description);
+    assertEquals(new BigDecimal("22.00"), transaction.getValue().amount);
+  }
+
+  @Test
+  void unsupportedPromotionDoesNotPersistOrParticipateInTransactionDeduplication() {
+    ApiException error = assertThrows(ApiException.class, () -> service.importBankEmail(7L,
+        new ImportDtos.BankEmailRequest(
+            "notificaciones@notificacionesbcp.com.pe",
+            "STOP: Esto te va a tentar en Sodimac Angamos",
+            "Compra tu SOAT y participa por S/ 1000",
+            "promo-message")));
+
+    assertEquals("IMPORT_UNSUPPORTED_EMAIL", error.code);
+    verify(repository, never()).existsByUserIdAndExternalId(any(), any());
+    verify(repository, never()).save(any());
+  }
+
+  @Test
+  void transferToOtherBankIsPersistedAsTransfer() {
+    when(repository.existsByUserIdAndExternalId(7L, "transfer-message")).thenReturn(false);
+
+    service.importBankEmail(7L, new ImportDtos.BankEmailRequest(
+        "notificaciones@notificacionesbcp.com.pe",
+        "Constancia de Transferencia a Otros Bancos - Servicio de Notificaciones BCP",
+        "Importe: S/ 15432.10",
+        "transfer-message"));
+
+    ArgumentCaptor<Transaction> transaction = ArgumentCaptor.forClass(Transaction.class);
+    verify(repository).save(transaction.capture());
+    assertEquals("TRANSFER", transaction.getValue().type);
+    assertEquals(new BigDecimal("15432.10"), transaction.getValue().amount);
+  }
+
+  @Test
+  void cashWithdrawalIsPersistedAsCashWithdrawal() {
+    when(repository.existsByUserIdAndExternalId(7L, "cash-message")).thenReturn(false);
+
+    service.importBankEmail(7L, new ImportDtos.BankEmailRequest(
+        "notificaciones@notificacionesbcp.com.pe",
+        "Realizaste un retiro en un cajero automatico BCP - Servicio de Notificaciones BCP",
+        "Retiro de S/ 1800.00 en cajero BCP.",
+        "cash-message"));
+
+    ArgumentCaptor<Transaction> transaction = ArgumentCaptor.forClass(Transaction.class);
+    verify(repository).save(transaction.capture());
+    assertEquals("CASH_WITHDRAWAL", transaction.getValue().type);
+    assertEquals(new BigDecimal("1800.00"), transaction.getValue().amount);
+  }
 }

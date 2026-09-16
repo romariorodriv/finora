@@ -9,6 +9,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PeruBankParser implements BankEmailParser {
+  private enum RecognizedOperation {
+    PURCHASE, REJECTED_PURCHASE, TRANSFER, CASH_WITHDRAWAL, WARDADITO_WITHDRAWAL, WARDADITO_DEPOSIT, REFUND
+  }
+
   private static final String MERCHANT_END =
       "(?=\\.(?:\\s|$)|[\\r\\n]|\\s+(?:por tu seguridad|te enviamos|datos de (?:la|tu) operaci[oó]n|monto\\s*:|total del consumo)|$)";
   private static final Pattern AMOUNT =
@@ -33,16 +37,35 @@ public class PeruBankParser implements BankEmailParser {
           + "fondos\\s+insuficientes|saldo\\s+insuficiente|no\\s+tienes\\s+saldo\\s+suficiente|"
           + "no\\s+se\\s+pudo\\s+realizar)",
       Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+  private static final Pattern BCP_WARDADITO_WITHDRAWAL = Pattern.compile(
+      "realizaste\\s+un\\s+retiro\\s+de\\s+(?:S/|PEN)\\s*[0-9]+(?:[.,][0-9]{1,2})?"
+          + "\\s+en\\s+tu\\s+wardadito\\s+caja\\s+de\\s+ahorro",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+  private static final Pattern BCP_WARDADITO_WITHDRAWAL_SUBJECT = Pattern.compile(
+      "realizaste\\s+un\\s+retiro\\s+de\\s+tu\\s+wardadito",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+  private static final Pattern BCP_WARDADITO_DEPOSIT = Pattern.compile(
+      "(?:realizaste\\s+un\\s+aporte\\s+voluntario\\s+a\\s+tu\\s+wardadito|"
+          + "aporte\\s+(?:voluntario\\s+)?(?:de\\s+)?(?:S/|PEN)\\s*[0-9]+(?:[.,][0-9]{1,2})?.*?wardadito)",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL);
+  private static final Pattern BCP_TRANSFER_OTHER_BANK = Pattern.compile(
+      "constancia\\s+de\\s+transferencia\\s+a\\s+otros\\s+bancos",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+  private static final Pattern BCP_TRANSFER_OWN_ACCOUNTS = Pattern.compile(
+      "constancia\\s+de\\s+transferencia\\s+entre\\s+mis\\s+cuentas",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+  private static final Pattern BCP_CASH_WITHDRAWAL = Pattern.compile(
+      "realizaste\\s+un\\s+retiro\\s+en\\s+un\\s+cajero\\s+autom[aÃ¡]tico\\s+BCP|"
+          + "retiro\\s+de\\s+(?:S/|PEN)\\s*[0-9]+(?:[.,][0-9]{1,2})?.*?cajero",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL);
+  private static final Pattern BCP_REFUND = Pattern.compile(
+      "realizamos\\s+una\\s+devoluci[oÃ³]n\\s+de\\s+una\\s+operaci[oÃ³]n\\s+a\\s+tu\\s+tarjeta\\s+de\\s+d[eÃ©]bito\\s+BCP|"
+          + "\\bdevoluci[oÃ³]n\\b.*?tarjeta\\s+de\\s+d[eÃ©]bito\\s+BCP",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL);
 
   @Override
   public boolean supports(String sender, String content) {
-    if (isBcpSender(sender)) {
-      return true;
-    }
-    String text = ((sender == null ? "" : sender) + " " + (content == null ? "" : content))
-        .toLowerCase(Locale.ROOT);
-    return text.contains("bcp") || text.contains("interbank") || text.contains("bbva")
-        || text.contains("scotiabank") || text.contains("consumo");
+    return recognize(sender, content) != null;
   }
 
   @Override
@@ -53,16 +76,36 @@ public class PeruBankParser implements BankEmailParser {
   @Override
   public Parsed parse(String sender, String content) {
     String text = content == null ? "" : content;
+    RecognizedOperation operation = recognize(sender, text);
+    if (operation == null) {
+      throw new IllegalArgumentException("Email bancario no soportado");
+    }
     Matcher amountMatcher = AMOUNT.matcher(text);
     if (!amountMatcher.find()) {
       throw new IllegalArgumentException("No encontramos un monto");
     }
     BigDecimal amount = new BigDecimal(amountMatcher.group(1).replace(',', '.'));
+    return switch (operation) {
+      case PURCHASE, REJECTED_PURCHASE -> parsePurchase(sender, text, amount, operation);
+      case TRANSFER -> new Parsed("Transferencia BCP", amount, "PEN", LocalDate.now(), "BCP", "Transferencias",
+          .95, MovementType.TRANSFER, OperationStatus.COMPLETED);
+      case CASH_WITHDRAWAL -> new Parsed("Retiro en cajero BCP", amount, "PEN", LocalDate.now(), "BCP", "Efectivo",
+          .95, MovementType.CASH_WITHDRAWAL, OperationStatus.COMPLETED);
+      case WARDADITO_WITHDRAWAL -> new Parsed("Retiro de Wardadito", amount, "PEN", LocalDate.now(), "Wardadito",
+          "Ahorro", .95, MovementType.SAVINGS_WITHDRAWAL, OperationStatus.COMPLETED);
+      case WARDADITO_DEPOSIT -> new Parsed("Aporte a Wardadito", amount, "PEN", LocalDate.now(), "Wardadito",
+          "Ahorro", .95, MovementType.SAVINGS_DEPOSIT, OperationStatus.COMPLETED);
+      case REFUND -> new Parsed("Devolucion BCP", amount, "PEN", LocalDate.now(), "BCP", "Devoluciones",
+          .95, MovementType.REFUND, OperationStatus.REFUNDED);
+    };
+  }
+
+  private Parsed parsePurchase(String sender, String text, BigDecimal amount, RecognizedOperation operation) {
     String rawMerchant = extractMerchant(sender, text);
     String merchant = normalizeMerchant(rawMerchant);
-    return new Parsed("Consumo en " + merchant, amount, "PEN", LocalDate.now(), merchant,
-        categorize(merchant), isValidMerchant(rawMerchant) ? .95 : .80,
-        REJECTED_OPERATION.matcher(text).find() ? OperationStatus.REJECTED : OperationStatus.COMPLETED);
+    return new Parsed("Consumo en " + merchant, amount, "PEN", LocalDate.now(), merchant, categorize(merchant),
+        isValidMerchant(rawMerchant) ? .95 : .80, MovementType.EXPENSE,
+        operation == RecognizedOperation.REJECTED_PURCHASE ? OperationStatus.REJECTED : OperationStatus.COMPLETED);
   }
 
   String normalizeMerchant(String rawMerchant) {
@@ -114,6 +157,38 @@ public class PeruBankParser implements BankEmailParser {
 
   private boolean isBcpSender(String sender) {
     return sender != null && BCP_SENDER.matcher(sender).find();
+  }
+
+  private RecognizedOperation recognize(String sender, String content) {
+    String text = content == null ? "" : content;
+    if (REJECTED_OPERATION.matcher(text).find()) {
+      return RecognizedOperation.REJECTED_PURCHASE;
+    }
+    if (BCP_WARDADITO_WITHDRAWAL_SUBJECT.matcher(text).find() || BCP_WARDADITO_WITHDRAWAL.matcher(text).find()) {
+      return RecognizedOperation.WARDADITO_WITHDRAWAL;
+    }
+    if (BCP_WARDADITO_DEPOSIT.matcher(text).find()) {
+      return RecognizedOperation.WARDADITO_DEPOSIT;
+    }
+    if (BCP_TRANSFER_OTHER_BANK.matcher(text).find() || BCP_TRANSFER_OWN_ACCOUNTS.matcher(text).find()) {
+      return RecognizedOperation.TRANSFER;
+    }
+    if (BCP_CASH_WITHDRAWAL.matcher(text).find()) {
+      return RecognizedOperation.CASH_WITHDRAWAL;
+    }
+    if (BCP_REFUND.matcher(text).find()) {
+      return RecognizedOperation.REFUND;
+    }
+    if (BCP_PURCHASE.matcher(text).find()) {
+      return RecognizedOperation.PURCHASE;
+    }
+    if (isBcpSender(sender)
+        && text.toLowerCase(Locale.ROOT).contains("realizaste un consumo")
+        && AMOUNT.matcher(text).find()
+        && extractMerchant(sender, text) != null) {
+      return RecognizedOperation.PURCHASE;
+    }
+    return null;
   }
 
   private String cleanCandidate(String candidate) {
