@@ -1,5 +1,6 @@
 package com.finora.app.importer;
 
+import com.finora.app.category.CategoryClassifier;
 import com.finora.app.shared.error.ApiException;
 import com.finora.app.transaction.*;
 import org.springframework.stereotype.Service;
@@ -12,10 +13,12 @@ import java.util.UUID;
 public class ImportService {
   private final BankEmailParser parser;
   private final TransactionRepository repo;
+  private final CategoryClassifier classifier;
 
-  public ImportService(BankEmailParser parser, TransactionRepository repo) {
+  public ImportService(BankEmailParser parser, TransactionRepository repo, CategoryClassifier classifier) {
     this.parser = parser;
     this.repo = repo;
+    this.classifier = classifier;
   }
 
   @Transactional
@@ -45,6 +48,11 @@ public class ImportService {
     t.merchant = parsed.merchant();
     t.category = parsed.category();
     t.type = parsed.type().name();
+    if ("EXPENSE".equals(t.type)) {
+      CategoryClassifier.Classification category = classifier.classify(t.merchant, t.description, t.category);
+      t.macroCategory = category.macroCategory().name();
+      t.category = category.subcategory();
+    }
     t.source = "BANK_EMAIL";
     t.externalId = externalId;
     repo.save(t);

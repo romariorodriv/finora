@@ -1,5 +1,6 @@
 package com.finora.app.transaction;
 
+import com.finora.app.category.CategoryClassifier;
 import com.finora.app.shared.error.ApiException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,9 +10,11 @@ import java.util.List;
 @Service
 public class TransactionService {
   private final TransactionRepository repo;
+  private final CategoryClassifier classifier;
 
-  public TransactionService(TransactionRepository repo) {
+  public TransactionService(TransactionRepository repo, CategoryClassifier classifier) {
     this.repo = repo;
+    this.classifier = classifier;
   }
 
   public List<TransactionResponse> list(Long userId, LocalDate from, LocalDate to) {
@@ -60,5 +63,12 @@ public class TransactionService {
     t.type = r.type() == null || r.type().isBlank() ? "EXPENSE" : r.type();
     t.merchant = r.merchant();
     t.recurring = r.recurring();
+    if ("EXPENSE".equals(t.type)) {
+      CategoryClassifier.Classification category = classifier.classify(t.merchant, t.description, t.category);
+      t.macroCategory = category.macroCategory().name();
+      t.category = category.subcategory();
+    } else {
+      t.macroCategory = null;
+    }
   }
 }

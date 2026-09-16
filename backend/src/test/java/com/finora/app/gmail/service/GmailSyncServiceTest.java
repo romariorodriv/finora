@@ -15,6 +15,7 @@ import com.finora.app.gmail.dto.GmailDtos;
 import com.finora.app.gmail.entity.GmailConnection;
 import com.finora.app.gmail.entity.ImportedMessage;
 import com.finora.app.gmail.repository.ImportedMessageRepository;
+import com.finora.app.category.CategoryClassifier;
 import com.finora.app.importer.PeruBankParser;
 import com.finora.app.transaction.TransactionRepository;
 import java.time.Instant;
@@ -48,7 +49,7 @@ class GmailSyncServiceTest {
         Instant.parse("2026-09-10T15:00:00Z")));
 
     GmailSyncService service = new GmailSyncService(
-        oauth, gmail, importedMessages, transactions, new PeruBankParser(), 30);
+        oauth, gmail, importedMessages, transactions, new PeruBankParser(), new CategoryClassifier(), 30);
     GmailDtos.SyncResponse result = service.doSync(7L);
 
     assertEquals(0, result.transactionsCreated());
@@ -79,7 +80,7 @@ class GmailSyncServiceTest {
         Instant.parse("2026-09-11T15:00:00Z")));
 
     GmailSyncService service = new GmailSyncService(
-        oauth, gmail, importedMessages, transactions, new PeruBankParser(), 30);
+        oauth, gmail, importedMessages, transactions, new PeruBankParser(), new CategoryClassifier(), 30);
     GmailDtos.SyncResponse result = service.doSync(7L);
 
     assertEquals(1, result.rejected());
@@ -103,7 +104,7 @@ class GmailSyncServiceTest {
         Instant.parse("2026-09-10T15:00:00Z")));
 
     GmailSyncService service = new GmailSyncService(
-        oauth, gmail, importedMessages, transactions, new PeruBankParser(), 30);
+        oauth, gmail, importedMessages, transactions, new PeruBankParser(), new CategoryClassifier(), 30);
     GmailDtos.SyncResponse result = service.doSync(7L);
 
     assertEquals(0, result.transactionsCreated());

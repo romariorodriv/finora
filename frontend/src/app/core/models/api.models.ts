@@ -18,6 +18,7 @@ export interface TransactionRequest {
 export interface TransactionResponse extends TransactionRequest {
   id: number;
   userId: number;
+  macroCategory?: string;
   source: string;
   externalId?: string;
   createdAt: string;
@@ -31,9 +32,46 @@ export interface DashboardResponse {
   dailyAverage: number;
   projection: number;
   categories: Record<string, number>;
+  macroCategories?: MacroCategorySummary[];
+  insightTitle?: string;
+  insightBody?: string;
   daily: Record<string, number>;
   transactions?: TransactionResponse[];
   recurring?: TransactionResponse[];
+}
+
+export interface MacroCategorySummary {
+  macroCategory: string;
+  label: string;
+  total: number;
+  percentage: number;
+}
+
+export interface SubcategorySummary {
+  name: string;
+  total: number;
+}
+
+export interface CategoryDetailResponse {
+  macroCategory: string;
+  label: string;
+  total: number;
+  subcategories: SubcategorySummary[];
+  transactions: TransactionResponse[];
+}
+
+export interface FeedbackRequest {
+  rating: number;
+  understoodSpending: 'YES' | 'PARTIALLY' | 'NO' | '';
+  liked?: string;
+  improvement?: string;
+  wantedFeature?: string;
+}
+
+export interface FeedbackResponse extends Omit<FeedbackRequest, 'understoodSpending'> {
+  id: number;
+  understoodSpending: 'YES' | 'PARTIALLY' | 'NO';
+  createdAt: string;
 }
 
 export interface GmailStatus {

@@ -129,6 +129,24 @@ public class PeruBankParser implements BankEmailParser {
     if (normalized.contains("SPOTIFY")) {
       return "Spotify";
     }
+    if (normalized.matches(".*\\bMETRO\\b.*")) {
+      return "Metro";
+    }
+    if (normalized.contains("PLAZA VEA")) {
+      return "Plaza Vea";
+    }
+    if (normalized.contains("TOTTUS")) {
+      return "Tottus";
+    }
+    if (normalized.contains("WONG")) {
+      return "Wong";
+    }
+    if (normalized.contains("PRIMAX")) {
+      return "Primax";
+    }
+    if (normalized.contains("REPSOL")) {
+      return "Repsol";
+    }
     return merchant;
   }
 

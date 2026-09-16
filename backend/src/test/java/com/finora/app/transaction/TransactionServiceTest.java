@@ -1,5 +1,6 @@
 package com.finora.app.transaction;
 
+import com.finora.app.category.CategoryClassifier;
 import com.finora.app.shared.error.ApiException;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
@@ -10,7 +11,7 @@ import static org.mockito.Mockito.*;
 
 class TransactionServiceTest {
   private final TransactionRepository repo = mock(TransactionRepository.class);
-  private final TransactionService service = new TransactionService(repo);
+  private final TransactionService service = new TransactionService(repo, new CategoryClassifier());
 
   @Test
   void updateRejectsTransactionsFromAnotherUser() {

@@ -8,6 +8,7 @@ export interface DailySpendingPoint {
 
 export interface CategorySpendingPoint {
   name: string;
+  macroCategory?: string;
   value: number;
   percentage: number;
   color: string;
@@ -22,6 +23,13 @@ export function normalizeDashboard(response: DashboardResponse): DashboardRespon
     dailyAverage: Number(response.dailyAverage),
     projection: Number(response.projection),
     categories: response.categories ?? {},
+    macroCategories: (response.macroCategories ?? []).map(item => ({
+      ...item,
+      total: Number(item.total),
+      percentage: Number(item.percentage)
+    })),
+    insightTitle: response.insightTitle,
+    insightBody: response.insightBody,
     daily: response.daily ?? {},
     transactions: response.transactions ?? [],
     recurring: response.recurring ?? []
@@ -44,36 +52,43 @@ export function calculateDailySpending(daily: Record<string, number>, range: 7 |
 }
 
 export function calculateCategoryDistribution(
-  categories: Record<string, number>,
+  categories: Record<string, number> | undefined,
   colors: string[]
 ): CategorySpendingPoint[] {
-  const entries = Object.entries(categories)
+  const entries = Object.entries(categories ?? {})
     .map(([name, value]) => ({ name, value: Number(value) }))
     .sort((a, b) => b.value - a.value);
   const total = entries.reduce((sum, item) => sum + item.value, 0);
-  const visible = entries.slice(0, 5);
-  const remainder = entries.slice(5).reduce((sum, item) => sum + item.value, 0);
 
-  if (remainder > 0) {
-    const existingOther = visible.find(item => item.name.toLocaleLowerCase('es') === 'otros');
-    if (existingOther) {
-      existingOther.value += remainder;
-    } else {
-      visible.push({ name: 'Otros', value: remainder });
-    }
-  }
-
-  return visible.map((item, index) => ({
+  return entries.map((item, index) => ({
     ...item,
     percentage: total ? item.value / total * 100 : 0,
     color: colors[index % colors.length]
   }));
 }
 
+export function calculateMacroCategoryDistribution(
+  categories: { macroCategory: string; label: string; total: number; percentage: number }[] | undefined,
+  colors: string[]
+): CategorySpendingPoint[] {
+  return (categories ?? [])
+    .filter(item => Number(item.total) > 0)
+    .map((item, index) => ({
+      name: item.label,
+      macroCategory: item.macroCategory,
+      value: Number(item.total),
+      percentage: Number(item.percentage),
+      color: colors[index % colors.length]
+    }));
+}
+
 export function generateFinancialInsight(categories: CategorySpendingPoint[], expenses: number): string {
   if (!categories.length || expenses === 0) {
-    return 'No tenemos suficientes movimientos todavía para darte una recomendación.';
+    return 'No tenemos suficientes movimientos todavia para darte una recomendacion.';
   }
   const largest = categories[0];
-  return `${largest.name} es tu mayor categoría y representa el ${Math.round(largest.percentage)}% de tus gastos del mes.`;
+  if (largest.macroCategory === 'OTROS' || largest.name.toLocaleLowerCase('es') === 'otros') {
+    return 'Hay movimientos que Sarela todavia no pudo clasificar.';
+  }
+  return `${largest.name} lidera tus gastos y representa el ${Math.round(largest.percentage)}% de tus gastos del mes.`;
 }

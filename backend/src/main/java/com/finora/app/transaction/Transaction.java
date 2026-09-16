@@ -5,6 +5,7 @@ public class Transaction {
  @Id @GeneratedValue(strategy=GenerationType.IDENTITY) public Long id; @Column(name="user_id",nullable=false) public Long userId;
  @Column(nullable=false) public String description; @Column(nullable=false,precision=12,scale=2) public BigDecimal amount;
  @Column(nullable=false) public LocalDate date; @Column(nullable=false) public String category; @Column(nullable=false) public String type="EXPENSE";
+ @Column(name="macro_category") public String macroCategory;
  public String source="MANUAL"; @Column(name="external_id") public String externalId; public String merchant; public boolean recurring; public Instant createdAt=Instant.now();
  public Transaction(){}
 }

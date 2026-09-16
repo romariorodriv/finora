@@ -4,6 +4,7 @@ import com.finora.app.gmail.client.GmailClient;
 import com.finora.app.gmail.dto.GmailDtos;
 import com.finora.app.gmail.entity.*;
 import com.finora.app.gmail.repository.ImportedMessageRepository;
+import com.finora.app.category.CategoryClassifier;
 import com.finora.app.importer.BankEmailParser;
 import com.finora.app.transaction.*;
 import com.finora.app.shared.error.ApiException;
@@ -19,9 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class GmailSyncService {
     private final GmailOAuthService oauth;private final GmailClient gmail;private final ImportedMessageRepository imported;
-    private final TransactionRepository transactions;private final BankEmailParser parser;private final int days;
+    private final TransactionRepository transactions;private final BankEmailParser parser;private final CategoryClassifier classifier;private final int days;
     private final Set<Long> running=ConcurrentHashMap.newKeySet();
-    public GmailSyncService(GmailOAuthService oauth,GmailClient gmail,ImportedMessageRepository imported,TransactionRepository transactions,BankEmailParser parser,@Value("${app.gmail.initial-sync-days:30}")int days){this.oauth=oauth;this.gmail=gmail;this.imported=imported;this.transactions=transactions;this.parser=parser;this.days=days;}
+    public GmailSyncService(GmailOAuthService oauth,GmailClient gmail,ImportedMessageRepository imported,TransactionRepository transactions,BankEmailParser parser,CategoryClassifier classifier,@Value("${app.gmail.initial-sync-days:30}")int days){this.oauth=oauth;this.gmail=gmail;this.imported=imported;this.transactions=transactions;this.parser=parser;this.classifier=classifier;this.days=days;}
 
     public GmailDtos.SyncResponse sync(Long userId){if(!running.add(userId))throw new ApiException(409,"GMAIL_SYNC_RUNNING","Ya existe una sincronización en curso");try{return doSync(userId);}finally{running.remove(userId);}}
     @Transactional
@@ -34,7 +35,7 @@ public class GmailSyncService {
                 if(parsed.isEmpty()){row.processingStatus=ImportedMessage.Status.IGNORED;}
                 else{BankEmailParser.Parsed p=parsed.get();if(p.status()==BankEmailParser.OperationStatus.REJECTED){row.processingStatus=ImportedMessage.Status.REJECTED;row.confidence=p.confidence();row.parserName="PeruBankParser";row.parserVersion="1.2";rejected++;}
                     else if(p.confidence()<.75){row.processingStatus=ImportedMessage.Status.REVIEW_REQUIRED;row.confidence=p.confidence();review++;}
-                    else{Transaction t=new Transaction();t.userId=userId;t.description=p.description();t.amount=p.amount();t.date=LocalDate.ofInstant(m.receivedAt(),ZoneId.of("America/Lima"));t.merchant=p.merchant();t.category=p.category();t.type=p.type().name();t.source="GMAIL";t.externalId="gmail:"+ref.id();transactions.save(t);row.processingStatus=ImportedMessage.Status.IMPORTED;row.createdTransactionId=t.id;row.confidence=p.confidence();row.parserName="PeruBankParser";row.parserVersion="1.2";created++;}}
+                    else{Transaction t=new Transaction();t.userId=userId;t.description=p.description();t.amount=p.amount();t.date=LocalDate.ofInstant(m.receivedAt(),ZoneId.of("America/Lima"));t.merchant=p.merchant();t.category=p.category();t.type=p.type().name();if("EXPENSE".equals(t.type)){CategoryClassifier.Classification category=classifier.classify(t.merchant,t.description,t.category);t.macroCategory=category.macroCategory().name();t.category=category.subcategory();}t.source="GMAIL";t.externalId="gmail:"+ref.id();transactions.save(t);row.processingStatus=ImportedMessage.Status.IMPORTED;row.createdTransactionId=t.id;row.confidence=p.confidence();row.parserName="PeruBankParser";row.parserVersion="1.2";created++;}}
             }catch(Exception e){row.processingStatus=ImportedMessage.Status.FAILED;row.errorCode="PROCESSING_ERROR";failed++;}row.updatedAt=Instant.now();imported.save(row);
         }page=result.nextPageToken();pages++;}while(page!=null&&pages<5);
         c.lastSyncAt=Instant.now();c.updatedAt=Instant.now();oauth.save(c);return new GmailDtos.SyncResponse(found,processed,created,dupes,review,rejected,failed);

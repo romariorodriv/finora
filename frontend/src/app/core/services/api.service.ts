@@ -5,7 +5,10 @@ import { normalizeDashboard } from '../dashboard.utils';
 import { environment } from '../../../environments/environment';
 import {
   AssistantAnswer,
+  CategoryDetailResponse,
   DashboardResponse,
+  FeedbackRequest,
+  FeedbackResponse,
   GmailAuthUrl,
   GmailStatus,
   GmailSyncResponse,
@@ -25,6 +28,17 @@ export class ApiService {
 
   dashboard(): Observable<DashboardResponse> {
     return this.http.get<DashboardResponse>(`${this.baseUrl}/dashboard`).pipe(map(normalizeDashboard));
+  }
+
+  categoryDetail(macroCategory: string): Observable<CategoryDetailResponse> {
+    return this.http.get<CategoryDetailResponse>(`${this.baseUrl}/dashboard/categories/${macroCategory}`).pipe(
+      map(detail => ({
+        ...detail,
+        total: Number(detail.total),
+        subcategories: (detail.subcategories ?? []).map(item => ({ ...item, total: Number(item.total) })),
+        transactions: detail.transactions ?? []
+      }))
+    );
   }
 
   transactions(): Observable<TransactionResponse[]> {
@@ -52,6 +66,10 @@ export class ApiService {
 
   askAssistant(message: string): Observable<AssistantAnswer> {
     return this.http.post<AssistantAnswer>(`${this.baseUrl}/assistant`, { message });
+  }
+
+  sendFeedback(request: FeedbackRequest): Observable<FeedbackResponse> {
+    return this.http.post<FeedbackResponse>(`${this.baseUrl}/feedback`, request);
   }
 
   gmailStatus(): Observable<GmailStatus> {

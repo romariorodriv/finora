@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.finora.app.category.CategoryClassifier;
 import com.finora.app.transaction.Transaction;
 import com.finora.app.transaction.TransactionRepository;
 import java.math.BigDecimal;
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 class DashboardServiceTest {
   private final TransactionRepository repository = mock(TransactionRepository.class);
-  private final DashboardService service = new DashboardService(repository);
+  private final DashboardService service = new DashboardService(repository, new CategoryClassifier());
 
   @Test
   void savingsWithdrawalAppearsInMovementsButDoesNotAffectAccountingMetrics() {
@@ -33,7 +34,8 @@ class DashboardServiceTest {
     assertEquals(BigDecimal.ZERO, dashboard.income());
     assertEquals(new BigDecimal("-100.00"), dashboard.balance());
     assertEquals(1, dashboard.categories().size());
-    assertEquals(new BigDecimal("100.00"), dashboard.categories().get("Comida"));
+    assertEquals(new BigDecimal("100.00"), dashboard.categories().get("Dia a dia"));
+    assertEquals("DIA_A_DIA", dashboard.macroCategories().get(0).macroCategory());
     assertEquals(1, dashboard.daily().size());
     assertEquals(new BigDecimal("100.00"), dashboard.daily().get(LocalDate.of(2026, 9, 10)));
     assertTrue(dashboard.transactions().stream()
@@ -42,6 +44,27 @@ class DashboardServiceTest {
         .anyMatch(transaction -> "CASH_WITHDRAWAL".equals(transaction.type())));
     assertTrue(dashboard.transactions().stream()
         .anyMatch(transaction -> "TRANSFER".equals(transaction.type())));
+  }
+
+  @Test
+  void macroCategoriesAndDetailUseOnlyExpenseTransactionsForUser() {
+    Transaction metro = transaction("Metro", "80.00", "EXPENSE", "Supermercado");
+    metro.macroCategory = "DIA_A_DIA";
+    Transaction pedidosYa = transaction("PedidosYa", "20.00", "EXPENSE", "Delivery");
+    pedidosYa.macroCategory = "DIA_A_DIA";
+    Transaction income = transaction("Sueldo", "2000.00", "INCOME", "Otros");
+    Transaction transfer = transaction("Transferencia", "300.00", "TRANSFER", "Transferencias");
+    when(repository.findByUserIdAndDateBetweenOrderByDateDesc(7L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+        .thenReturn(List.of(income, transfer, pedidosYa, metro));
+
+    DashboardResponse dashboard = service.dashboard(7L, 2026, 9);
+    DashboardResponse.CategoryDetail detail = service.categoryDetail(7L, "DIA_A_DIA", 2026, 9);
+
+    assertEquals(new BigDecimal("100.00"), dashboard.expenses());
+    assertEquals(new BigDecimal("100.00"), dashboard.categories().get("Dia a dia"));
+    assertEquals(new BigDecimal("100.00"), detail.total());
+    assertEquals(2, detail.transactions().size());
+    assertEquals(List.of("Supermercado", "Delivery"), detail.subcategories().stream().map(DashboardResponse.SubcategorySummary::name).toList());
   }
 
   private Transaction transaction(String description, String amount, String type, String category) {

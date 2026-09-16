@@ -17,4 +17,10 @@ public class DashboardController {
       @RequestParam(required = false) Integer month) {
     return service.dashboard((Long) a.getPrincipal(), year, month);
   }
+
+  @GetMapping("/categories/{macroCategory}")
+  public DashboardResponse.CategoryDetail categoryDetail(Authentication a, @PathVariable String macroCategory,
+      @RequestParam(required = false) Integer year, @RequestParam(required = false) Integer month) {
+    return service.categoryDetail((Long) a.getPrincipal(), macroCategory, year, month);
+  }
 }

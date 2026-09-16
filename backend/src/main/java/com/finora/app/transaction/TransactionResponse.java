@@ -10,6 +10,7 @@ public record TransactionResponse(
     BigDecimal amount,
     LocalDate date,
     String category,
+    String macroCategory,
     String type,
     String source,
     String externalId,
@@ -18,7 +19,7 @@ public record TransactionResponse(
     Instant createdAt
 ) {
   public static TransactionResponse from(Transaction t) {
-    return new TransactionResponse(t.id, t.userId, t.description, t.amount, t.date, t.category, t.type, t.source,
+    return new TransactionResponse(t.id, t.userId, t.description, t.amount, t.date, t.category, t.macroCategory, t.type, t.source,
         t.externalId, t.merchant, t.recurring, t.createdAt);
   }
 }

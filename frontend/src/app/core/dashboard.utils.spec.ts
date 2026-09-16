@@ -42,6 +42,6 @@ describe('dashboard transformations', () => {
 
     expect(categories.map(item => item.name)).toEqual(['Otros', 'Suscripciones', 'Comida']);
     expect(categories.map(item => item.value)).toEqual([7093.12, 131.60, 38.90]);
-    expect(generateFinancialInsight(categories, fixture.expenses)).toContain('Otros');
+    expect(generateFinancialInsight(categories, fixture.expenses)).toContain('todavia no pudo clasificar');
   });
 });

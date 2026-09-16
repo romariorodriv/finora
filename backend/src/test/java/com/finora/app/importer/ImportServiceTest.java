@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.finora.app.category.CategoryClassifier;
 import com.finora.app.shared.error.ApiException;
 import com.finora.app.transaction.Transaction;
 import com.finora.app.transaction.TransactionRepository;
@@ -25,7 +26,7 @@ class ImportServiceTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    service = new ImportService(new PeruBankParser(), repository);
+    service = new ImportService(new PeruBankParser(), repository, new CategoryClassifier());
   }
 
   @Test
@@ -43,6 +44,8 @@ class ImportServiceTest {
     assertEquals(new BigDecimal("19.00"), transaction.getValue().amount);
     assertEquals("PedidosYa", transaction.getValue().merchant);
     assertEquals("EXPENSE", transaction.getValue().type);
+    assertEquals("DIA_A_DIA", transaction.getValue().macroCategory);
+    assertEquals("Delivery", transaction.getValue().category);
   }
 
   @Test

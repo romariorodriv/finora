@@ -1,47 +1,25 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  ArcElement,
-  CategoryScale,
-  Chart,
-  DoughnutController,
-  Filler,
-  LinearScale,
-  LineController,
-  LineElement,
-  PointElement,
-  Tooltip
-} from 'chart.js';
 import { finalize } from 'rxjs';
 import { ApiService } from './core/services/api.service';
 import { AuthService } from './core/services/auth.service';
 import {
-  calculateCategoryDistribution,
   calculateDailySpending,
+  calculateMacroCategoryDistribution,
   CategorySpendingPoint,
+  DailySpendingPoint,
   generateFinancialInsight
 } from './core/dashboard.utils';
 import {
-  AssistantAnswer,
+  CategoryDetailResponse,
   DashboardResponse,
+  FeedbackRequest,
   GmailStatus,
   GmailSyncResponse,
   TransactionRequest,
   TransactionResponse
 } from './core/models/api.models';
-
-Chart.register(
-  ArcElement,
-  CategoryScale,
-  DoughnutController,
-  Filler,
-  LinearScale,
-  LineController,
-  LineElement,
-  PointElement,
-  Tooltip
-);
 
 @Component({
   selector: 'app-root',
@@ -49,22 +27,8 @@ Chart.register(
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('spendingChart') set spendingChartCanvas(canvas: ElementRef<HTMLCanvasElement> | undefined) {
-    this.spendingCanvas = canvas;
-    if (canvas) {
-      setTimeout(() => this.renderSpendingChart());
-    }
-  }
-
-  @ViewChild('categoryChart') set categoryChartCanvas(canvas: ElementRef<HTMLCanvasElement> | undefined) {
-    this.categoryCanvas = canvas;
-    if (canvas) {
-      setTimeout(() => this.renderCategoryChart());
-    }
-  }
-
-  view: 'dashboard' | 'movements' | 'import' | 'assistant' = 'dashboard';
+export class AppComponent implements OnInit {
+  view: 'dashboard' | 'movements' | 'import' | 'feedback' = 'dashboard';
   authMode: 'login' | 'register' = 'login';
   readonly showDevTools = false;
   loginForm = { email: '', password: '' };
@@ -75,26 +39,23 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     sender: 'notificaciones@bcp.com.pe',
     content: 'Realizaste un consumo de S/ 38.90 en Rappi con tu tarjeta BCP.'
   };
+  feedbackForm: FeedbackRequest = this.emptyFeedback();
+  feedbackSubmitting = false;
+  feedbackSubmitted = false;
+  feedbackError = '';
   dashboard?: DashboardResponse;
   transactions: TransactionResponse[] = [];
   categories: string[] = [];
   gmail?: GmailStatus;
   syncResult?: GmailSyncResponse;
-  chatInput = '';
-  messages: { role: 'bot' | 'user'; text: string }[] = [
-    { role: 'bot', text: 'Hola. Puedo ayudarte a entender tus gastos sin juzgarte. ¿Qué te gustaría saber?' }
-  ];
-  suggestions = ['¿En qué gasté más?', '¿Cuánto llevo este mes?', '¿Qué pagos se repiten?'];
   error = '';
   toast = '';
   syncingGmail = false;
   gmailUpdateStatus = '';
   selectedSpendingRange: 7 | 30 = 30;
-  private spendingChart?: Chart<'line'>;
-  private categoryChart?: Chart<'doughnut'>;
-  private spendingCanvas?: ElementRef<HTMLCanvasElement>;
-  private categoryCanvas?: ElementRef<HTMLCanvasElement>;
-  private readonly chartColors = ['#0f3d30', '#276f5b', '#48b88e', '#78e6b0', '#a9d9bf', '#c0d4cc'];
+  selectedCategory?: CategoryDetailResponse;
+  loadingCategory = false;
+  private readonly chartColors = ['#0f3d30', '#276f5b', '#48b88e', '#78e6b0', '#a9d9bf', '#c0d4cc', '#8fb6a6'];
 
   constructor(public readonly auth: AuthService, private readonly api: ApiService) {}
 
@@ -106,17 +67,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     if (gmailParam) {
       history.replaceState({}, '', location.pathname);
       this.view = 'dashboard';
-      this.showToast(gmailParam === 'connected' ? 'Gmail conectado correctamente' : 'No se autorizó la conexión');
+      this.showToast(gmailParam === 'connected' ? 'Gmail conectado correctamente' : 'No se autorizo la conexion');
     }
-  }
-
-  ngAfterViewInit(): void {
-    this.renderDashboardCharts();
-  }
-
-  ngOnDestroy(): void {
-    this.spendingChart?.destroy();
-    this.categoryChart?.destroy();
   }
 
   login(): void {
@@ -133,12 +85,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   register(): void {
     this.error = '';
     if (this.registerForm.password !== this.registerForm.confirmPassword) {
-      this.error = 'Las contraseñas no coinciden.';
+      this.error = 'Las contrasenas no coinciden.';
       return;
     }
     this.auth.register(this.registerForm.name, this.registerForm.email, this.registerForm.password).subscribe({
       next: () => {
-        this.showToast('Tu cuenta está lista');
+        this.showToast('Tu cuenta esta lista');
         this.loadApp();
       },
       error: e => {
@@ -152,6 +104,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.auth.logout();
     this.dashboard = undefined;
     this.transactions = [];
+    this.selectedCategory = undefined;
   }
 
   go(view: typeof this.view): void {
@@ -162,8 +115,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     if (view === 'import') {
       this.loadGmail();
     }
-    if (view === 'dashboard') {
-      setTimeout(() => this.renderDashboardCharts());
+    if (view === 'feedback') {
+      this.feedbackError = '';
     }
   }
 
@@ -239,7 +192,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         this.syncResult = r;
         this.gmailUpdateStatus = r.transactionsCreated > 0
           ? `Actualizado hace unos segundos. ${r.transactionsCreated} movimientos nuevos.`
-          : 'Todo está al día. No encontramos movimientos nuevos.';
+          : 'Todo esta al dia. No encontramos movimientos nuevos.';
         this.showToast(`${r.transactionsCreated} movimientos importados`);
         this.loadDashboard();
         this.loadGmail();
@@ -261,20 +214,29 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  ask(text = this.chatInput): void {
-    const message = text.trim();
-    if (!message) {
+  submitFeedback(): void {
+    this.feedbackError = '';
+    if (!this.feedbackForm.rating || this.feedbackForm.rating < 1 || this.feedbackForm.rating > 5) {
+      this.feedbackError = 'Elige una calificacion del 1 al 5.';
       return;
     }
-    this.messages.push({ role: 'user', text: message });
-    this.chatInput = '';
-    this.api.askAssistant(message).subscribe({
-      next: (answer: AssistantAnswer) => {
-        this.messages.push({ role: 'bot', text: answer.answer });
-        this.suggestions = answer.suggestions;
+    if (!this.feedbackForm.understoodSpending) {
+      this.feedbackError = 'Cuentanos si Sarela te ayudo a entender tus gastos.';
+      return;
+    }
+    this.feedbackSubmitting = true;
+    this.api.sendFeedback(this.feedbackForm).pipe(finalize(() => this.feedbackSubmitting = false)).subscribe({
+      next: () => {
+        this.feedbackSubmitted = true;
+        this.feedbackForm = this.emptyFeedback();
+        this.showToast('Gracias por tu opinion');
       },
-      error: e => this.showToast(this.message(e))
+      error: e => this.feedbackError = this.message(e)
     });
+  }
+
+  openFeedback(): void {
+    this.go('feedback');
   }
 
   money(value: number | string | undefined): string {
@@ -283,19 +245,68 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectSpendingRange(range: 7 | 30): void {
     this.selectedSpendingRange = range;
-    this.renderSpendingChart();
   }
 
   hasDailySpending(): boolean {
     return Boolean(this.dashboard && this.dashboard.expenses > 0 && Object.keys(this.dashboard.daily).length > 0);
   }
 
+  dailyPoints(): DailySpendingPoint[] {
+    return calculateDailySpending(this.dashboard?.daily ?? {}, this.selectedSpendingRange);
+  }
+
+  linePoints(): string {
+    const points = this.dailyPoints();
+    if (!points.length) {
+      return '';
+    }
+    const max = Math.max(...points.map(point => point.value), 1);
+    return points.map((point, index) => {
+      const x = points.length === 1 ? 50 : (index / (points.length - 1)) * 100;
+      const y = 100 - (point.value / max) * 82 - 8;
+      return `${x},${y}`;
+    }).join(' ');
+  }
+
   categoryDistribution(): CategorySpendingPoint[] {
-    return calculateCategoryDistribution(this.dashboard?.categories ?? {}, this.chartColors);
+    return calculateMacroCategoryDistribution(this.dashboard?.macroCategories, this.chartColors);
+  }
+
+  donutStyle(): Record<string, string> {
+    const categories = this.categoryDistribution();
+    if (!categories.length) {
+      return {};
+    }
+    let cursor = 0;
+    const stops = categories.map(item => {
+      const start = cursor;
+      cursor += item.percentage;
+      return `${item.color} ${start}% ${cursor}%`;
+    });
+    return { background: `conic-gradient(${stops.join(', ')})` };
+  }
+
+  financialInsightTitle(): string {
+    return this.dashboard?.insightTitle || 'Una senal para este mes';
   }
 
   financialInsight(): string {
-    return generateFinancialInsight(this.categoryDistribution(), this.dashboard?.expenses ?? 0);
+    return this.dashboard?.insightBody || generateFinancialInsight(this.categoryDistribution(), this.dashboard?.expenses ?? 0);
+  }
+
+  openCategory(item: CategorySpendingPoint): void {
+    if (!item.macroCategory) {
+      return;
+    }
+    this.loadingCategory = true;
+    this.api.categoryDetail(item.macroCategory).pipe(finalize(() => this.loadingCategory = false)).subscribe({
+      next: detail => this.selectedCategory = detail,
+      error: e => this.showToast(this.message(e))
+    });
+  }
+
+  closeCategory(): void {
+    this.selectedCategory = undefined;
   }
 
   movementTitle(tx: TransactionResponse): string {
@@ -309,7 +320,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   lastSyncLabel(): string {
     if (!this.gmail?.lastSyncAt) {
-      return 'Aún no has actualizado tus movimientos';
+      return 'Aun no has actualizado tus movimientos';
     }
     const syncDate = new Date(this.gmail.lastSyncAt);
     const today = new Date();
@@ -330,10 +341,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private loadDashboard(): void {
     this.api.dashboard().subscribe({
-      next: d => {
-        this.dashboard = d;
-        setTimeout(() => this.renderDashboardCharts());
-      },
+      next: d => this.dashboard = d,
       error: e => this.showToast(this.message(e))
     });
   }
@@ -358,98 +366,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.api.gmailStatus().subscribe({ next: s => this.gmail = s, error: e => this.showToast(this.message(e)) });
   }
 
-  private renderDashboardCharts(): void {
-    if (this.view !== 'dashboard' || !this.dashboard) {
-      return;
-    }
-    this.renderSpendingChart();
-    this.renderCategoryChart();
-  }
-
-  private renderSpendingChart(): void {
-    if (!this.spendingCanvas || !this.dashboard) {
-      return;
-    }
-    const points = calculateDailySpending(this.dashboard.daily, this.selectedSpendingRange);
-    this.spendingChart?.destroy();
-    this.spendingChart = new Chart(this.spendingCanvas.nativeElement, {
-      type: 'line',
-      data: {
-        labels: points.map(point => point.label),
-        datasets: [{
-          data: points.map(point => point.value),
-          borderColor: '#276f5b',
-          backgroundColor: 'rgba(120, 230, 176, 0.18)',
-          borderWidth: 2,
-          fill: true,
-          tension: 0.32,
-          pointRadius: 0,
-          pointHoverRadius: 4,
-          pointBackgroundColor: '#0f3d30'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { intersect: false, mode: 'index' },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            displayColors: false,
-            callbacks: {
-              title: items => {
-                const date = points[items[0].dataIndex]?.date;
-                return date
-                  ? new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'long' }).format(new Date(`${date}T12:00:00`))
-                  : '';
-              },
-              label: item => this.money(Number(item.raw))
-            }
-          }
-        },
-        scales: {
-          x: { grid: { display: false }, ticks: { maxTicksLimit: 10, color: '#708078' } },
-          y: {
-            beginAtZero: true,
-            border: { display: false },
-            grid: { color: '#e3eae5' },
-            ticks: { color: '#708078', callback: value => `S/ ${Number(value).toLocaleString('es-PE')}` }
-          }
-        }
-      }
-    });
-  }
-
-  private renderCategoryChart(): void {
-    if (!this.categoryCanvas || !this.dashboard) {
-      return;
-    }
-    const categories = this.categoryDistribution();
-    this.categoryChart?.destroy();
-    this.categoryChart = new Chart(this.categoryCanvas.nativeElement, {
-      type: 'doughnut',
-      data: {
-        labels: categories.map(item => item.name),
-        datasets: [{
-          data: categories.map(item => item.value),
-          backgroundColor: categories.map(item => item.color),
-          borderColor: '#ffffff',
-          borderWidth: 2,
-          hoverOffset: 3
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '70%',
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: item => `${item.label}: ${this.money(Number(item.raw))}` } }
-        }
-      }
-    });
-  }
-
   private emptyTransaction(): TransactionRequest {
     return {
       description: '',
@@ -462,6 +378,16 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+  private emptyFeedback(): FeedbackRequest {
+    return {
+      rating: 0,
+      understoodSpending: '',
+      liked: '',
+      improvement: '',
+      wantedFeature: ''
+    };
+  }
+
   private showToast(message: string): void {
     this.toast = message;
     setTimeout(() => this.toast = '', 2600);
@@ -471,7 +397,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     if (error?.status === 0) {
       return 'No pudimos conectarnos con Sarela. Intenta nuevamente.';
     }
-    return error?.error?.message || 'Algo salió mal. Intenta nuevamente.';
+    return error?.error?.message || 'Algo salio mal. Intenta nuevamente.';
   }
 
   private authMessage(error: any, mode: 'login' | 'register'): string {
@@ -479,11 +405,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       return 'No pudimos conectarnos con Sarela. Intenta nuevamente.';
     }
     if (mode === 'login' && error?.status === 401) {
-      return 'No pudimos iniciar sesión. Revisa tu correo y contraseña.';
+      return 'No pudimos iniciar sesion. Revisa tu correo y contrasena.';
     }
     if (mode === 'register' && (error?.status === 409 || error?.error?.code === 'EMAIL_ALREADY_REGISTERED')) {
       return 'Ya existe una cuenta con este correo.';
     }
-    return 'Algo salió mal. Intenta nuevamente.';
+    return 'Algo salio mal. Intenta nuevamente.';
   }
 }
