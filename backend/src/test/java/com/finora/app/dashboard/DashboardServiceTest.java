@@ -31,6 +31,8 @@ class DashboardServiceTest {
     DashboardResponse dashboard = service.dashboard(7L, 2026, 9);
 
     assertEquals(new BigDecimal("100.00"), dashboard.expenses());
+    assertEquals(1, dashboard.expenseCount());
+    assertEquals(new BigDecimal("100.00"), dashboard.averageTicket());
     assertEquals(BigDecimal.ZERO, dashboard.income());
     assertEquals(new BigDecimal("-100.00"), dashboard.balance());
     assertEquals(1, dashboard.categories().size());
@@ -62,6 +64,8 @@ class DashboardServiceTest {
     DashboardResponse.MerchantDetail merchantDetail = service.merchantDetail(7L, "Tambo", 2026, 9);
 
     assertEquals(new BigDecimal("100.00"), dashboard.expenses());
+    assertEquals(3, dashboard.expenseCount());
+    assertEquals(new BigDecimal("33.33"), dashboard.averageTicket());
     assertEquals(new BigDecimal("60.00"), dashboard.categories().get("Alimentacion"));
     assertEquals(60.0, dashboard.macroCategories().get(0).percentage());
     assertEquals(List.of("Alimentacion", "Transporte"), dashboard.macroCategories().stream().map(DashboardResponse.CategorySummary::label).toList());
@@ -131,6 +135,22 @@ class DashboardServiceTest {
     assertEquals("SUSCRIPCIONES", dashboard.macroCategories().get(0).macroCategory());
     assertEquals(4, detail.transactions().size());
     assertTrue(!dashboard.categories().containsKey("Otros"));
+  }
+
+  @Test
+  void expenseCountAndAverageUseAllEligibleExpensesNotTheRecentTransactionsPreview() {
+    List<Transaction> tx = java.util.stream.IntStream.rangeClosed(1, 12)
+        .mapToObj(i -> transaction("OXXO " + i, "10.00", "EXPENSE", "Alimentacion", "OXXO " + i))
+        .toList();
+    when(repository.findByUserIdAndDateBetweenOrderByDateDesc(7L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+        .thenReturn(tx);
+
+    DashboardResponse dashboard = service.dashboard(7L, 2026, 9);
+
+    assertEquals(new BigDecimal("120.00"), dashboard.expenses());
+    assertEquals(12, dashboard.expenseCount());
+    assertEquals(new BigDecimal("10.00"), dashboard.averageTicket());
+    assertEquals(8, dashboard.transactions().size());
   }
 
   private Transaction legacy(String merchant, String amount, String macroCategory) {

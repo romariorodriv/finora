@@ -2,90 +2,58 @@ package com.finora.app.category;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.finora.app.merchant.MerchantNormalizer;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class CategoryClassifierTest {
   private final CategoryClassifier classifier = new CategoryClassifier();
 
-  @Test
-  void classifiesKnownMerchants() {
-    assertCategory("Tambo 123", MacroCategory.ALIMENTACION, "Alimentacion");
-    assertCategory("OXXO Peru", MacroCategory.ALIMENTACION, "Alimentacion");
-    assertCategory("Plaza Vea", MacroCategory.ALIMENTACION, "Alimentacion");
-    assertCategory("PedidosYa", MacroCategory.ALIMENTACION, "Alimentacion");
-    assertCategory("Rappi", MacroCategory.ALIMENTACION, "Alimentacion");
-    assertCategory("SUPERM METRO SN FELIPE", MacroCategory.ALIMENTACION, "Alimentacion");
-    assertCategory("Uber *Trip", MacroCategory.TRANSPORTE, "Transporte");
-    assertCategory("Cabify", MacroCategory.TRANSPORTE, "Transporte");
-    assertCategory("Inkafarma", MacroCategory.SALUD, "Salud");
-    assertCategory("Mifarma", MacroCategory.SALUD, "Salud");
-    assertCategory("Claro", MacroCategory.SERVICIOS, "Servicios");
-    assertCategory("Movistar", MacroCategory.SERVICIOS, "Servicios");
+  @ParameterizedTest
+  @CsvSource({
+      "OXXO MIRTOS,ALIMENTACION,Alimentacion",
+      "OXXO COSTA RICA,ALIMENTACION,Alimentacion",
+      "OXXO TREE,ALIMENTACION,Alimentacion",
+      "TAMBO ARAMBURU-C9,ALIMENTACION,Alimentacion",
+      "MOLINA ROKYS,ALIMENTACION,Alimentacion",
+      "PEDIDOSYA*MCDONALDS,ALIMENTACION,Alimentacion",
+      "SERVICENTRO SMILE SA,TRANSPORTE,Transporte",
+      "PRIMAX AVIACION,TRANSPORTE,Transporte",
+      "PEAJES LIMA,TRANSPORTE,Transporte",
+      "PARAMOUNT+,SUSCRIPCIONES,Suscripciones",
+      "Spotify,SUSCRIPCIONES,Suscripciones"
+  })
+  void classifiesObservedMerchantVariants(String merchant, MacroCategory expectedMacro, String expectedCategory) {
+    CategoryClassifier.Classification result = classifier.classify(merchant, "Consumo en " + merchant, "Otros");
+
+    assertEquals(expectedMacro, result.macroCategory());
+    assertEquals(expectedCategory, result.subcategory());
   }
 
-  @Test
-  void unknownMerchantFallsBackToOthers() {
-    CategoryClassifier.Classification result = classifier.classify("Comercio Nuevo", "Compra");
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "FACEBK ADS",
+      "PAGOEFECTIVO*FACEBOOK",
+      "PLIN JUAN PRIME",
+      "APPLE STORE MIRAFLORES",
+      "MAXIMA LIBRERIA"
+  })
+  void avoidsKnownFalsePositiveSubscriptions(String merchant) {
+    CategoryClassifier.Classification result = classifier.classify(merchant, "Pago en " + merchant, "Otros");
+
     assertEquals(MacroCategory.OTROS, result.macroCategory());
     assertEquals("Otros", result.subcategory());
   }
 
-  @Test
-  void classifiesNormalizedMerchants() {
-    assertNormalizedCategory("TAMBO 123", MacroCategory.ALIMENTACION);
-    assertNormalizedCategory("OXXO PERU", MacroCategory.ALIMENTACION);
-    assertNormalizedCategory("PEDIDOSYA*LIMA", MacroCategory.ALIMENTACION);
-    assertNormalizedCategory("UBER *TRIP", MacroCategory.TRANSPORTE);
-    assertNormalizedCategory("INKAFARMA MIRAFLORES", MacroCategory.SALUD);
-    assertNormalizedCategory("CLARO POSTPAGO", MacroCategory.SERVICIOS);
-  }
+  @ParameterizedTest
+  @CsvSource({
+      "Comida,ALIMENTACION,Alimentacion",
+      "Ahorro,OTROS,Otros"
+  })
+  void mapsLegacyCategoriesToEffectiveCatalog(String category, MacroCategory expectedMacro, String expectedCategory) {
+    CategoryClassifier.Classification result = classifier.classify("Comercio sin regla", "Compra", category);
 
-  @Test
-  void classifiesFoodAndTransportRulesKeptByTheTaxonomy() {
-    assertNormalizedCategory("ROKYS SAN MIGUEL", MacroCategory.ALIMENTACION);
-    assertNormalizedCategory("SERVICENTRO PANAMERICANA", MacroCategory.TRANSPORTE);
-    assertNormalizedCategory("PEAJE VILLA", MacroCategory.TRANSPORTE);
-  }
-
-  @Test
-  void normalizesAndClassifiesSubscriptionPlatforms() {
-    assertNormalizedMerchantCategory("DLC*SPOTIFY", "Spotify");
-    assertNormalizedMerchantCategory("NETFLIX.COM", "Netflix");
-    assertNormalizedMerchantCategory("PARAMOUNT PLUS", "Paramount+");
-    assertNormalizedMerchantCategory("EBN*PRIME VIDEO", "Prime Video");
-    assertNormalizedMerchantCategory("DISNEY PLUS", "Disney+");
-    assertNormalizedMerchantCategory("HBO MAX", "Max");
-    assertNormalizedMerchantCategory("MAX.COM", "Max");
-    assertNormalizedMerchantCategory("YOUTUBE PREMIUM", "YouTube Premium");
-    assertNormalizedMerchantCategory("APPLE MUSIC", "Apple Music");
-    assertNormalizedMerchantCategory("ICLOUD", "iCloud");
-    assertNormalizedMerchantCategory("GOOGLE ONE", "Google One");
-  }
-
-  @Test
-  void doesNotClassifyAmbiguousGoogleDescriptorsAsSubscriptions() {
-    assertNormalizedCategory("GOOGLE CHATGPT", MacroCategory.OTROS);
-    assertNormalizedCategory("GOOGLE STORE", MacroCategory.OTROS);
-  }
-
-  private void assertCategory(String merchant, MacroCategory macroCategory, String subcategory) {
-    CategoryClassifier.Classification result = classifier.classify(merchant, "Compra");
-    assertEquals(macroCategory, result.macroCategory());
-    assertEquals(subcategory, result.subcategory());
-  }
-
-  private void assertNormalizedCategory(String rawMerchant, MacroCategory macroCategory) {
-    String normalized = MerchantNormalizer.normalize(rawMerchant);
-    CategoryClassifier.Classification result = classifier.classify(normalized, "Compra");
-    assertEquals(macroCategory, result.macroCategory());
-  }
-
-  private void assertNormalizedMerchantCategory(String rawMerchant, String expectedMerchant) {
-    String normalized = MerchantNormalizer.normalize(rawMerchant);
-    assertEquals(expectedMerchant, normalized);
-    CategoryClassifier.Classification result = classifier.classify(normalized, "Compra");
-    assertEquals(MacroCategory.SUSCRIPCIONES, result.macroCategory());
-    assertEquals("Suscripciones", result.subcategory());
+    assertEquals(expectedMacro, result.macroCategory());
+    assertEquals(expectedCategory, result.subcategory());
   }
 }

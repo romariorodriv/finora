@@ -29,6 +29,8 @@ export interface DashboardResponse {
   expenses: number;
   income: number;
   balance: number;
+  expenseCount: number;
+  averageTicket: number;
   dailyAverage: number;
   projection: number;
   categories: Record<string, number>;

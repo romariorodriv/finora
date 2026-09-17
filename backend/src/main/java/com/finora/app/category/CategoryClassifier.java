@@ -46,7 +46,7 @@ public class CategoryClassifier {
       return classified;
     }
     MacroCategory fromSubcategory = macroFromSubcategory(currentSubcategory);
-    return fromSubcategory == null ? OTHER : new Classification(fromSubcategory, currentSubcategory);
+    return fromSubcategory == null ? OTHER : new Classification(fromSubcategory, fromSubcategory.label());
   }
 
   public MacroCategory macroFromSubcategory(String subcategory) {

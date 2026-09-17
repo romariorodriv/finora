@@ -36,6 +36,10 @@ public class DashboardService {
     BigDecimal expenses = sum(tx, "EXPENSE");
     BigDecimal income = sum(tx, "INCOME");
     List<Transaction> expensesOnly = tx.stream().filter(this::isExpense).toList();
+    int expenseCount = expensesOnly.size();
+    BigDecimal averageTicket = expenseCount == 0
+        ? BigDecimal.ZERO
+        : expenses.divide(BigDecimal.valueOf(expenseCount), 2, RoundingMode.HALF_UP);
 
     Map<MacroCategory, BigDecimal> macroTotals = expensesOnly.stream().collect(Collectors
         .groupingBy(this::macroCategory, () -> new EnumMap<>(MacroCategory.class),
@@ -59,7 +63,8 @@ public class DashboardService {
         ? dailyAverage.multiply(BigDecimal.valueOf(ym.lengthOfMonth())).setScale(2, RoundingMode.HALF_UP)
         : expenses;
     String[] insight = insight(macroCategories, merchants);
-    return new DashboardResponse(ym.toString(), expenses, income, income.subtract(expenses), dailyAverage, projection,
+    return new DashboardResponse(ym.toString(), expenses, income, income.subtract(expenses), expenseCount, averageTicket,
+        dailyAverage, projection,
         cats, macroCategories, merchants, insight[0], insight[1], daily,
         tx.stream().limit(8).map(TransactionResponse::from).toList(),
         tx.stream().filter(t -> t.recurring).map(TransactionResponse::from).toList());

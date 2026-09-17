@@ -13,6 +13,8 @@ describe('dashboard transformations', () => {
     expenses: 7263.62,
     income: 0,
     balance: -7263.62,
+    expenseCount: 28,
+    averageTicket: 259.42,
     dailyAverage: 660.33,
     projection: 19809.90,
     categories: { Alimentacion: 38.90, Servicios: 131.60, Otros: 7093.12 },
@@ -35,6 +37,8 @@ describe('dashboard transformations', () => {
     expect(dashboard.expenses).toBe(7263.62);
     expect(dashboard.income).toBe(0);
     expect(dashboard.balance).toBe(-7263.62);
+    expect(dashboard.expenseCount).toBe(28);
+    expect(dashboard.averageTicket).toBe(259.42);
     expect(dashboard.dailyAverage).toBe(660.33);
     expect(dashboard.projection).toBe(19809.90);
   });

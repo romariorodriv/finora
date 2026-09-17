@@ -21,6 +21,8 @@ export function normalizeDashboard(response: DashboardResponse): DashboardRespon
     expenses: Number(response.expenses),
     income: Number(response.income),
     balance: Number(response.balance),
+    expenseCount: Number(response.expenseCount ?? 0),
+    averageTicket: Number(response.averageTicket ?? 0),
     dailyAverage: Number(response.dailyAverage),
     projection: Number(response.projection),
     categories: response.categories ?? {},

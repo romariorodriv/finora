@@ -76,8 +76,8 @@
 
       <article *ngIf="gmail?.connected" class="gmail-update" aria-live="polite">
         <div>
-          <b>Movimientos de Gmail</b>
-          <span>{{ gmailUpdateStatus || ('Ultima actualizacion: ' + lastSyncLabel()) }}</span>
+          <b>Gmail: {{ gmailConnectionLabel() }}</b>
+          <span>{{ gmailUpdateStatus || gmailStatusCopy() }}</span>
         </div>
         <button class="ghost compact" type="button" (click)="syncGmail()" [disabled]="syncingGmail">
           {{ syncingGmail ? 'Actualizando...' : 'Actualizar movimientos' }}
@@ -179,12 +179,44 @@
       </form>
       <article class="panel">
         <h3>Todos tus movimientos</h3>
+        <p class="section-copy">Estos filtros no cambian las metricas del dashboard.</p>
+        <div class="movement-filters" role="search" aria-label="Filtros de movimientos">
+          <label>Buscar <input name="movementSearch" [(ngModel)]="movementFilters.search" (ngModelChange)="updateMovementFilters()" placeholder="Comercio o descripcion"></label>
+          <label>Desde <input name="movementFrom" type="date" [(ngModel)]="movementFilters.from" (ngModelChange)="updateMovementFilters()"></label>
+          <label>Hasta <input name="movementTo" type="date" [(ngModel)]="movementFilters.to" (ngModelChange)="updateMovementFilters()"></label>
+          <label>Categoria
+            <select name="movementCategory" [(ngModel)]="movementFilters.category" (ngModelChange)="updateMovementFilters()">
+              <option value="">Todas</option>
+              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+            </select>
+          </label>
+          <label>Tipo
+            <select name="movementType" [(ngModel)]="movementFilters.type" (ngModelChange)="updateMovementFilters()">
+              <option value="">Todos</option>
+              <option value="EXPENSE">Gasto</option>
+              <option value="INCOME">Ingreso</option>
+              <option value="SAVINGS_WITHDRAWAL">Ahorro: retiro</option>
+              <option value="SAVINGS_DEPOSIT">Ahorro: aporte</option>
+              <option value="TRANSFER">Transferencia</option>
+              <option value="CASH_WITHDRAWAL">Retiro en efectivo</option>
+              <option value="REFUND">Devolucion</option>
+            </select>
+          </label>
+          <button class="ghost compact" type="button" (click)="resetMovementFilters()" [disabled]="!hasMovementFilters()">Restablecer</button>
+        </div>
+        <div class="result-count" *ngIf="transactions.length">{{ filteredTransactions().length }} de {{ transactions.length }} movimientos</div>
         <div class="empty" *ngIf="transactions.length === 0">Aun no tienes movimientos registrados.</div>
-        <div class="tx tx-actions" *ngFor="let tx of transactions">
-          <span>{{ tx.description }} <small>{{ tx.category }} - {{ tx.date }}</small></span>
+        <div class="empty" *ngIf="transactions.length > 0 && filteredTransactions().length === 0">No hay resultados para estos filtros.</div>
+        <div class="tx tx-actions" *ngFor="let tx of pagedTransactions()">
+          <span>{{ movementTitle(tx) }} <small>{{ tx.category || tx.macroCategory || 'Otros' }} - {{ tx.date }}</small></span>
           <b [class.income]="tx.type === 'INCOME'">{{ money(tx.amount) }}</b>
           <button class="ghost compact" (click)="editTransaction(tx)">Editar</button>
           <button class="danger compact" (click)="deleteTransaction(tx.id)">Eliminar</button>
+        </div>
+        <div class="pager" *ngIf="filteredTransactions().length > movementPageSize">
+          <button class="ghost compact" type="button" (click)="previousMovementPage()" [disabled]="movementPage === 1">Anterior</button>
+          <span>Pagina {{ movementPage }} de {{ movementTotalPages() }}</span>
+          <button class="ghost compact" type="button" (click)="nextMovementPage()" [disabled]="movementPage === movementTotalPages()">Siguiente</button>
         </div>
       </article>
     </section>
@@ -194,15 +226,15 @@
         <div class="connection-status" aria-hidden="true">{{ gmail?.connected ? 'OK' : '@' }}</div>
         <div>
           <p class="eyebrow dark">MOVIMIENTOS AUTOMATICOS</p>
-          <h2>{{ gmail?.connected ? 'Gmail conectado' : 'Conecta tus movimientos' }}</h2>
-          <p *ngIf="gmail?.connected">{{ gmail?.email }}</p>
+          <h2>Gmail: {{ gmailConnectionLabel() }}</h2>
+          <p *ngIf="gmail?.connected">{{ gmailStatusCopy() }}</p>
           <p *ngIf="!gmail?.connected">Sarela encuentra tus compras y pagos en las notificaciones que recibes por correo.</p>
-          <small *ngIf="gmail?.connected">Ultima actualizacion: {{ lastSyncLabel() }}</small>
-          <small *ngIf="!gmail?.connected">Tus datos se usan unicamente para ayudarte a entender tus finanzas.</small>
+          <small *ngIf="gmail?.connected">{{ gmailUpdateStatus || 'Listo para actualizar cuando tu lo pidas.' }}</small>
+          <small *ngIf="!gmail?.connected">{{ gmailStatusCopy() }}</small>
         </div>
         <div class="connection-actions">
           <button class="primary" *ngIf="!gmail?.connected && gmail?.configured" (click)="connectGmail()">Conectar Gmail</button>
-          <button class="primary" *ngIf="gmail?.connected" (click)="syncGmail()">Actualizar movimientos</button>
+          <button class="primary" *ngIf="gmail?.connected" (click)="syncGmail()" [disabled]="syncingGmail">{{ syncingGmail ? 'Actualizando...' : 'Actualizar movimientos' }}</button>
           <button class="ghost" *ngIf="gmail?.connected" (click)="disconnectGmail()">Desconectar</button>
         </div>
         <p class="setup-note" *ngIf="gmail && !gmail.connected && !gmail.configured">Esta opcion estara disponible cuando termine la configuracion.</p>
@@ -259,8 +291,8 @@
 </div>
 
 <div class="drawer-backdrop" *ngIf="selectedCategory || selectedMerchant" (click)="closeDrawer()"></div>
-<aside class="category-drawer" *ngIf="selectedCategory" aria-label="Detalle de categoria">
-  <button class="drawer-close" type="button" (click)="closeCategory()">Cerrar</button>
+<aside class="category-drawer" *ngIf="selectedCategory" role="dialog" aria-modal="true" aria-label="Detalle de categoria">
+  <button class="drawer-close" type="button" aria-label="Cerrar detalle de categoria" (click)="closeCategory()">Cerrar</button>
   <p class="eyebrow dark">DETALLE DE CATEGORIA</p>
   <h2>{{ selectedCategory.label }}</h2>
   <strong>{{ money(selectedCategory.total) }} este mes</strong>
@@ -276,8 +308,8 @@
   </div>
 </aside>
 
-<aside class="category-drawer" *ngIf="selectedMerchant" aria-label="Detalle de comercio">
-  <button class="drawer-close" type="button" (click)="closeMerchant()">Cerrar</button>
+<aside class="category-drawer" *ngIf="selectedMerchant" role="dialog" aria-modal="true" aria-label="Detalle de comercio">
+  <button class="drawer-close" type="button" aria-label="Cerrar detalle de comercio" (click)="closeMerchant()">Cerrar</button>
   <p class="eyebrow dark">DETALLE DE COMERCIO</p>
   <h2>{{ selectedMerchant.label }}</h2>
   <strong>{{ money(selectedMerchant.total) }} este mes</strong>

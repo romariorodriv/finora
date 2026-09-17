@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ApiService } from './core/services/api.service';
@@ -59,6 +59,15 @@ export class AppComponent implements OnInit {
   selectedMerchant?: MerchantDetailResponse;
   loadingCategory = false;
   loadingMerchant = false;
+  movementFilters = {
+    search: '',
+    from: '',
+    to: '',
+    category: '',
+    type: ''
+  };
+  movementPage = 1;
+  readonly movementPageSize = 12;
   private readonly chartColors = ['#0f3d30', '#2f7d62', '#6fc39b', '#b6d7c4', '#dfe8e2'];
   private readonly merchantColors = ['#173c34', '#5f927d', '#9ec7b2', '#d3e2d9', '#eef2ef', '#c8d4cc'];
 
@@ -338,13 +347,62 @@ export class AppComponent implements OnInit {
     this.selectedMerchant = undefined;
   }
 
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeDrawer();
+  }
+
   transactionCount(): number {
-    return this.dashboard?.transactions?.filter(tx => tx.type === 'EXPENSE').length ?? 0;
+    return this.dashboard?.expenseCount ?? 0;
   }
 
   averageTicket(): number {
-    const count = this.transactionCount();
-    return count ? Number(this.dashboard?.expenses ?? 0) / count : 0;
+    return this.dashboard?.averageTicket ?? 0;
+  }
+
+  filteredTransactions(): TransactionResponse[] {
+    const search = this.normalizeSearch(this.movementFilters.search);
+    return this.transactions.filter(tx => {
+      const text = this.normalizeSearch(`${tx.merchant || ''} ${tx.description || ''}`);
+      const matchesSearch = !search || text.includes(search);
+      const matchesCategory = !this.movementFilters.category
+        || tx.category === this.movementFilters.category
+        || tx.macroCategory === this.movementFilters.category;
+      const matchesType = !this.movementFilters.type || tx.type === this.movementFilters.type;
+      const matchesFrom = !this.movementFilters.from || tx.date >= this.movementFilters.from;
+      const matchesTo = !this.movementFilters.to || tx.date <= this.movementFilters.to;
+      return matchesSearch && matchesCategory && matchesType && matchesFrom && matchesTo;
+    });
+  }
+
+  pagedTransactions(): TransactionResponse[] {
+    const start = (this.movementPage - 1) * this.movementPageSize;
+    return this.filteredTransactions().slice(start, start + this.movementPageSize);
+  }
+
+  movementTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredTransactions().length / this.movementPageSize));
+  }
+
+  updateMovementFilters(): void {
+    this.movementPage = 1;
+  }
+
+  resetMovementFilters(): void {
+    this.movementFilters = { search: '', from: '', to: '', category: '', type: '' };
+    this.movementPage = 1;
+  }
+
+  hasMovementFilters(): boolean {
+    return Object.values(this.movementFilters).some(Boolean);
+  }
+
+  previousMovementPage(): void {
+    this.movementPage = Math.max(1, this.movementPage - 1);
+  }
+
+  nextMovementPage(): void {
+    this.movementPage = Math.min(this.movementTotalPages(), this.movementPage + 1);
   }
 
   movementTitle(tx: TransactionResponse): string {
@@ -429,6 +487,39 @@ export class AppComponent implements OnInit {
   private showToast(message: string): void {
     this.toast = message;
     setTimeout(() => this.toast = '', 2600);
+  }
+
+  gmailConnectionLabel(): string {
+    if (!this.gmail) {
+      return 'Consultando estado';
+    }
+    if (!this.gmail.configured) {
+      return 'No disponible';
+    }
+    if (!this.gmail.connected) {
+      return 'No conectado';
+    }
+    if (this.syncingGmail) {
+      return 'Actualizando';
+    }
+    return this.gmail.status === 'CONNECTED' ? 'Conectado' : this.gmail.status;
+  }
+
+  gmailStatusCopy(): string {
+    if (!this.gmail) {
+      return 'Estamos consultando la conexion.';
+    }
+    if (!this.gmail.configured) {
+      return 'La integracion todavia no esta configurada para este entorno.';
+    }
+    if (!this.gmail.connected) {
+      return 'Conecta Gmail cuando quieras importar movimientos desde notificaciones bancarias.';
+    }
+    return `Cuenta: ${this.gmail.email || 'Gmail'} | Ultima actualizacion: ${this.lastSyncLabel()}`;
+  }
+
+  private normalizeSearch(value: string): string {
+    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es').trim();
   }
 
   private message(error: any): string {

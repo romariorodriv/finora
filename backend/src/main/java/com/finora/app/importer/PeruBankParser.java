@@ -181,13 +181,13 @@ public class PeruBankParser implements BankEmailParser {
 
   private String categorize(String merchant) {
     String normalized = merchant.toLowerCase(Locale.ROOT);
-    if (normalized.matches(".*(pedidosya|rappi|starbucks|restaurant|tambo).*")) {
-      return "Comida";
+    if (normalized.matches(".*(pedidosya|rappi|starbucks|restaurant|tambo|oxxo|rokys).*")) {
+      return "Alimentacion";
     }
-    if (normalized.matches(".*(uber|cabify|grif).*")) {
+    if (normalized.matches(".*(uber|cabify|grif|servicentro|primax|peaje).*")) {
       return "Transporte";
     }
-    if (normalized.matches(".*(netflix|spotify|openai|canva).*")) {
+    if (normalized.matches(".*(netflix|spotify|paramount\\+|paramount plus|prime video|disney\\+|youtube premium|apple music|icloud|google one).*")) {
       return "Suscripciones";
     }
     if (normalized.matches(".*(inkafarma|mifarma|clinica).*")) {

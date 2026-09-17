@@ -19,7 +19,7 @@ class PeruBankParserTest {
     assertEquals(new BigDecimal("19.00"), parsed.amount());
     assertEquals("PEN", parsed.currency());
     assertEquals("PedidosYa", parsed.merchant());
-    assertEquals("Comida", parsed.category());
+    assertEquals("Alimentacion", parsed.category());
     assertEquals("Consumo en PedidosYa", parsed.description());
     assertEquals(BankEmailParser.MovementType.EXPENSE, parsed.type());
     assertEquals(BankEmailParser.OperationStatus.COMPLETED, parsed.status());
@@ -29,14 +29,14 @@ class PeruBankParserTest {
   void normalizesPedidosYaRegardlessOfFinalMerchant() {
     BankEmailParser.Parsed parsed = parse("22.60", "PEDIDOSYA*MCDONALDS");
     assertEquals("PedidosYa", parsed.merchant());
-    assertEquals("Comida", parsed.category());
+    assertEquals("Alimentacion", parsed.category());
   }
 
   @Test
   void normalizesRappiPlatform() {
     BankEmailParser.Parsed parsed = parse("31.40", "RAPPI*STARBUCKS");
     assertEquals("Rappi", parsed.merchant());
-    assertEquals("Comida", parsed.category());
+    assertEquals("Alimentacion", parsed.category());
   }
 
   @Test

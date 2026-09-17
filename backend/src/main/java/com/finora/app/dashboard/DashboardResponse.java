@@ -10,6 +10,8 @@ public record DashboardResponse(
     BigDecimal expenses,
     BigDecimal income,
     BigDecimal balance,
+    int expenseCount,
+    BigDecimal averageTicket,
     BigDecimal dailyAverage,
     BigDecimal projection,
     Map<String, BigDecimal> categories,
