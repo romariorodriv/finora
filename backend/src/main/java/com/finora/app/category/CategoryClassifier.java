@@ -13,6 +13,7 @@ public class CategoryClassifier {
 
   private static final Classification OTHER = new Classification(MacroCategory.OTROS, "Otros");
   private static final List<Rule> RULES = List.of(
+      new Rule(MacroCategory.TRANSPORTE, "Gasolina", List.of("alle estaciones sac")),
       new Rule(MacroCategory.ALIMENTACION, "Alimentacion",
           List.of("tambo", "oxxo", "rokys", "pedidosya", "pedidos ya", "rappi", "metro", "wong", "plaza vea", "tottus")),
       new Rule(MacroCategory.TRANSPORTE, "Transporte",
@@ -45,6 +46,9 @@ public class CategoryClassifier {
     if (classified.macroCategory() != MacroCategory.OTROS) {
       return classified;
     }
+    if ("gasolina".equals(normalize(currentSubcategory))) {
+      return new Classification(MacroCategory.TRANSPORTE, "Gasolina");
+    }
     MacroCategory fromSubcategory = macroFromSubcategory(currentSubcategory);
     return fromSubcategory == null ? OTHER : new Classification(fromSubcategory, fromSubcategory.label());
   }
@@ -54,7 +58,7 @@ public class CategoryClassifier {
     if (List.of("alimentacion", "supermercado", "restaurantes", "delivery", "comida", "dia a dia").contains(normalized)) {
       return MacroCategory.ALIMENTACION;
     }
-    if (List.of("combustible", "taxi / apps", "taxi apps", "transporte", "estacionamiento")
+    if (List.of("gasolina", "combustible", "taxi / apps", "taxi apps", "transporte", "estacionamiento")
         .contains(normalized)) {
       return MacroCategory.TRANSPORTE;
     }

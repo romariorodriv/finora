@@ -181,6 +181,9 @@ public class PeruBankParser implements BankEmailParser {
 
   private String categorize(String merchant) {
     String normalized = merchant.toLowerCase(Locale.ROOT);
+    if (normalized.contains("alle estaciones sac")) {
+      return "Gasolina";
+    }
     if (normalized.matches(".*(pedidosya|rappi|starbucks|restaurant|tambo|oxxo|rokys).*")) {
       return "Alimentacion";
     }

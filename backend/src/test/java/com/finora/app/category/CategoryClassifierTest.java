@@ -19,6 +19,8 @@ class CategoryClassifierTest {
       "PEDIDOSYA*MCDONALDS,ALIMENTACION,Alimentacion",
       "SERVICENTRO SMILE SA,TRANSPORTE,Transporte",
       "PRIMAX AVIACION,TRANSPORTE,Transporte",
+      "ALLE ESTACIONES SAC,TRANSPORTE,Gasolina",
+      "alle   estaciones   sac,TRANSPORTE,Gasolina",
       "PEAJES LIMA,TRANSPORTE,Transporte",
       "PARAMOUNT+,SUSCRIPCIONES,Suscripciones",
       "Spotify,SUSCRIPCIONES,Suscripciones"
@@ -48,7 +50,8 @@ class CategoryClassifierTest {
   @ParameterizedTest
   @CsvSource({
       "Comida,ALIMENTACION,Alimentacion",
-      "Ahorro,OTROS,Otros"
+      "Ahorro,OTROS,Otros",
+      "Gasolina,TRANSPORTE,Gasolina"
   })
   void mapsLegacyCategoriesToEffectiveCatalog(String category, MacroCategory expectedMacro, String expectedCategory) {
     CategoryClassifier.Classification result = classifier.classify("Comercio sin regla", "Compra", category);

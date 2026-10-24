@@ -49,6 +49,24 @@ class ImportServiceTest {
   }
 
   @Test
+  void allePurchaseKeepsGasolinaAfterCategoryClassification() {
+    when(repository.existsByUserIdAndExternalId(7L, "alle-message")).thenReturn(false);
+
+    service.importBankEmail(7L, new ImportDtos.BankEmailRequest(
+        "notificaciones@notificacionesbcp.com.pe",
+        "Realizaste un consumo",
+        "Realizaste un consumo de S/ 100.00 con tu Tarjeta de Debito BCP en ALLE ESTACIONES SAC.",
+        "alle-message"));
+
+    ArgumentCaptor<Transaction> transaction = ArgumentCaptor.forClass(Transaction.class);
+    verify(repository).save(transaction.capture());
+    assertEquals("ALLE ESTACIONES SAC", transaction.getValue().merchant);
+    assertEquals("EXPENSE", transaction.getValue().type);
+    assertEquals("TRANSPORTE", transaction.getValue().macroCategory);
+    assertEquals("Gasolina", transaction.getValue().category);
+  }
+
+  @Test
   void rejectedBcpPurchaseDoesNotPersistOrParticipateInTransactionDeduplication() {
     ApiException error = assertThrows(ApiException.class, () -> service.importBankEmail(7L,
         new ImportDtos.BankEmailRequest(
