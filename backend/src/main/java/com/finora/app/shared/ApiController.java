@@ -13,6 +13,6 @@ public class ApiController {
   @GetMapping({"/api/categories", "/api/v1/categories"})
   public List<String> categories() {
     return List.of("Comida", "Transporte", "Servicios", "Compras", "Salud", "Educación", "Suscripciones",
-        "Entretenimiento", "Otros");
+        "Entretenimiento", "Gasolina","Otros");
   }
 }

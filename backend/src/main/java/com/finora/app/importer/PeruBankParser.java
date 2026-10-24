@@ -209,6 +209,8 @@ public class PeruBankParser implements BankEmailParser {
     if (normalized.matches(".*(inkafarma|mifarma|clinica).*")) {
       return "Salud";
     }
+    if( normalized.matches(".*(alle estaciones sac).*")){
+      return "Gasolina";}
     return "Otros";
   }
 }
