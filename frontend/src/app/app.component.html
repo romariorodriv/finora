@@ -37,6 +37,7 @@
     <a class="logo"><span class="brand" aria-hidden="true">S</span><b>Sarela</b></a>
     <nav aria-label="Navegacion principal">
       <button [class.active]="view === 'dashboard'" (click)="go('dashboard')">Inicio</button>
+      <button [class.active]="view === 'planning'" (click)="go('planning')">Mi dinero disponible</button>
       <button [class.active]="view === 'movements'" (click)="go('movements')">Movimientos</button>
       <button [class.active]="view === 'import'" (click)="go('import')">Conectar Gmail</button>
       <button [class.active]="view === 'feedback'" (click)="go('feedback')">Danos tu opinion</button>
@@ -48,11 +49,12 @@
     <header>
       <div>
         <p>{{ view === 'dashboard' ? 'Tu espacio financiero' : 'Sarela' }}</p>
-        <h2>{{ view === 'dashboard' ? 'Hola, ' + auth.user.name.split(' ')[0] : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conecta tus movimientos' : 'Danos tu opinion' }}</h2>
+        <h2>{{ view === 'dashboard' ? 'Hola, ' + auth.user.name.split(' ')[0] : view === 'planning' ? 'Mi dinero disponible' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conecta tus movimientos' : 'Danos tu opinion' }}</h2>
       </div>
       <div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div>
     </header>
 
+    <app-planning *ngIf="view === 'planning'"></app-planning>
     <section *ngIf="view === 'dashboard'" class="view dashboard-view">
       <div class="dashboard-intro">
         <div>
@@ -92,6 +94,7 @@
       </div>
       <ng-template #dashboardLoading><div class="empty dashboard-loading">Cargando tu resumen...</div></ng-template>
 
+      <article class="gmail-update"><div><b>Planifica hasta tu próximo ingreso</b><span>Confirma tu saldo, reserva y pagos pendientes para conocer tu disponibilidad.</span></div><button class="ghost compact" type="button" (click)="go('planning')">Mi dinero disponible</button></article>
       <div class="analytics-grid">
         <article class="panel category-panel">
           <h3>Tus gastos por categoria</h3>

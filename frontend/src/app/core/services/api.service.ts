@@ -4,6 +4,7 @@ import { map, Observable } from 'rxjs';
 import { normalizeDashboard } from '../dashboard.utils';
 import { environment } from '../../../environments/environment';
 import {
+  PlanningState, PlanningProfile, PlanningPaymentInput,
   AssistantAnswer,
   CategoryDetailResponse,
   DashboardResponse,
@@ -22,6 +23,11 @@ export class ApiService {
   private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(private readonly http: HttpClient) {}
+
+  getPlanningState(): Observable<PlanningState> { return this.http.get<PlanningState>(`${this.baseUrl}/planning/state`); }
+  savePlanningProfile(profile: PlanningProfile): Observable<PlanningState> { return this.http.put<PlanningState>(`${this.baseUrl}/planning/state`, profile); }
+  addPlanningPayment(payment: PlanningPaymentInput): Observable<PlanningState> { return this.http.post<PlanningState>(`${this.baseUrl}/planning/payments`, payment); }
+  deletePlanningPayment(id: number): Observable<PlanningState> { return this.http.delete<PlanningState>(`${this.baseUrl}/planning/payments/${id}`); }
 
   categories(): Observable<string[]> {
     return this.http.get<string[]>(`${this.baseUrl}/categories`);

@@ -22,6 +22,11 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest().body(body(400, "VALIDATION_ERROR", message, r));
   }
 
+  @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+  ResponseEntity<?> malformedJson(Exception e, HttpServletRequest r) {
+    return ResponseEntity.badRequest().body(body(400, "BAD_REQUEST", "Datos o fechas invalidos.", r));
+  }
+
   @ExceptionHandler(IllegalArgumentException.class)
   ResponseEntity<?> illegalArgument(IllegalArgumentException e, HttpServletRequest r) {
     return ResponseEntity.badRequest().body(body(400, "BAD_REQUEST", e.getMessage(), r));

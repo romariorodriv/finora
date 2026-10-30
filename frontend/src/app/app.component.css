@@ -243,7 +243,7 @@ header h2 { margin: 4px 0; font-size: 22px; }
   .app { grid-template-columns: 1fr; }
   aside { padding: 14px 18px; gap: 14px; }
   .logo { justify-content: center; }
-  nav { grid-template-columns: repeat(4, minmax(0, 1fr)); overflow-x: auto; }
+  nav { grid-template-columns: repeat(5, minmax(max-content, 1fr)); overflow-x: auto; }
   nav button { text-align: center; padding: 10px 6px; font-size: 12px; white-space: nowrap; }
   .logout { margin: 0; text-align: center; padding: 8px; }
   header { min-height: 86px; }

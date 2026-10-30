@@ -1,3 +1,4 @@
+import { PlanningComponent } from './planning/planning.component';
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -25,12 +26,12 @@ import {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PlanningComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
-  view: 'dashboard' | 'movements' | 'import' | 'feedback' = 'dashboard';
+  view: 'dashboard' | 'movements' | 'import' | 'feedback' | 'planning' = 'dashboard';
   authMode: 'login' | 'register' = 'login';
   readonly showDevTools = false;
   loginForm = { email: '', password: '' };
@@ -116,6 +117,7 @@ export class AppComponent implements OnInit {
 
   logout(): void {
     this.auth.logout();
+    this.view = 'dashboard';
     this.dashboard = undefined;
     this.transactions = [];
     this.selectedCategory = undefined;
