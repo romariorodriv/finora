@@ -10,6 +10,7 @@ public class User {
   @Column(nullable=false, unique=true) public String email;
   @Column(nullable=false) public String passwordHash;
   @Column(nullable=false) public Instant createdAt = Instant.now();
+  @Column(nullable=false,length=16) public String role="USER";
   protected User() {}
   public User(String name,String email,String passwordHash){this.name=name;this.email=email;this.passwordHash=passwordHash;}
 }

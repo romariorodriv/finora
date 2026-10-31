@@ -1,3 +1,4 @@
+import { IconComponent } from '../shared/icon.component';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -5,7 +6,7 @@ import { finalize, Subject, takeUntil } from 'rxjs';
 import { ApiService } from '../core/services/api.service';
 import { PlanningState, PlanningProjection, PlanningPayment } from '../core/models/api.models';
 
-@Component({selector: 'app-planning', imports: [CommonModule, FormsModule],
+@Component({selector: 'app-planning', imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: './planning.component.html', styleUrl: './planning.component.css'})
 export class PlanningComponent implements OnInit, OnDestroy {
   private readonly destroyed = new Subject<void>();
@@ -23,6 +24,9 @@ export class PlanningComponent implements OnInit, OnDestroy {
   planningSaved = false;
   planningNew = { name: '', dueDate: '', amount: 0 };
   planningResult?: PlanningProjection;
+  planningDirty = false;
+  planningLoaded = false;
+  planningSuccess = '';
   planningError = '';
   planningLoading = false;
 
@@ -32,6 +36,28 @@ export class PlanningComponent implements OnInit, OnDestroy {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 
+  markPlanningDirty(): void {
+    this.planningDirty = true;
+    this.planningResult = undefined;
+    this.planningSuccess = '';
+    this.planningAlerts = [];
+  }
+
+  paymentDate(date: string): string {
+    return new Intl.DateTimeFormat('es-PE', {day: 'numeric', month: 'short', year: 'numeric'}).format(new Date(`${date}T12:00:00`));
+  }
+
+  paymentStatus(date: string): string {
+    const parts = new Intl.DateTimeFormat('en-US', {timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit'}).formatToParts(new Date());
+    const part = (type: string) => parts.find(item => item.type === type)?.value;
+    const today = `${part('year')}-${part('month')}-${part('day')}`;
+    if (date < today) return 'Vencido';
+    const end = new Date(`${today}T12:00:00`);
+    end.setDate(end.getDate() + 3);
+    const limit = `${end.getFullYear()}-${String(end.getMonth()+1).padStart(2,'0')}-${String(end.getDate()).padStart(2,'0')}`;
+    return date <= limit ? 'Próximo' : 'Pendiente';
+  }
+
   addObligation(): void {
     if (this.planningLoading) return;
     const entry = { ...this.planningNew };
@@ -39,10 +65,11 @@ export class PlanningComponent implements OnInit, OnDestroy {
       this.planningError = 'Completa nombre, fecha y monto positivo del pago.';
       return;
     }
+    this.planningSuccess = '';
     this.planningError = '';
     this.planningLoading = true;
     this.api.addPlanningPayment({ ...entry, name: entry.name.trim() }).pipe(finalize(() => this.planningLoading = false)).pipe(takeUntil(this.destroyed)).subscribe({
-      next: state => { this.applyPlanningState(state); this.planningNew = {name:'',dueDate:'',amount:0}; },
+      next: state => { this.applyPlanningState(state, true); this.planningSuccess = 'Pago añadido a tu plan.'; this.planningNew = {name:'',dueDate:'',amount:0}; },
       error: err => this.planningError = this.message(err)
     });
   }
@@ -53,10 +80,11 @@ export class PlanningComponent implements OnInit, OnDestroy {
     if (!item) return;
     this.planningError = "";
     this.planningLoading = true;
-    this.api.deletePlanningPayment(item.id).pipe(finalize(() => this.planningLoading = false)).pipe(takeUntil(this.destroyed)).subscribe({next: state => this.applyPlanningState(state), error: err => this.planningError = this.message(err)});
+    this.api.deletePlanningPayment(item.id).pipe(finalize(() => this.planningLoading = false)).pipe(takeUntil(this.destroyed)).subscribe({next: state => { this.applyPlanningState(state, true); this.planningSuccess = 'Pago retirado de tu plan.'; }, error: err => this.planningError = this.message(err)});
   }
 
   previewPlanning(): void {
+    this.planningSuccess = '';
     this.planningError = '';
     this.planningResult = undefined;
     if (this.planningBalance === null || !Number.isFinite(this.planningBalance) || this.planningBalance < 0 || !Number.isFinite(this.planningReserve) || this.planningReserve < 0 || !this.planningIncomeDate) {
@@ -76,16 +104,23 @@ export class PlanningComponent implements OnInit, OnDestroy {
     if (this.planningLoading) return;
     this.planningLoading = true;
     this.api.savePlanningProfile({ nextIncomeDate: this.planningIncomeDate, confirmedBalance: this.planningBalance, reserve: this.planningReserve }).pipe(finalize(() => this.planningLoading = false)).pipe(takeUntil(this.destroyed)).subscribe({
-      next: state => this.applyPlanningState(state),
+      next: state => { this.applyPlanningState(state); this.planningSuccess = 'Tu plan está guardado y actualizado.'; },
       error: err => this.planningError = err?.error?.message || 'No fue posible calcular la disponibilidad. Comprueba los datos y la conexión.'
     });
   }
-  private applyPlanningState(state: PlanningState): void {
+  private applyPlanningState(state: PlanningState, preserveDraft = false): void {
+    const keepDraft = preserveDraft && this.planningDirty;
+    this.planningLoaded = true;
     this.planningSaved = !!state.profile;
-    if(state.profile){this.planningBalance = state.profile.confirmedBalance;this.planningReserve = state.profile.reserve;this.planningIncomeDate = state.profile.nextIncomeDate;}
+    if (state.profile && !keepDraft) {
+      this.planningBalance = state.profile.confirmedBalance;
+      this.planningReserve = state.profile.reserve;
+      this.planningIncomeDate = state.profile.nextIncomeDate;
+    }
+    this.planningDirty = keepDraft;
     this.planningObligations = state.payments || [];
-    this.planningResult = state.projection || undefined;
-    this.planningAlerts = state.alerts || [];
+    this.planningResult = keepDraft ? undefined : state.projection || undefined;
+    this.planningAlerts = keepDraft ? [] : state.alerts || [];
   }
   loadPlanning(): void {
     this.planningError = "";

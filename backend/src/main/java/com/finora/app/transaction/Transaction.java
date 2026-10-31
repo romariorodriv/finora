@@ -7,5 +7,13 @@ public class Transaction {
  @Column(nullable=false) public LocalDate date; @Column(nullable=false) public String category; @Column(nullable=false) public String type="EXPENSE";
  @Column(name="macro_category") public String macroCategory;
  public String source="MANUAL"; @Column(name="external_id") public String externalId; public String merchant; public boolean recurring; public Instant createdAt=Instant.now();
+ @Column(name="category_id") public Long categoryId;
+ @Column(name="classification_source",nullable=false,length=30) public String classificationSource="LEGACY";
+ @Column(name="classification_rule_id") public Long classificationRuleId;
+ @Column(name="review_status",nullable=false,length=15) public String reviewStatus="PENDING";
+ @Column(name="normalized_merchant",length=500) public String normalizedMerchant;
+ @Column(name="original_description",columnDefinition="TEXT") public String originalDescription;
+ @Column(nullable=false,length=3) public String currency="PEN";
+ @Version public Long version;
  public Transaction(){}
 }

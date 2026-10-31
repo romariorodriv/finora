@@ -56,4 +56,32 @@ describe('Planning dashboard', () => {
     expect(component.planningObligations.length).toBe(1);
     expect(component.planningError).toBe('Pago no encontrado');
   });
+  it('preserves an unsaved profile draft while a payment is added', () => {
+    api.addPlanningPayment.and.returnValue(of(state));
+    const component=new PlanningComponent(api);component.ngOnInit();
+    component.planningBalance=1500;component.markPlanningDirty();
+    component.planningNew={name:'Internet',amount:50,dueDate:'2099-01-01'};component.addObligation();
+    expect(component.planningBalance).toBe(1500);expect(component.planningDirty).toBeTrue();
+    expect(component.planningResult).toBeUndefined();expect(component.planningObligations.length).toBe(1);
+  });
+  it('confirms saving, clears the draft flag and restores the server projection', () => {
+    api.savePlanningProfile.and.returnValue(of(state));
+    const component=new PlanningComponent(api);component.ngOnInit();component.markPlanningDirty();component.previewPlanning();
+    expect(component.planningDirty).toBeFalse();expect(component.planningResult?.available).toBe(650);
+    expect(component.planningSuccess).toContain('guardado');
+  });
+  it('shows a deficit from the server and renders preventive alerts', () => {
+    api.getPlanningState.and.returnValue(of({...state,projection:{...state.projection!,available:-100,dailyLimit:0,deficit:true},alerts:['Tus pagos pendientes y reserva superan tu saldo confirmado.']}));
+    const fixture=TestBed.createComponent(PlanningComponent);fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.available-amount').classList.contains('negative')).toBeTrue();
+    expect(fixture.nativeElement.textContent).toContain('Necesita tu atención');
+    expect(fixture.nativeElement.textContent).toContain('superan tu saldo confirmado');
+  });
+  it('offers retry and disables saving when the initial persisted state could not be read', () => {
+    api.getPlanningState.and.returnValue(throwError(()=>({error:{message:'No disponible'}})));
+    const fixture=TestBed.createComponent(PlanningComponent);fixture.detectChanges();
+    expect(fixture.componentInstance.planningLoaded).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.planning-form button[type="submit"]').disabled).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.form-error').textContent).toContain('Reintentar');
+  });
 });

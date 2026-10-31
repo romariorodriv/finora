@@ -1,44 +1,29 @@
-    <section class="view sarela-planning">
-      <div class="dashboard-intro"><div><p class="eyebrow dark">PLANIFICACIÓN PERSONAL</p><h1>Que tu dinero te alcance hasta el próximo ingreso.</h1><p class="planning-subtitle">Anticipa tus compromisos, protege tu reserva y decide con información clara.</p></div></div>
-      <div class="planning-grid">
-        <article class="panel planning-form">
-          <h3>1. Confirma tu situación</h3>
-          <p class="section-copy">Introduce tu saldo real disponible en soles. El balance mensual no representa tu saldo bancario.</p>
-          <form (ngSubmit)="previewPlanning()">
-            <label>Saldo disponible confirmado (S/)<input name="planningBalance" type="number" min="0" step="0.01" required [(ngModel)]="planningBalance" (ngModelChange)="planningResult = undefined" /></label>
-            <label>Próximo ingreso<input name="planningIncomeDate" type="date" required [(ngModel)]="planningIncomeDate" (ngModelChange)="planningResult = undefined" /></label>
-            <label>Reserva que no quieres gastar (S/)<input name="planningReserve" type="number" min="0" step="0.01" required [(ngModel)]="planningReserve" (ngModelChange)="planningResult = undefined" /></label>
-            <button class="primary full" type="submit" [disabled]="planningLoading">{{ planningLoading ? 'Calculando...' : 'Calcular mi disponibilidad' }}</button>
-          </form>
-          <p class="form-error" role="alert" *ngIf="planningError">{{ planningError }}</p>
-        </article>
-        <article class="panel planning-result" aria-live="polite">
-          <p class="planning-disclaimer" *ngIf="planningSaved">Datos guardados de forma privada en tu cuenta. La proyección se recalcula al entrar.</p>
-          <div *ngIf="planningAlerts.length" class="planning-alerts" role="status"><p *ngFor="let alert of planningAlerts">{{alert}}</p></div>
-          <p class="eyebrow dark">TU PROYECCIÓN</p>
-          <ng-container *ngIf="planningResult; else planningEmpty">
-            <span>Estimación disponible hasta tu próximo ingreso</span>
-            <strong [class.negative]="planningResult.deficit">{{ money(planningResult.available) }}</strong>
-            <p *ngIf="planningResult.deficit" class="planning-warning">Tus obligaciones superan el saldo confirmado y la reserva. Revisa tus próximos pagos.</p>
-            <div class="planning-totals"><div><small>Pagos próximos</small><b>{{money(planningResult.committedPayments)}}</b></div><div><small>Orientación diaria · {{ planningResult.days }} días</small><b>{{money(planningResult.dailyLimit)}}</b></div></div>
-            <p class="planning-disclaimer">{{planningResult.note}}</p>
-          </ng-container>
-          <ng-template #planningEmpty><div class="planning-empty"><div class="planning-icon">S/</div><h3>Más claridad, menos sorpresas.</h3><p>Completa los datos y tus compromisos para calcular un límite orientativo, sin suposiciones sobre tu saldo.</p></div></ng-template>
-        </article>
-      </div>
-      <article class="panel planning-payments">
-        <h3>2. Tus pagos antes del próximo sueldo</h3>
-        <p class="section-copy">Añade únicamente compromisos pendientes. Los pagos vencidos antes de hoy no se descuentan automáticamente.</p>
-        <form class="planning-payments-form" (ngSubmit)="addObligation()">
-          <label>Concepto<input name="planningName" type="text" maxlength="100" placeholder="Ej. Alquiler" [(ngModel)]="planningNew.name" /></label>
-          <label>Vencimiento<input name="planningDueDate" type="date" [(ngModel)]="planningNew.dueDate" /></label>
-          <label>Monto (S/)<input name="planningAmount" type="number" min="0.01" step="0.01" [(ngModel)]="planningNew.amount" /></label>
-          <button type="submit" class="ghost" [disabled]="planningLoading">Añadir pago</button>
-        </form>
-        <div class="planning-item" *ngFor="let item of planningObligations; let i = index"><div><b>{{item.name}}</b><small>{{item.dueDate}}</small></div><strong>{{money(item.amount)}}</strong><button type="button" class="ghost compact" [disabled]="planningLoading" [attr.aria-label]="'Quitar ' + item.name" (click)="removeObligation(i)">Quitar</button></div>
-        <p class="section-copy" *ngIf="!planningObligations.length">Aún no has añadido pagos. Puedes calcular sin ellos, pero la estimación será incompleta.</p>
-      </article>
-      <p class="planning-disclaimer">Estimación orientativa: no sustituye un presupuesto completo ni asesoría financiera. Revisa los pagos y saldos antes de tomar decisiones.</p>
-      <p class="planning-disclaimer">Privacidad: saldo, reserva y pagos quedan guardados en tu cuenta en el servidor. Puedes borrar cada compromiso. No conectamos automáticamente saldos bancarios; revisa la información cuando cambie. Importes en PEN.</p>
-    </section>
-
+<section class="sarela-planning">
+  <div class="planning-heading"><div><p class="eyebrow">MI DINERO DISPONIBLE</p><h1>Tu próximo ingreso,<br>sin sorpresas.</h1><p class="planning-subtitle">Un plan que parte de tu realidad, para decidir con más tranquilidad.</p></div><span class="status-badge" [class.warning]="planningDirty || !planningSaved"><app-icon [name]="planningDirty ? 'clock' : 'shield'" [size]="14" />{{ planningDirty ? 'Cambios sin guardar' : planningSaved ? 'Tu plan está guardado' : 'Tu primer paso empieza aquí' }}</span></div>
+  <div class="form-error" role="alert" *ngIf="planningError"><app-icon name="info" [size]="16" /><span>{{ planningError }}</span><button type="button" class="ghost compact" *ngIf="!planningLoaded" (click)="loadPlanning()">Reintentar</button></div>
+  <p class="planning-success" role="status" *ngIf="planningSuccess"><app-icon name="check" [size]="16" />{{ planningSuccess }}</p>
+  <div class="planning-grid">
+    <article class="planning-result" [class.has-deficit]="planningResult?.deficit" aria-live="polite">
+      <div class="result-top"><span class="result-icon"><app-icon name="wallet" [size]="25" /></span><span class="eyebrow">TU MARGEN PARA EL DÍA A DÍA</span></div>
+      <ng-container *ngIf="planningResult as result; else planningEmpty">
+        <span class="available-label">Disponible hasta tu próximo ingreso</span>
+        <strong class="available-amount" [class.negative]="result.deficit">{{ money(result.available) }}</strong>
+        <span class="status-badge" [class.danger]="result.deficit"><app-icon [name]="result.deficit ? 'info' : 'check'" [size]="13" />{{ result.deficit ? 'Necesita tu atención' : 'Calculado con tus datos confirmados' }}</span>
+        <p class="planning-warning" *ngIf="result.deficit">Tus pagos pendientes y tu reserva superan el saldo confirmado. Revisa los compromisos de este periodo.</p>
+        <div class="daily-guidance"><div><span>Una orientación para cada día</span><strong>{{ money(result.dailyLimit) }}<small>/ día</small></strong></div><span class="days-chip"><app-icon name="calendar" [size]="16" />{{ result.days }} días</span></div>
+        <div class="planning-breakdown"><div><span>Saldo confirmado</span><b>{{ money(result.confirmedBalance) }}</b></div><div><span>Pagos antes del ingreso</span><b>− {{ money(result.committedPayments) }}</b></div><div><span>Reserva protegida</span><b>− {{ money(result.reserve) }}</b></div></div>
+        <p class="planning-disclaimer">{{ result.note }}</p>
+      </ng-container>
+      <ng-template #planningEmpty><div *ngIf="planningLoading; else waitingForPlan" class="planning-loading" role="status"><span class="skeleton"></span><span class="skeleton"></span><span>Cargando tu plan…</span></div><ng-template #waitingForPlan><div class="planning-empty"><h2>{{ planningDirty ? 'Tu plan está tomando forma.' : 'Más claridad. Menos sorpresas.' }}</h2><p>{{ planningDirty ? 'Guarda tu saldo, reserva y próximo ingreso para actualizar la disponibilidad.' : 'Tres datos para empezar: cuánto tienes, qué quieres reservar y cuándo llega tu próximo ingreso.' }}</p><div class="empty-steps"><span><app-icon name="check" [size]="14" /> Confirma</span><span><app-icon name="check" [size]="14" /> Anticipa</span><span><app-icon name="check" [size]="14" /> Planifica</span></div></div></ng-template></ng-template>
+    </article>
+    <article class="panel planning-form"><div class="panel-title"><span class="step-number">01</span><div><h3>Tu punto de partida</h3><p class="section-copy">Usa tu saldo real disponible en soles.</p></div></div><form (ngSubmit)="previewPlanning()"><label>Saldo confirmado <span class="input-hint">El dinero que tienes disponible hoy.</span><div class="money-input"><span>S/</span><input [disabled]="planningLoading || !planningLoaded" aria-label="Saldo confirmado en soles" name="planningBalance" type="number" min="0" max="100000000" step="0.01" required [(ngModel)]="planningBalance" (ngModelChange)="markPlanningDirty()" /></div></label><label>Próximo ingreso<input [disabled]="planningLoading || !planningLoaded" name="planningIncomeDate" type="date" required [(ngModel)]="planningIncomeDate" (ngModelChange)="markPlanningDirty()" /></label><label>Reserva de seguridad <span class="input-hint">Lo que prefieres mantener a salvo.</span><div class="money-input"><span>S/</span><input [disabled]="planningLoading || !planningLoaded" aria-label="Reserva de seguridad en soles" name="planningReserve" type="number" min="0" max="100000000" step="0.01" required [(ngModel)]="planningReserve" (ngModelChange)="markPlanningDirty()" /></div></label><button class="primary full" type="submit" [disabled]="planningLoading || !planningLoaded"><app-icon name="spark" [size]="17" />{{ planningLoading ? 'Actualizando…' : 'Guardar y calcular' }}</button></form><p class="form-footnote"><app-icon name="lock" [size]="13" /> Tu información se guarda en tu cuenta.</p></article>
+  </div>
+  <article class="panel planning-alerts" *ngIf="planningAlerts.length"><div class="alerts-heading"><span class="alert-icon"><app-icon name="info" [size]="20" /></span><div><p class="eyebrow">UNA MIRADA A TIEMPO</p><h3>Tenlo presente</h3></div><span class="alert-count">{{ planningAlerts.length }}</span></div><ul><li *ngFor="let alert of planningAlerts">{{ alert }}</li></ul></article>
+  <article class="panel planning-payments"><div class="payments-heading"><div class="panel-title"><span class="step-number">02</span><div><h3>Lo que viene por pagar</h3><p class="section-copy">Anticipa tus compromisos antes del próximo ingreso.</p></div></div><span class="payment-count">{{ planningObligations.length }} pendientes</span></div>
+    <form class="planning-payments-form" (ngSubmit)="addObligation()"><label>Concepto<input [disabled]="planningLoading || !planningLoaded" name="planningName" type="text" maxlength="100" required placeholder="Nombre del pago" [(ngModel)]="planningNew.name" /></label><label>Vencimiento<input [disabled]="planningLoading || !planningLoaded" name="planningDueDate" type="date" required [(ngModel)]="planningNew.dueDate" /></label><label>Monto (S/)<input [disabled]="planningLoading || !planningLoaded" name="planningAmount" type="number" min="0.01" max="100000000" step="0.01" required [(ngModel)]="planningNew.amount" /></label><button type="submit" class="primary" [disabled]="planningLoading || !planningLoaded"><app-icon name="plus" [size]="17" />Añadir pago</button></form>
+    <div class="payment-list"><div class="planning-item" *ngFor="let item of planningObligations; let i = index"><span class="payment-icon"><app-icon name="calendar" [size]="19" /></span><div class="payment-name"><b>{{ item.name }}</b><small>{{ paymentDate(item.dueDate) }}</small></div><span class="status-badge neutral" [class.warning]="paymentStatus(item.dueDate) !== 'Pendiente'">{{ paymentStatus(item.dueDate) }}</span><strong>{{ money(item.amount) }}</strong><button type="button" class="remove-payment" [disabled]="planningLoading" [attr.aria-label]="'Quitar ' + item.name" (click)="removeObligation(i)"><app-icon name="close" [size]="17" /></button></div></div>
+    <div class="empty payment-empty" *ngIf="!planningObligations.length"><app-icon name="calendar" [size]="30" /><strong>Tus próximos pagos, en un solo lugar.</strong><p>Añade los compromisos pendientes para que tu estimación sea más completa.</p></div>
+    <p class="payment-note"><app-icon name="info" [size]="14" />Los pagos vencidos se señalan como aviso y no se descuentan automáticamente. Quita un pago si ya fue realizado.</p>
+  </article>
+  <p class="privacy-note"><app-icon name="shield" [size]="16" /><span>Tu saldo y tus compromisos son privados. La disponibilidad es orientativa y parte de lo que confirmas; no se conectan saldos bancarios automáticamente. Importes en PEN.</span></p>
+</section>

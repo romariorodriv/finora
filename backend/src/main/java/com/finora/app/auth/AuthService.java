@@ -36,6 +36,6 @@ public class AuthService {
   }
 
   private AuthDtos.AuthResponse out(User u) {
-    return new AuthDtos.AuthResponse(jwt.issue(u.id, u.email), u.id, u.name, u.email);
+    return new AuthDtos.AuthResponse(jwt.issue(u.id, u.email), u.id, u.name, u.email, u.role);
   }
 }

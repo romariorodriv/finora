@@ -1,193 +1,118 @@
-<section *ngIf="!auth.user" class="auth">
+<app-landing *ngIf="!auth.user && publicView === 'landing'" (accessRequested)="openAccess($event)"></app-landing>
+<section *ngIf="!auth.user && publicView === 'access'" class="auth">
+  <button class="auth-back" type="button" (click)="returnToLanding()" [disabled]="authSubmitting"><app-icon name="arrow" [size]="15" />Volver a Sarela</button>
   <div class="auth-copy">
-    <div class="brand" aria-hidden="true">S</div>
-    <p class="eyebrow">INTELIGENCIA FINANCIERA PERSONAL</p>
-    <h1>Sarela</h1>
-    <h2>Tu dinero, finalmente claro.</h2>
-    <p>Conecta tus movimientos y descubre en que estas gastando.</p>
+    <div class="auth-wordmark"><span class="brand" aria-hidden="true">S</span><span>Sarela<span class="brand-dot">.</span></span></div>
+    <p class="eyebrow">UN POCO MÁS DE TRANQUILIDAD</p>
+    <h1>Tu dinero,<br>finalmente claro.</h1>
+    <p>Entiende lo que gastas hoy. Planifica lo que viene mañana.</p>
+    <div class="auth-steps"><div><app-icon name="wallet" /><span>Confirma tu saldo</span></div><div><app-icon name="calendar" /><span>Anticipa tus pagos</span></div><div><app-icon name="spark" /><span>Decide con claridad</span></div></div>
+    <small class="auth-footnote"><app-icon name="lock" [size]="14" /> Tu espacio financiero personal.</small>
   </div>
 
   <div class="login-card">
-    <div class="auth-tabs" role="tablist" aria-label="Acceso a Sarela">
-      <button type="button" [class.active]="authMode === 'login'" (click)="authMode = 'login'">Ingresar</button>
-      <button type="button" [class.active]="authMode === 'register'" (click)="authMode = 'register'">Crear cuenta</button>
+    <div class="auth-tabs" role="group" aria-label="Acceso a Sarela">
+      <button type="button" [class.active]="authMode === 'login'" (click)="openAccess('login')" [disabled]="authSubmitting">Ingresar</button>
+      <button type="button" [class.active]="authMode === 'register'" (click)="openAccess('register')" [disabled]="authSubmitting">Crear cuenta</button>
     </div>
-    <form *ngIf="authMode === 'login'" (ngSubmit)="login()">
-      <h2>Que bueno verte</h2>
+    <form *ngIf="authMode === 'login'" (ngSubmit)="login()" [attr.aria-busy]="authSubmitting">
+      <p class="eyebrow">BIENVENIDO DE NUEVO</p><h2>Qué bueno verte.</h2>
       <p class="form-intro">Ingresa para revisar tus finanzas.</p>
       <label>Correo <input name="email" type="email" autocomplete="email" [(ngModel)]="loginForm.email" required></label>
-      <label>Contrasena <input name="password" type="password" autocomplete="current-password" [(ngModel)]="loginForm.password" required></label>
-      <button class="primary full" type="submit">Ingresar</button>
+      <label>Contraseña <input name="password" type="password" autocomplete="current-password" [(ngModel)]="loginForm.password" required></label>
+      <button class="primary full" type="submit" [disabled]="authSubmitting">{{ authSubmitting ? 'Ingresando…' : 'Ingresar' }}</button>
     </form>
-    <form *ngIf="authMode === 'register'" (ngSubmit)="register()">
-      <h2>Empieza con claridad</h2>
+    <form *ngIf="authMode === 'register'" (ngSubmit)="register()" [attr.aria-busy]="authSubmitting">
+      <p class="eyebrow">TU SIGUIENTE PASO</p><h2>Empieza con claridad.</h2>
       <p class="form-intro">Crea tu cuenta en menos de un minuto.</p>
       <label>Nombre <input name="name" autocomplete="name" [(ngModel)]="registerForm.name" required></label>
       <label>Correo <input name="registerEmail" type="email" autocomplete="email" [(ngModel)]="registerForm.email" required></label>
-      <label>Contrasena <input name="registerPassword" type="password" autocomplete="new-password" minlength="8" [(ngModel)]="registerForm.password" required></label>
-      <label>Confirmar contrasena <input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" [(ngModel)]="registerForm.confirmPassword" required></label>
-      <button class="primary full" type="submit">Crear cuenta</button>
+      <label>Contraseña <input name="registerPassword" type="password" autocomplete="new-password" minlength="8" [(ngModel)]="registerForm.password" required></label>
+      <label>Confirmar contraseña <input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" [(ngModel)]="registerForm.confirmPassword" required></label>
+      <button class="primary full" type="submit" [disabled]="authSubmitting">{{ authSubmitting ? 'Creando tu cuenta…' : 'Crear cuenta' }}</button>
     </form>
     <p class="form-error" role="alert" *ngIf="error">{{ error }}</p>
   </div>
 </section>
 
+<a class="skip-link" href="#main-content" *ngIf="auth.user">Ir al contenido</a>
 <div *ngIf="auth.user" class="app">
-  <aside>
-    <a class="logo"><span class="brand" aria-hidden="true">S</span><b>Sarela</b></a>
-    <nav aria-label="Navegacion principal">
-      <button [class.active]="view === 'dashboard'" (click)="go('dashboard')">Inicio</button>
-      <button [class.active]="view === 'planning'" (click)="go('planning')">Mi dinero disponible</button>
-      <button [class.active]="view === 'movements'" (click)="go('movements')">Movimientos</button>
-      <button [class.active]="view === 'import'" (click)="go('import')">Conectar Gmail</button>
-      <button [class.active]="view === 'feedback'" (click)="go('feedback')">Danos tu opinion</button>
-    </nav>
-    <button class="logout" (click)="logout()">Cerrar sesion</button>
+  <aside class="sidebar">
+    <button class="logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al resumen"><span class="brand" aria-hidden="true">S</span><span>Sarela<span class="brand-dot">.</span></span></button>
+    <p class="sidebar-caption">TU ESPACIO</p>
+    <nav aria-label="Navegación principal"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Resumen</span></button>
+      <button type="button" [class.active]="view === 'planning'" [attr.aria-current]="view === 'planning' ? 'page' : null" (click)="go('planning')"><app-icon name="wallet" /><span>Mi dinero disponible</span></button>
+      <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>Movimientos</span></button>
+      <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>Conexión Gmail</span></button>
+      <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>Tu opinión</span></button></nav>
+    <button class="ghost admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()"><app-icon name="shield" [size]="17" />Administración</button>
+    <div class="sidebar-note"><app-icon name="spark" [size]="22" /><b>Un plan. Más calma.</b><p>Haz espacio para lo que de verdad importa.</p><button type="button" (click)="go('planning')">Revisar mi plan <app-icon name="arrow" [size]="16" /></button></div>
+    <div class="sidebar-footer"><div class="profile"><div class="avatar">{{ auth.user.name[0] }}</div><div><b>{{ auth.user.name }}</b><small>Mi cuenta · Sarela 2.2</small></div></div><button class="logout" type="button" (click)="logout()"><app-icon name="logout" [size]="17" />Cerrar sesión</button></div>
   </aside>
-
-  <main>
-    <header>
-      <div>
-        <p>{{ view === 'dashboard' ? 'Tu espacio financiero' : 'Sarela' }}</p>
-        <h2>{{ view === 'dashboard' ? 'Hola, ' + auth.user.name.split(' ')[0] : view === 'planning' ? 'Mi dinero disponible' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conecta tus movimientos' : 'Danos tu opinion' }}</h2>
-      </div>
-      <div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div>
+  <main id="main-content" tabindex="-1">
+    <header class="topbar">
+      <button class="mobile-brand logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al resumen"><span class="brand">S</span><span>Sarela.</span></button>
+      <div class="breadcrumb">Mi espacio <span>/</span><b>{{ view === 'dashboard' ? 'Resumen' : view === 'planning' ? 'Mi dinero disponible' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conexión Gmail' : view === 'admin' ? 'Administración' : 'Tu opinión' }}</b></div>
+      <div class="topbar-actions"><button class="ghost compact admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()" aria-label="Abrir administración"><app-icon name="shield" [size]="17" /><span>Administrar</span></button><button class="connection-pill" type="button" (click)="go('import')"><span class="status-dot" [class.connected]="gmail?.connected"></span><span>{{ !gmail ? 'Consultando Gmail' : gmail.connected ? 'Gmail conectado' : 'Gmail sin conectar' }}</span><app-icon name="down" [size]="14" /></button><div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div><button class="mobile-logout" type="button" aria-label="Cerrar sesión" (click)="logout()"><app-icon name="logout" [size]="18" /></button></div>
     </header>
-
+    <router-outlet></router-outlet>
     <app-planning *ngIf="view === 'planning'"></app-planning>
     <section *ngIf="view === 'dashboard'" class="view dashboard-view">
-      <div class="dashboard-intro">
-        <div>
-          <h1>Hola, {{ auth.user.name.split(' ')[0] }}</h1>
-          <p>Aqui tienes un resumen de tus gastos este mes.</p>
-        </div>
-        <b>{{ dashboard?.month }}</b>
+      <div class="dashboard-intro"><div><p class="eyebrow">TU PANORAMA FINANCIERO</p><h1>Tu dinero, con más claridad.</h1><p>Hola, {{ auth.user.name.split(' ')[0] }}. Cada decisión empieza por entender dónde estás.</p></div><label class="currency-selector" *ngIf="dashboard?.availableCurrencies && dashboard!.availableCurrencies!.length>1">Moneda del resumen<select [(ngModel)]="selectedCurrency" (ngModelChange)="loadDashboard()"><option *ngFor="let unit of dashboard?.availableCurrencies" [value]="unit">{{unit==='UNK'?'Sin moneda registrada':unit}}</option></select></label><span class="date-chip"><app-icon name="calendar" [size]="16" />{{ monthLabel() }}</span></div>
+      <div class="form-error" role="alert" *ngIf="dashboardError">{{ dashboardError }} <button class="ghost compact" type="button" (click)="loadDashboard()">Reintentar</button></div>
+      <div class="overview-grid">
+        <article class="planning-feature" [class.deficit]="planningSummary?.projection?.deficit" aria-live="polite">
+          <div class="feature-top"><span class="feature-icon"><app-icon name="wallet" [size]="24" /></span><span class="eyebrow">MI DINERO DISPONIBLE</span><span class="feature-version">PLAN PERSONAL</span></div>
+          <ng-container *ngIf="!planningSummaryLoading; else planSummaryLoading">
+            <ng-container *ngIf="planningSummary?.projection as projection; else noPlanSummary"><p class="feature-label">Hasta tu próximo ingreso</p><strong class="feature-amount" [class.negative]="projection.deficit">{{ money(projection.available,'PEN') }}</strong><p class="feature-description">Una orientación de <b>{{ money(projection.dailyLimit,'PEN') }} al día</b> durante {{ projection.days }} días.</p><span class="status-badge" [class.danger]="projection.deficit"><app-icon [name]="projection.deficit ? 'info' : 'check'" [size]="13" />{{ projection.deficit ? 'Revisa tus compromisos' : 'Según tu saldo y pagos confirmados' }}</span></ng-container>
+            <ng-template #noPlanSummary><h2>Que tu dinero alcance<br>para lo que viene.</h2><p class="feature-description">Confirma tu saldo, anticipa tus pagos y descubre cuánto puedes reservar para tu día a día.</p></ng-template>
+          </ng-container>
+          <ng-template #planSummaryLoading><div class="feature-skeleton" role="status"><span class="skeleton"></span><span class="skeleton"></span><span class="sr-only">Cargando tu disponibilidad</span></div></ng-template>
+          <p class="summary-error" *ngIf="planningSummaryError">{{ planningSummaryError }} <button type="button" (click)="loadPlanningSummary()">Reintentar</button></p>
+          <p class="summary-alert" *ngIf="planningSummary?.profile && planningSummary?.alerts?.length">{{ planningSummary?.alerts?.[0] }}</p>
+          <div class="feature-bottom"><button class="primary" type="button" (click)="go('planning')">{{ planningSummary?.profile ? 'Revisar mi plan' : 'Crear mi plan' }}<app-icon name="arrow" [size]="16" /></button><small>Tu saldo. Tus prioridades.</small></div>
+        </article>
+        <article class="panel balance-panel"><div class="panel-heading"><span class="eyebrow">BALANCE DEL MES</span><app-icon name="trend" /></div><strong class="balance-amount" [class.negative]="(dashboard?.balance ?? 0) < 0">{{ dashboard ? money(dashboard.balance) : '—' }}</strong><p class="section-copy">Ingresos menos gastos registrados.<br>Este balance no es tu saldo bancario.</p><div class="balance-flows"><div><span class="flow-icon"><app-icon name="downLeft" [size]="17" /></span><span>Ingresos<b>{{ dashboard ? money(dashboard.income) : '—' }}</b></span></div><div><span class="flow-icon expense"><app-icon name="upRight" [size]="17" /></span><span>Gastos<b>{{ dashboard ? money(dashboard.expenses) : '—' }}</b></span></div></div></article>
       </div>
-
-      <article *ngIf="gmail && !gmail.connected" class="gmail-onboarding">
-        <div class="onboarding-mark" aria-hidden="true">&#64;</div>
-        <div>
-          <p class="eyebrow dark">EMPIEZA AQUI</p>
-          <h2>Conecta tus movimientos</h2>
-          <p>Sarela puede encontrar automaticamente tus compras y pagos a partir de las notificaciones que recibes en tu correo.</p>
-          <small>Tus datos se usan unicamente para ayudarte a entender tus finanzas.</small>
-        </div>
-        <button class="primary" *ngIf="gmail.configured" (click)="connectGmail()">Conectar Gmail</button>
-        <p class="setup-note" *ngIf="!gmail.configured">La conexion estara disponible cuando finalice la configuracion de Sarela.</p>
-      </article>
-
-      <article *ngIf="gmail?.connected" class="gmail-update" aria-live="polite">
-        <div>
-          <b>Gmail: {{ gmailConnectionLabel() }}</b>
-          <span>{{ gmailUpdateStatus || gmailStatusCopy() }}</span>
-        </div>
-        <button class="ghost compact" type="button" (click)="syncGmail()" [disabled]="syncingGmail">
-          {{ syncingGmail ? 'Actualizando...' : 'Actualizar movimientos' }}
-        </button>
-      </article>
-
-      <div class="metrics primary-metrics" *ngIf="dashboard; else dashboardLoading">
-        <article class="metric hero"><span>Gasto total</span><strong>{{ money(dashboard.expenses) }}</strong><small>Este mes</small></article>
-        <article class="metric"><span>Transacciones</span><strong>{{ transactionCount() }}</strong><small>Gastos registrados</small></article>
-        <article class="metric"><span>Ticket promedio</span><strong>{{ money(averageTicket()) }}</strong><small>Por movimiento</small></article>
-        <article class="metric insight-kpi"><span>Insight breve</span><strong>{{ financialInsightTitle() }}</strong><small>{{ financialInsight() }}</small></article>
-      </div>
-      <ng-template #dashboardLoading><div class="empty dashboard-loading">Cargando tu resumen...</div></ng-template>
-
-      <article class="gmail-update"><div><b>Planifica hasta tu próximo ingreso</b><span>Confirma tu saldo, reserva y pagos pendientes para conocer tu disponibilidad.</span></div><button class="ghost compact" type="button" (click)="go('planning')">Mi dinero disponible</button></article>
+      <div class="metrics" *ngIf="dashboard as data; else metricsLoading"><article class="metric"><span>Gastos del mes <app-icon name="upRight" [size]="16" /></span><strong>{{ money(data.expenses) }}</strong><small>Total registrado</small></article><article class="metric"><span>Ingresos del mes <app-icon name="downLeft" [size]="16" /></span><strong>{{ money(data.income) }}</strong><small>Entradas registradas</small></article><article class="metric"><span>Transacciones <app-icon name="rows" [size]="16" /></span><strong>{{ transactionCount() }}</strong><small>Gastos registrados</small></article><article class="metric"><span>Ticket promedio <app-icon name="wallet" [size]="16" /></span><strong>{{ money(averageTicket()) }}</strong><small>Por movimiento</small></article></div>
+      <ng-template #metricsLoading><div class="metrics" role="status" aria-label="Cargando resumen"><div class="metric" *ngFor="let item of [1,2,3,4]"><span class="skeleton"></span><span class="skeleton"></span></div></div></ng-template>
+      <div class="activity-grid"><article class="panel spending-panel"><div class="panel-heading"><div><p class="eyebrow">EN PERSPECTIVA</p><h3>El ritmo de tus gastos</h3><p class="section-copy">Movimientos registrados, día a día.</p></div><div class="range-control" role="group" aria-label="Periodo del gráfico"><button type="button" [class.active]="selectedSpendingRange === 7" [attr.aria-pressed]="selectedSpendingRange === 7" (click)="selectSpendingRange(7)">7 días</button><button type="button" [class.active]="selectedSpendingRange === 30" [attr.aria-pressed]="selectedSpendingRange === 30" (click)="selectSpendingRange(30)">30 días</button></div></div>
+        <div *ngIf="hasDailySpending(); else emptyActivity" class="chart-frame"><div class="chart-axis"><span>{{ money(dailyPeak()) }}</span><span>S/ 0</span></div><div class="line-plot"><svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Evolución de tus gastos registrados"><defs><linearGradient id="spendingFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#86c6a3" stop-opacity=".32"/><stop offset="100%" stop-color="#86c6a3" stop-opacity=".01"/></linearGradient></defs><path d="M0 20H100 M0 50H100 M0 80H100" class="chart-grid"/><polygon [attr.points]="'0,100 ' + linePoints() + ' 100,100'" fill="url(#spendingFill)"/><polyline [attr.points]="linePoints()"/></svg><div class="line-labels"><span *ngFor="let point of dailyPoints()"><span>{{ point.label }}</span><b>{{ money(point.value) }}</b></span></div></div></div>
+        <ng-template #emptyActivity><div class="empty"><app-icon name="trend" [size]="30" /><strong>Cada movimiento cuenta</strong><p>Cuando registres gastos, podrás ver aquí cómo evolucionan.</p><button type="button" class="ghost compact" (click)="go('movements')">Registrar movimiento</button></div></ng-template>
+      </article><article class="insight-panel"><div class="insight-icon"><app-icon name="spark" [size]="24" /></div><p class="eyebrow">UNA MIRADA DE SARELA</p><h3>{{ financialInsightTitle() }}</h3><p>{{ financialInsight() }}</p><span class="insight-footnote">A partir de tus movimientos registrados.</span></article></div>
       <div class="analytics-grid">
-        <article class="panel category-panel">
-          <h3>Tus gastos por categoria</h3>
-          <p class="section-copy">Distribucion de tu gasto este mes.</p>
-          <div class="category-visual" *ngIf="categoryDistribution().length; else noCategories">
-            <button class="donut-frame native-donut" type="button" [ngStyle]="donutStyle(categoryDistribution())" aria-label="Distribucion de gastos por categoria">
-              <span class="donut-total"><b>{{ money(dashboard?.expenses) }}</b><small>gastado</small></span>
-            </button>
-            <div class="category-legend" aria-label="Detalle por categoria">
-              <button type="button" *ngFor="let item of categoryDistribution()" (click)="openCategory(item)">
-                <i [style.background]="item.color" aria-hidden="true"></i>
-                <span>{{ item.name }}</span>
-                <b>{{ item.percentage | number:'1.0-0' }}%</b>
-                <small>{{ money(item.value) }}</small>
-              </button>
-            </div>
-          </div>
-          <ng-template #noCategories><div class="empty chart-empty">{{ dashboard ? 'Tus categorias apareceran cuando registres movimientos.' : 'Cargando tus categorias...' }}</div></ng-template>
-        </article>
-
-        <article class="panel category-panel">
-          <h3>Donde estas gastando?</h3>
-          <p class="section-copy">Tus comercios con mayor gasto este mes.</p>
-          <div class="category-visual" *ngIf="merchantDistribution().length; else noMerchants">
-            <button class="donut-frame native-donut" type="button" [ngStyle]="donutStyle(merchantDistribution())" aria-label="Distribucion de gastos por comercio">
-              <span class="donut-total"><b>{{ money(dashboard?.expenses) }}</b><small>gastado</small></span>
-            </button>
-            <div class="category-legend merchant-legend" aria-label="Detalle por comercio">
-              <button type="button" *ngFor="let item of merchantDistribution()" (click)="openMerchant(item)" [disabled]="item.merchant === '__OTHER_MERCHANTS__'">
-                <i [style.background]="item.color" aria-hidden="true">{{ item.name[0] }}</i>
-                <span>{{ item.name }}</span>
-                <b>{{ item.percentage | number:'1.0-0' }}%</b>
-                <small>{{ money(item.value) }}</small>
-              </button>
-            </div>
-          </div>
-          <ng-template #noMerchants><div class="empty chart-empty">{{ dashboard ? 'Tus comercios apareceran cuando registres movimientos.' : 'Cargando tus comercios...' }}</div></ng-template>
-        </article>
+        <article class="panel category-panel"><div class="panel-heading"><div><p class="eyebrow">TU DISTRIBUCIÓN</p><h3>¿En qué estás gastando?</h3></div><app-icon name="grid" [size]="18" /></div><p class="section-copy">Cada categoría tiene su lugar.</p><div class="category-visual" *ngIf="categoryDistribution().length; else noCategories"><div class="native-donut" [ngStyle]="donutStyle(categoryDistribution())" role="img" aria-label="Distribución de gastos por categoría"><span class="donut-total"><small>Este mes</small><b>{{ money(dashboard?.expenses) }}</b></span></div><div class="category-legend"><button type="button" *ngFor="let item of categoryDistribution(); trackBy: trackSpendingPoint" (click)="openCategory(item)"><i [style.background]="item.color" aria-hidden="true"></i><span>{{ item.name }}</span><b>{{ item.percentage | number:'1.0-0' }}%</b><small>{{ money(item.value) }}</small></button></div></div><ng-template #noCategories><div class="empty"><app-icon name="grid" [size]="28" /><p>{{ dashboard ? 'Tus categorías aparecerán al registrar gastos.' : 'Cargando categorías…' }}</p></div></ng-template></article>
+        <article class="panel category-panel"><div class="panel-heading"><div><p class="eyebrow">TUS HÁBITOS</p><h3>Los comercios de tu día a día</h3></div><app-icon name="wallet" [size]="18" /></div><p class="section-copy">Dónde se concentran tus gastos del mes.</p><div class="category-visual" *ngIf="merchantDistribution().length; else noMerchants"><div class="native-donut" [ngStyle]="donutStyle(merchantDistribution())" role="img" aria-label="Distribución de gastos por comercio"><span class="donut-total"><small>Total gastado</small><b>{{ money(dashboard?.expenses) }}</b></span></div><div class="category-legend merchant-legend"><button type="button" *ngFor="let item of merchantDistribution(); trackBy: trackSpendingPoint" (click)="openMerchant(item)" [disabled]="item.merchant === '__OTHER_MERCHANTS__'"><i [style.background]="item.color" aria-hidden="true"></i><span>{{ item.name }}</span><b>{{ item.percentage | number:'1.0-0' }}%</b><small>{{ money(item.value) }}</small></button></div></div><ng-template #noMerchants><div class="empty"><app-icon name="wallet" [size]="28" /><p>{{ dashboard ? 'Tus comercios aparecerán al registrar gastos.' : 'Cargando comercios…' }}</p></div></ng-template></article>
       </div>
-
-      <section class="insight-panel">
-        <p class="eyebrow dark">INSIGHT DE SARELA</p>
-        <h3>{{ financialInsightTitle() }}</h3>
-        <p>{{ financialInsight() }}</p>
-      </section>
-
-      <div class="grid dashboard-bottom">
-        <article class="panel recent-panel">
-          <h3>Ultimas transacciones</h3>
-          <p class="section-copy">Fecha, comercio, categoria y monto.</p>
-          <div class="empty" *ngIf="!dashboard?.transactions?.length">Tus movimientos mas recientes apareceran aqui.</div>
-          <div class="tx" *ngFor="let tx of dashboard?.transactions">
-            <span><strong>{{ movementDate(tx.date) }} | {{ movementTitle(tx) }}</strong><small>{{ tx.category || tx.macroCategory || 'Otros' }}</small></span>
-            <b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : '-' }}{{ money(tx.amount) }}</b>
-          </div>
-        </article>
-
-        <article class="feedback-card dashboard-feedback">
-          <div>
-            <h3>Tu opinion cuenta</h3>
-            <p>Que tan bien entendiste tus gastos este mes?</p>
-          </div>
-          <div class="mini-rating" aria-label="Rating de feedback">
-            <span *ngFor="let value of [1,2,3,4,5]">{{ value }}</span>
-          </div>
-          <button class="ghost" type="button" (click)="openFeedback()">Responder</button>
-        </article>
-      </div>
+      <div class="dashboard-bottom"><article class="panel recent-panel"><div class="panel-heading"><div><p class="eyebrow">LO MÁS RECIENTE</p><h3>Últimos movimientos</h3></div><button class="text-link" type="button" (click)="go('movements')">Ver todos<app-icon name="arrow" [size]="15" /></button></div><div class="empty" *ngIf="!dashboard?.transactions?.length"><app-icon name="rows" [size]="26" /><p>Tu historial empieza con el primer movimiento.</p></div><div class="tx" *ngFor="let tx of dashboard?.transactions"><span class="transaction-mark"><app-icon [name]="tx.type === 'INCOME' ? 'downLeft' : 'upRight'" [size]="17" /></span><span><strong>{{ movementTitle(tx) }}</strong><small>{{ movementDate(tx.date) }} · {{ tx.category || tx.macroCategory || 'Otros' }}</small></span><b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : tx.type === 'EXPENSE' ? '−' : '' }}{{ money(tx.amount,tx.currency) }}</b></div></article>
+      <article class="panel recurring-panel"><div class="panel-heading"><div><p class="eyebrow">COMPROMISOS HABITUALES</p><h3>Suscripciones y recurrentes</h3></div><app-icon name="repeat" [size]="19" /></div><p class="section-copy">Cargos registrados como recurrentes este mes.</p><div class="recurring-total" *ngIf="dashboard?.recurring?.length">{{ money(recurringTotal()) }}<small>total registrado</small></div><div class="tx" *ngFor="let tx of dashboard?.recurring"><span><strong>{{ movementTitle(tx) }}</strong><small>{{ tx.category }}</small></span><b>{{ money(tx.amount,tx.currency) }}</b></div><div class="empty" *ngIf="!dashboard?.recurring?.length"><app-icon name="repeat" [size]="26" /><p>Aquí verás los movimientos que marques como recurrentes.</p></div></article></div>
+      <article *ngIf="gmail" class="connection-banner"><span class="banner-icon"><app-icon name="mail" /></span><div><b>{{ gmail.connected ? 'Tu conexión está lista.' : 'Dale menos trabajo a tus finanzas.' }}</b><p>{{ gmail.connected ? (gmailUpdateStatus || gmailStatusCopy()) : 'Conecta Gmail e importa tus notificaciones bancarias.' }}</p></div><button class="ghost compact" type="button" *ngIf="gmail.connected" (click)="syncGmail()" [disabled]="syncingGmail"><app-icon name="refresh" [size]="15" />{{ syncingGmail ? 'Actualizando…' : 'Actualizar' }}</button><button class="ghost compact" type="button" *ngIf="!gmail.connected" (click)="go('import')">Ver conexión<app-icon name="arrow" [size]="15" /></button></article>
+      <article class="feedback-card"><div><app-icon name="message" /><div><h3>Tu opinión hace la diferencia.</h3><p>Ayúdanos a hacer tus finanzas un poco más claras.</p></div></div><button class="ghost compact" type="button" (click)="openFeedback()">Compartir mi opinión<app-icon name="arrow" [size]="15" /></button></article>
     </section>
-
-    <section *ngIf="view === 'movements'" class="view two">
+    <section *ngIf="view === 'movements'" class="view two movements-view">
       <form class="panel" (ngSubmit)="saveTransaction()">
+        <p class="eyebrow">TUS MOVIMIENTOS</p>
         <h3>{{ editingId ? 'Editar movimiento' : 'Agregar movimiento' }}</h3>
         <div class="type-toggle">
           <button type="button" [class.active]="txForm.type === 'EXPENSE'" (click)="txForm.type = 'EXPENSE'">Gasto</button>
           <button type="button" [class.active]="txForm.type === 'INCOME'" (click)="txForm.type = 'INCOME'">Ingreso</button>
         </div>
-        <label>Descripcion <input name="description" [(ngModel)]="txForm.description" required></label>
+        <label>Descripción <input name="description" [(ngModel)]="txForm.description" required></label>
         <label>Monto <input name="amount" type="number" step="0.01" [(ngModel)]="txForm.amount" required></label>
         <label>Fecha <input name="date" type="date" [(ngModel)]="txForm.date" required></label>
-        <label>Categoria <select name="category" [(ngModel)]="txForm.category"><option *ngFor="let c of categories">{{ c }}</option></select></label>
+        <label>Categoría <select name="category" [(ngModel)]="txForm.category"><option *ngFor="let c of categories">{{ c }}</option></select></label>
         <label class="check"><input name="recurring" type="checkbox" [(ngModel)]="txForm.recurring"> Es recurrente</label>
-        <button class="primary" type="submit">{{ editingId ? 'Actualizar' : 'Guardar' }}</button>
-        <button class="ghost" type="button" *ngIf="editingId" (click)="cancelEdit()">Cancelar</button>
+        <button class="primary" type="submit" [disabled]="savingTransaction">{{ savingTransaction ? 'Guardando…' : editingId ? 'Actualizar' : 'Guardar' }}</button>
+        <button class="ghost" type="button" *ngIf="editingId" (click)="cancelEdit()" [disabled]="savingTransaction">Cancelar</button>
       </form>
       <article class="panel">
-        <h3>Todos tus movimientos</h3>
-        <p class="section-copy">Estos filtros no cambian las metricas del dashboard.</p>
+        <div class="panel-heading"><div><p class="eyebrow">HISTORIAL</p><h3>Todos tus movimientos</h3></div><app-icon name="rows" /></div>
+        <p class="section-copy">Estos filtros no cambian las métricas del dashboard.</p>
         <div class="movement-filters" role="search" aria-label="Filtros de movimientos">
           <label>Buscar <input name="movementSearch" [(ngModel)]="movementFilters.search" (ngModelChange)="updateMovementFilters()" placeholder="Comercio o descripcion"></label>
           <label>Desde <input name="movementFrom" type="date" [(ngModel)]="movementFilters.from" (ngModelChange)="updateMovementFilters()"></label>
           <label>Hasta <input name="movementTo" type="date" [(ngModel)]="movementFilters.to" (ngModelChange)="updateMovementFilters()"></label>
-          <label>Categoria
+          <label>Categoría
             <select name="movementCategory" [(ngModel)]="movementFilters.category" (ngModelChange)="updateMovementFilters()">
               <option value="">Todas</option>
               <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
@@ -202,37 +127,37 @@
               <option value="SAVINGS_DEPOSIT">Ahorro: aporte</option>
               <option value="TRANSFER">Transferencia</option>
               <option value="CASH_WITHDRAWAL">Retiro en efectivo</option>
-              <option value="REFUND">Devolucion</option>
+              <option value="REFUND">Devolución</option>
             </select>
           </label>
           <button class="ghost compact" type="button" (click)="resetMovementFilters()" [disabled]="!hasMovementFilters()">Restablecer</button>
         </div>
         <div class="result-count" *ngIf="transactions.length">{{ filteredTransactions().length }} de {{ transactions.length }} movimientos</div>
-        <div class="empty" *ngIf="transactions.length === 0">Aun no tienes movimientos registrados.</div>
+        <div class="empty" *ngIf="transactionsLoading" role="status"><span class="skeleton"></span>Cargando tus movimientos…</div><div class="empty" *ngIf="!transactionsLoading && transactions.length === 0"><app-icon name="rows" [size]="28" /><strong>Todo empieza con un movimiento</strong><p>Registra tu primer ingreso o gasto, o conecta Gmail.</p></div>
         <div class="empty" *ngIf="transactions.length > 0 && filteredTransactions().length === 0">No hay resultados para estos filtros.</div>
         <div class="tx tx-actions" *ngFor="let tx of pagedTransactions()">
-          <span>{{ movementTitle(tx) }} <small>{{ tx.category || tx.macroCategory || 'Otros' }} - {{ tx.date }}</small></span>
-          <b [class.income]="tx.type === 'INCOME'">{{ money(tx.amount) }}</b>
+          <span>{{ movementTitle(tx) }} <small><span class="category-tag">{{ tx.category || tx.macroCategory || 'Otros' }}</span> {{ movementDate(tx.date) }} · {{ movementTypeLabel(tx.type) }} <span class="recurring-tag" *ngIf="tx.recurring">Recurrente</span></small></span>
+          <b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : tx.type === 'EXPENSE' ? '−' : '' }}{{ money(tx.amount,tx.currency) }}</b>
           <button class="ghost compact" (click)="editTransaction(tx)">Editar</button>
-          <button class="danger compact" (click)="deleteTransaction(tx.id)">Eliminar</button>
+          <button class="danger compact" (click)="deleteTransaction(tx.id)" [disabled]="deletingTransactionIds.has(tx.id)">{{ deletingTransactionIds.has(tx.id) ? 'Eliminando…' : 'Eliminar' }}</button>
         </div>
         <div class="pager" *ngIf="filteredTransactions().length > movementPageSize">
           <button class="ghost compact" type="button" (click)="previousMovementPage()" [disabled]="movementPage === 1">Anterior</button>
-          <span>Pagina {{ movementPage }} de {{ movementTotalPages() }}</span>
+          <span>Página {{ movementPage }} de {{ movementTotalPages() }}</span>
           <button class="ghost compact" type="button" (click)="nextMovementPage()" [disabled]="movementPage === movementTotalPages()">Siguiente</button>
         </div>
       </article>
     </section>
 
     <section *ngIf="view === 'import'" class="view connection-view">
-      <article class="gmail-card" [class.connected]="gmail?.connected">
-        <div class="connection-status" aria-hidden="true">{{ gmail?.connected ? 'OK' : '@' }}</div>
+      <article class="gmail-card panel" [class.connected]="gmail?.connected">
+        <div class="connection-status"><app-icon [name]="gmail?.connected ? 'check' : 'mail'" [size]="28" /></div>
         <div>
-          <p class="eyebrow dark">MOVIMIENTOS AUTOMATICOS</p>
-          <h2>Gmail: {{ gmailConnectionLabel() }}</h2>
+          <p class="eyebrow dark">MOVIMIENTOS AUTOMÁTICOS</p>
+          <h2>Tus movimientos, conectados.</h2><span class="status-badge" [class.neutral]="!gmail?.connected">{{ gmailConnectionLabel() }}</span>
           <p *ngIf="gmail?.connected">{{ gmailStatusCopy() }}</p>
           <p *ngIf="!gmail?.connected">Sarela encuentra tus compras y pagos en las notificaciones que recibes por correo.</p>
-          <small *ngIf="gmail?.connected">{{ gmailUpdateStatus || 'Listo para actualizar cuando tu lo pidas.' }}</small>
+          <small *ngIf="gmail?.connected">{{ gmailUpdateStatus || 'Listo para actualizar cuando tú lo pidas.' }}</small>
           <small *ngIf="!gmail?.connected">{{ gmailStatusCopy() }}</small>
         </div>
         <div class="connection-actions">
@@ -240,13 +165,14 @@
           <button class="primary" *ngIf="gmail?.connected" (click)="syncGmail()" [disabled]="syncingGmail">{{ syncingGmail ? 'Actualizando...' : 'Actualizar movimientos' }}</button>
           <button class="ghost" *ngIf="gmail?.connected" (click)="disconnectGmail()">Desconectar</button>
         </div>
-        <p class="setup-note" *ngIf="gmail && !gmail.connected && !gmail.configured">Esta opcion estara disponible cuando termine la configuracion.</p>
+        <p class="setup-note" *ngIf="gmail && !gmail.connected && !gmail.configured">La conexión estará disponible cuando se complete la configuración.</p>
       </article>
+      <div class="connection-benefits"><article><app-icon name="search" /><h3>Menos trabajo manual</h3><p>Encuentra movimientos en tus notificaciones bancarias.</p></article><article><app-icon name="refresh" /><h3>A tu ritmo</h3><p>Actualiza tus movimientos cuando lo necesites.</p></article><article><app-icon name="shield" /><h3>Tú tienes el control</h3><p>Puedes desconectar tu cuenta desde esta pantalla.</p></article></div>
       <div class="update-summary" *ngIf="syncResult">
         Encontramos {{ syncResult.transactionsCreated }} movimientos nuevos. Omitimos {{ syncResult.duplicatesSkipped }} que ya estaban registrados.
       </div>
       <form class="panel dev-tools" *ngIf="showDevTools" (ngSubmit)="importEmail()">
-        <h3>Herramienta interna de deteccion</h3>
+        <h3>Herramienta interna de detección</h3>
         <label>Remitente <input name="sender" [(ngModel)]="importForm.sender"></label>
         <label>Contenido <textarea name="content" rows="6" [(ngModel)]="importForm.content"></textarea></label>
         <button class="primary" type="submit">Revisar movimiento</button>
@@ -255,51 +181,55 @@
 
     <section *ngIf="view === 'feedback'" class="view feedback-view">
       <form class="panel feedback-form" (ngSubmit)="submitFeedback()" *ngIf="!feedbackSubmitted; else thanks">
-        <p class="eyebrow dark">DANOS TU OPINION</p>
-        <h3>Ayudanos a mejorar Sarela</h3>
-        <label>Que tan util te resulto Sarela?
+        <div class="feedback-symbol"><app-icon name="message" [size]="26" /></div><p class="eyebrow">TE ESCUCHAMOS</p>
+        <h2>Una Sarela mejor, contigo.</h2><p class="section-copy">Cuéntanos cómo te está ayudando y qué podemos mejorar.</p>
+        <label>¿Qué tan útil te resultó Sarela?
           <select name="rating" [(ngModel)]="feedbackForm.rating" required>
-            <option [ngValue]="0">Selecciona una opcion</option>
+            <option [ngValue]="0">Selecciona una opción</option>
             <option *ngFor="let value of [1,2,3,4,5]" [ngValue]="value">{{ value }}</option>
           </select>
         </label>
-        <label>Sarela te ayudo a entender mejor en que estas gastando?
+        <label>¿Sarela te ayudó a entender mejor en qué estás gastando?
           <select name="understoodSpending" [(ngModel)]="feedbackForm.understoodSpending" required>
-            <option value="">Selecciona una opcion</option>
-            <option value="YES">Si</option>
+            <option value="">Selecciona una opción</option>
+            <option value="YES">Sí</option>
             <option value="PARTIALLY">Parcialmente</option>
             <option value="NO">No</option>
           </select>
         </label>
-        <label>Que fue lo que mas te gusto?
+        <label>¿Qué fue lo que más te gustó?
           <textarea name="liked" rows="3" maxlength="1000" [(ngModel)]="feedbackForm.liked"></textarea>
         </label>
-        <label>Que mejorarias?
+        <label>¿Qué mejorarías?
           <textarea name="improvement" rows="3" maxlength="1000" [(ngModel)]="feedbackForm.improvement"></textarea>
         </label>
-        <label>Que te gustaria que Sarela hiciera por ti?
+        <label>¿Qué te gustaría que Sarela hiciera por ti?
           <textarea name="wantedFeature" rows="3" maxlength="1000" [(ngModel)]="feedbackForm.wantedFeature"></textarea>
         </label>
         <p class="form-error" role="alert" *ngIf="feedbackError">{{ feedbackError }}</p>
-        <button class="primary" type="submit" [disabled]="feedbackSubmitting">{{ feedbackSubmitting ? 'Enviando...' : 'Enviar opinion' }}</button>
+        <button class="primary" type="submit" [disabled]="feedbackSubmitting">{{ feedbackSubmitting ? 'Enviando...' : 'Enviar opinión' }}</button>
       </form>
       <ng-template #thanks>
         <article class="panel feedback-thanks">
-          <h3>Gracias! Tu opinion nos ayuda a mejorar Sarela.</h3>
+          <app-icon name="check" [size]="36" /><h2>Gracias por compartir.</h2><p class="section-copy">Tu opinión nos ayuda a construir una Sarela más útil para ti.</p>
           <button class="ghost" type="button" (click)="feedbackSubmitted = false">Enviar otro comentario</button>
         </article>
       </ng-template>
     </section>
   </main>
+  <nav class="mobile-nav" aria-label="Navegación móvil"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Resumen</span></button>
+      <button type="button" [class.active]="view === 'planning'" [attr.aria-current]="view === 'planning' ? 'page' : null" (click)="go('planning')"><app-icon name="wallet" /><span>Planificar</span></button>
+      <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>Movimientos</span></button>
+      <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>Gmail</span></button>
+      <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>Opinión</span></button></nav>
 </div>
-
 <div class="drawer-backdrop" *ngIf="selectedCategory || selectedMerchant" (click)="closeDrawer()"></div>
-<aside class="category-drawer" *ngIf="selectedCategory" role="dialog" aria-modal="true" aria-label="Detalle de categoria">
-  <button class="drawer-close" type="button" aria-label="Cerrar detalle de categoria" (click)="closeCategory()">Cerrar</button>
-  <p class="eyebrow dark">DETALLE DE CATEGORIA</p>
+<aside class="category-drawer" *ngIf="selectedCategory" appFocusTrap role="dialog" aria-modal="true" aria-label="Detalle de categoria">
+  <button class="drawer-close" type="button" aria-label="Cerrar detalle de categoría" (click)="closeCategory()"><app-icon name="close" /></button>
+  <p class="eyebrow dark">DETALLE DE CATEGORÍA</p>
   <h2>{{ selectedCategory.label }}</h2>
   <strong>{{ money(selectedCategory.total) }} este mes</strong>
-  <h3>Distribucion</h3>
+  <h3>Distribución</h3>
   <div class="subcategory-row" *ngFor="let item of selectedCategory.subcategories">
     <span>{{ item.name }}</span>
     <b>{{ money(item.total) }}</b>
@@ -307,20 +237,22 @@
   <h3>Movimientos</h3>
   <div class="drawer-tx" *ngFor="let tx of selectedCategory.transactions">
     <span><b>{{ movementTitle(tx) }}</b><small>{{ movementDate(tx.date) }} - {{ tx.description }}</small></span>
-    <strong>{{ money(tx.amount) }}</strong>
+    <strong>{{ money(tx.amount,tx.currency) }}</strong>
   </div>
 </aside>
 
-<aside class="category-drawer" *ngIf="selectedMerchant" role="dialog" aria-modal="true" aria-label="Detalle de comercio">
-  <button class="drawer-close" type="button" aria-label="Cerrar detalle de comercio" (click)="closeMerchant()">Cerrar</button>
+<aside class="category-drawer" *ngIf="selectedMerchant" appFocusTrap role="dialog" aria-modal="true" aria-label="Detalle de comercio">
+  <button class="drawer-close" type="button" aria-label="Cerrar detalle de comercio" (click)="closeMerchant()"><app-icon name="close" /></button>
   <p class="eyebrow dark">DETALLE DE COMERCIO</p>
   <h2>{{ selectedMerchant.label }}</h2>
   <strong>{{ money(selectedMerchant.total) }} este mes</strong>
   <h3>Movimientos</h3>
   <div class="drawer-tx" *ngFor="let tx of selectedMerchant.transactions">
     <span><b>{{ movementDate(tx.date) }} | {{ movementTitle(tx) }}</b><small>{{ tx.description }} - {{ tx.category }}</small></span>
-    <strong>{{ money(tx.amount) }}</strong>
+    <strong>{{ money(tx.amount,tx.currency) }}</strong>
   </div>
 </aside>
 
-<div class="toast" role="status" *ngIf="toast">{{ toast }}</div>
+<div class="toast" role="status" *ngIf="toast"><app-icon name="info" />{{ toast }}<button type="button" aria-label="Cerrar mensaje" (click)="toast = ''"><app-icon name="close" [size]="16" /></button></div>
+
+<div class="detail-loading" role="status" *ngIf="loadingCategory || loadingMerchant"><app-icon name="clock" [size]="16" />Cargando detalle…</div>

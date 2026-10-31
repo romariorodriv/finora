@@ -18,6 +18,8 @@ export interface CategorySpendingPoint {
 export function normalizeDashboard(response: DashboardResponse): DashboardResponse {
   return {
     month: response.month,
+    currency: response.currency,
+    availableCurrencies: response.availableCurrencies,
     expenses: Number(response.expenses),
     income: Number(response.income),
     balance: Number(response.balance),
@@ -76,7 +78,7 @@ export function calculateCategoryDistribution(
 }
 
 export function calculateMacroCategoryDistribution(
-  categories: { macroCategory: string; label: string; total: number; percentage: number }[] | undefined,
+  categories: { macroCategory: string; label: string; total: number; percentage: number; color?: string }[] | undefined,
   colors: string[]
 ): CategorySpendingPoint[] {
   return (categories ?? [])
@@ -86,7 +88,7 @@ export function calculateMacroCategoryDistribution(
       macroCategory: item.macroCategory,
       value: Number(item.total),
       percentage: Number(item.percentage),
-      color: colors[index % colors.length]
+      color: item.color || colors[index % colors.length]
     }));
 }
 

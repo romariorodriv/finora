@@ -33,7 +33,7 @@ class TransactionServiceTest {
     ApiException error = assertThrows(ApiException.class, () -> service.delete(1L, 10L));
 
     assertEquals(403, error.status);
-    verify(repo, never()).delete(any());
+    verify(repo, never()).delete(any(Transaction.class));
   }
 
   private Transaction transaction(Long id, Long userId) {

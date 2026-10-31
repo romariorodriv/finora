@@ -32,6 +32,15 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest().body(body(400, "BAD_REQUEST", e.getMessage(), r));
   }
 
+  @ExceptionHandler({org.springframework.dao.DataIntegrityViolationException.class, org.springframework.orm.ObjectOptimisticLockingFailureException.class})
+  ResponseEntity<?> conflict(Exception e, HttpServletRequest r) {
+    return ResponseEntity.status(409).body(body(409,"DATA_CONFLICT","Los datos cambiaron o existe un registro duplicado. Recarga e intenta nuevamente.",r));
+  }
+  @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+  ResponseEntity<?> invalidParameter(Exception e, HttpServletRequest r) {
+    return ResponseEntity.badRequest().body(body(400,"BAD_REQUEST","Parámetro o fecha inválidos.",r));
+  }
+
   @ExceptionHandler(Exception.class)
   ResponseEntity<?> unknown(Exception e, HttpServletRequest r) {
     return ResponseEntity.status(500).body(body(500, "INTERNAL_ERROR", "Ocurrió un error inesperado", r));

@@ -11,6 +11,8 @@ import java.util.UUID;
 
 @Service
 public class ImportService {
+  private com.finora.app.admin.ClassificationEngine classificationEngine;
+  @org.springframework.beans.factory.annotation.Autowired public void setClassificationEngine(com.finora.app.admin.ClassificationEngine e){classificationEngine=e;}
   private final BankEmailParser parser;
   private final TransactionRepository repo;
   private final CategoryClassifier classifier;
@@ -55,6 +57,8 @@ public class ImportService {
     }
     t.source = "BANK_EMAIL";
     t.externalId = externalId;
+    t.currency=parsed.currency()==null?"UNK":parsed.currency();t.originalDescription=t.description;
+    if(classificationEngine!=null)classificationEngine.automatic(t);
     repo.save(t);
     return new ImportDtos.BankEmailResponse(TransactionResponse.from(t), parsed.confidence(), "RULE_WITH_AI_FALLBACK_READY");
   }

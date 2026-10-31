@@ -1,0 +1,51 @@
+<a class="skip-link" href="#landing-content">Ir al contenido</a>
+<header class="landing-header">
+  <div class="nav-inner">
+    <a class="wordmark" href="#inicio" aria-label="Sarela, inicio"><span class="wordmark-symbol" aria-hidden="true">S</span><span>sarela<span class="brand-period">.</span></span></a>
+    <nav class="section-nav" aria-label="Secciones de Sarela"><a href="#como-funciona">Cómo funciona</a><a href="#producto">Descubre Sarela</a><a href="#privacidad">Tu información</a></nav>
+    <div class="nav-actions"><button class="login-link" type="button" (click)="accessRequested.emit('login')">Ingresar</button><button class="primary" type="button" (click)="accessRequested.emit('register')">Empezar<app-icon name="arrow" [size]="15" /></button></div>
+  </div>
+</header>
+<main id="landing-content" tabindex="-1">
+  <section class="hero section-wrap" id="inicio" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="hero-eyebrow"><span></span>FINANZAS PERSONALES. UN POCO MÁS HUMANAS.</p>
+      <h1 id="hero-title">Tu dinero hoy.<br><em>Más calma mañana.</em></h1>
+      <p class="hero-description">Entiende lo que gastas. Anticipa lo que viene.<br class="wide-break"> Encuentra claridad para tu día a día.</p>
+      <div class="hero-actions"><button class="primary" type="button" (click)="accessRequested.emit('register')">Crear mi cuenta<app-icon name="arrow" [size]="17" /></button><a class="how-link" href="#como-funciona">Conocer Sarela<app-icon name="down" [size]="16" /></a></div>
+    </div>
+    <figure class="hero-art">
+      <picture><source media="(max-width: 600px)" srcset="images/sarela-emerald-sculpture-640.webp"><source media="(max-width: 1100px)" srcset="images/sarela-emerald-sculpture-960.webp"><img src="images/sarela-emerald-sculpture.webp" width="1536" height="1024" alt="Escultura de vidrio verde esmeralda con curvas suaves y luz natural" fetchpriority="high" decoding="async"></picture>
+      <figcaption><span class="art-caption-icon"><app-icon name="spark" [size]="18" /></span><div><b>Un poco de equilibrio cambia todo.</b><span>Tu saldo. Tus pagos. Tus prioridades.</span></div></figcaption>
+      <span class="art-side-note" aria-hidden="true">CLARIDAD PARA LO QUE VIENE</span>
+    </figure>
+    <p class="hero-footnote">La tranquilidad empieza por entender dónde estás.</p>
+  </section>
+  <div class="principles section-wrap"><span><app-icon name="wallet" [size]="17" />Sin suponer tu saldo</span><span><app-icon name="shield" [size]="17" />Un plan en tu cuenta</span><span><app-icon name="mail" [size]="17" />Gmail es opcional</span></div>
+  <section class="how-section section-wrap" id="como-funciona" aria-labelledby="how-title">
+    <div class="section-heading"><p class="eyebrow">MENOS COMPLICACIONES. MÁS CLARIDAD.</p><h2 id="how-title">Tres pasos.<br><em>Una nueva perspectiva.</em></h2><p>Empieza con lo que sabes hoy.<br>Sarela te ayuda a mirar lo que viene.</p></div>
+    <div class="steps-grid">
+      <article class="step"><div class="step-top"><span class="step-icon"><app-icon name="wallet" [size]="26" /></span><span class="step-index">01</span></div><h3>Tu punto de partida.</h3><p>Confirma tu saldo disponible, tu próximo ingreso y la reserva que prefieres proteger.</p></article>
+      <article class="step"><div class="step-top"><span class="step-icon"><app-icon name="calendar" [size]="26" /></span><span class="step-index">02</span></div><h3>Lo que viene por pagar.</h3><p>Añade tus compromisos pendientes. Ten presentes los pagos y los avisos que necesitas revisar.</p></article>
+      <article class="step"><div class="step-top"><span class="step-icon"><app-icon name="spark" [size]="26" /></span><span class="step-index">03</span></div><h3>Espacio para decidir.</h3><p>Consulta una estimación de disponibilidad y una orientación diaria hasta tu próximo ingreso.</p></article>
+    </div>
+  </section>
+  <section class="product-section section-wrap" id="producto" aria-labelledby="product-title">
+    <div class="section-heading"><p class="eyebrow">CADA COSA EN SU LUGAR</p><h2 id="product-title">Todo tu mes.<br><em>Una mirada más clara.</em></h2><p>Del primer movimiento a tus próximos compromisos.<br>Una experiencia pensada para entenderse.</p></div>
+    <div class="bento-grid">
+      <figure class="bento-photo"><picture><source media="(max-width: 600px)" srcset="images/sarela-calm-desk-640.webp"><img src="images/sarela-calm-desk.webp" width="1536" height="1024" alt="Cuaderno verde y taza de cerámica sobre un escritorio luminoso y despejado" loading="lazy" decoding="async"></picture><figcaption><p class="eyebrow">MÁS ALLÁ DE LOS NÚMEROS</p><h3>Más espacio para<br>lo que importa.</h3></figcaption></figure>
+      <article class="feature-card planning-card"><span class="feature-icon"><app-icon name="wallet" [size]="25" /></span><p class="card-kicker">MI DINERO DISPONIBLE</p><h3>Un plan.<br>Más tranquilidad.</h3><p>Saldo confirmado, pagos y reserva. Tres piezas para orientar tu día a día.</p><div class="formula-chips" aria-label="Saldo menos pagos menos reserva"><span>Saldo</span><b>−</b><span>Pagos</span><b>−</b><span>Reserva</span></div></article>
+      <article class="feature-card categories-card"><span class="feature-icon"><app-icon name="grid" [size]="25" /></span><p class="card-kicker">GASTOS CON CONTEXTO</p><h3>Cada gasto<br>cuenta una historia.</h3><p>Categorías y comercios para entender dónde se concentra tu dinero.</p></article>
+      <article class="feature-card"><span class="feature-icon"><app-icon name="repeat" [size]="25" /></span><h3>Lo que se repite,<br>a la vista.</h3><p>Identifica suscripciones y movimientos marcados como recurrentes en tu resumen.</p></article>
+      <article class="feature-card"><span class="feature-icon"><app-icon name="trend" [size]="25" /></span><h3>Tu mes,<br>en perspectiva.</h3><p>Revisa ingresos, gastos y su evolución sin perder de vista el detalle.</p></article>
+      <article class="feature-card"><span class="feature-icon"><app-icon name="mail" [size]="25" /></span><h3>Menos trabajo<br>manual.</h3><p>Conecta Gmail si quieres importar movimientos desde tus notificaciones bancarias.</p></article>
+    </div>
+    <div class="product-action"><button class="text-action" type="button" (click)="accessRequested.emit('register')">Descubrirlo con mi cuenta<app-icon name="arrow" [size]="18" /></button></div>
+  </section>
+  <section class="privacy-section section-wrap" id="privacidad" aria-labelledby="privacy-title">
+    <div class="privacy-card"><div class="privacy-copy"><span class="privacy-icon"><app-icon name="shield" [size]="34" /></span><p class="eyebrow">TAMBIÉN MERECES CLARIDAD SOBRE TUS DATOS</p><h2 id="privacy-title">Tu información.<br><em>Tus decisiones.</em></h2></div><div class="privacy-detail"><p>Tu saldo, reserva y pagos quedan asociados a tu cuenta. Tú confirmas los importes y decides cuándo actualizarlos.</p><p>Gmail es opcional y puedes desconectarlo desde Sarela. No se conectan saldos bancarios automáticamente.</p><div class="privacy-note"><app-icon name="info" [size]="17" /><span>La disponibilidad es una estimación basada en lo que confirmas, no una garantía de saldo.</span></div></div></div>
+  </section>
+  <section class="faq-section section-wrap" aria-labelledby="faq-title"><div><p class="eyebrow">ANTES DE EMPEZAR</p><h2 id="faq-title">Con las<br><em>cosas claras.</em></h2><p>Unas respuestas para dar el primer paso.</p></div><div class="faq-list"><details><summary>¿Necesito conectar Gmail?<app-icon name="plus" [size]="18" /></summary><p>No. Puedes registrar movimientos manualmente y crear tu plan con el saldo y los pagos que confirmes. Gmail es una conexión opcional.</p></details><details><summary>¿La disponibilidad es mi saldo bancario?<app-icon name="plus" [size]="18" /></summary><p>No. Sarela resta de tu saldo confirmado la reserva y los pagos pendientes del periodo. El resultado es una estimación que debes actualizar cuando cambie tu situación.</p></details><details><summary>¿Qué pasa con un pago vencido?<app-icon name="plus" [size]="18" /></summary><p>Sarela lo señala como aviso. Los pagos anteriores a hoy no se descuentan automáticamente de la proyección. Puedes quitar un pendiente si ya lo realizaste.</p></details></div></section>
+  <section class="final-cta section-wrap" aria-labelledby="cta-title"><span class="cta-symbol"><app-icon name="spark" [size]="32" /></span><p class="eyebrow">TU SIGUIENTE PASO PUEDE SER SIMPLE</p><h2 id="cta-title">Empieza con tu saldo.<br><em>Continúa con más calma.</em></h2><p>Un espacio para entender tu dinero.<br>Un plan para lo que viene.</p><button class="primary" type="button" (click)="accessRequested.emit('register')">Crear mi cuenta<app-icon name="arrow" [size]="18" /></button><span class="existing-account">¿Ya tienes cuenta? <button type="button" (click)="accessRequested.emit('login')">Ingresar</button></span></section>
+</main>
+<footer class="landing-footer section-wrap"><a class="wordmark" href="#inicio" aria-label="Volver al inicio de Sarela"><span class="wordmark-symbol" aria-hidden="true">S</span><span>sarela<span class="brand-period">.</span></span></a><p>Tu dinero, finalmente claro.</p><nav aria-label="Enlaces del pie"><a href="#como-funciona">Cómo funciona</a><a href="#privacidad">Tu información</a><button type="button" (click)="accessRequested.emit('login')">Ingresar</button></nav><small>© {{ year }} Sarela</small></footer>

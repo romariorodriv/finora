@@ -21,9 +21,11 @@ public record DashboardResponse(
     String insightBody,
     Map<LocalDate, BigDecimal> daily,
     List<TransactionResponse> transactions,
-    List<TransactionResponse> recurring
+    List<TransactionResponse> recurring,
+    String currency,
+    List<String> availableCurrencies
 ) {
-  public record CategorySummary(String macroCategory, String label, BigDecimal total, double percentage) {}
+  public record CategorySummary(String macroCategory,String label,BigDecimal total,double percentage,String color) { public CategorySummary(String key,String label,BigDecimal total,double percent){this(key,label,total,percent,null);} }
   public record MerchantSummary(String merchant, String label, BigDecimal total, double percentage) {}
   public record SubcategorySummary(String name, BigDecimal total) {}
   public record CategoryDetail(

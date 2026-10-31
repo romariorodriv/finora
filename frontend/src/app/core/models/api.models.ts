@@ -1,4 +1,6 @@
+export interface AccountProfile {userId:number;name:string;email:string;role:'USER'|'ADMIN';}
 export interface AuthResponse {
+  role?: 'USER'|'ADMIN';
   token: string;
   userId: number;
   name: string;
@@ -6,6 +8,7 @@ export interface AuthResponse {
 }
 
 export interface TransactionRequest {
+  currency?: string;
   description: string;
   amount: number;
   date: string;
@@ -16,6 +19,9 @@ export interface TransactionRequest {
 }
 
 export interface TransactionResponse extends TransactionRequest {
+  categoryId?: number;
+  classificationSource?: string;
+  reviewStatus?: string;
   id: number;
   userId: number;
   macroCategory?: string;
@@ -25,6 +31,8 @@ export interface TransactionResponse extends TransactionRequest {
 }
 
 export interface DashboardResponse {
+  currency?: string;
+  availableCurrencies?: string[];
   month: string;
   expenses: number;
   income: number;
@@ -44,6 +52,7 @@ export interface DashboardResponse {
 }
 
 export interface MacroCategorySummary {
+  color?: string;
   macroCategory: string;
   label: string;
   total: number;

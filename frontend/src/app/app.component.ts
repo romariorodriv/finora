@@ -1,8 +1,12 @@
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { LandingComponent } from './landing/landing.component';
+import { IconComponent } from './shared/icon.component';
+import { FocusTrapDirective } from './shared/focus-trap.directive';
 import { PlanningComponent } from './planning/planning.component';
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import { ApiService } from './core/services/api.service';
 import { AuthService } from './core/services/auth.service';
 import {
@@ -14,6 +18,7 @@ import {
   generateFinancialInsight
 } from './core/dashboard.utils';
 import {
+  PlanningState,
   CategoryDetailResponse,
   DashboardResponse,
   FeedbackRequest,
@@ -26,12 +31,25 @@ import {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, PlanningComponent],
+  imports: [CommonModule, FormsModule, PlanningComponent, IconComponent, FocusTrapDirective, LandingComponent, RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./dashboard/dashboard.styles.css', './app.component.css']
 })
-export class AppComponent implements OnInit {
-  view: 'dashboard' | 'movements' | 'import' | 'feedback' | 'planning' = 'dashboard';
+export class AppComponent implements OnInit, OnDestroy {
+  view: 'dashboard' | 'movements' | 'import' | 'feedback' | 'planning' | 'admin' = 'dashboard';
+  planningSummary?: PlanningState;
+  planningSummaryLoading = false;
+  planningSummaryError = '';
+  dashboardLoading = false;
+  dashboardError = '';
+  transactionsLoading = false;
+  selectedCurrency = '';
+  private routeSubscription?: Subscription;
+  private planningSummaryRequest?: Subscription;
+  publicView: 'landing' | 'access' = 'landing';
+  authSubmitting = false;
+  savingTransaction = false;
+  deletingTransactionIds = new Set<number>();
   authMode: 'login' | 'register' = 'login';
   readonly showDevTools = false;
   loginForm = { email: '', password: '' };
@@ -72,9 +90,13 @@ export class AppComponent implements OnInit {
   private readonly chartColors = ['#0f3d30', '#2f7d62', '#6fc39b', '#b6d7c4', '#dfe8e2'];
   private readonly merchantColors = ['#173c34', '#5f927d', '#9ec7b2', '#d3e2d9', '#eef2ef', '#c8d4cc'];
 
-  constructor(public readonly auth: AuthService, private readonly api: ApiService) {}
+  constructor(public readonly auth: AuthService, private readonly api: ApiService, private readonly router: Router) {
+    this.routeSubscription=router.events.subscribe(event=>{if(event instanceof NavigationEnd){if(event.urlAfterRedirects.startsWith('/admin'))this.view='admin';else if(this.view==='admin')this.view='dashboard';if(!this.auth.user)this.syncPublicView();}});
+  }
 
   ngOnInit(): void {
+    this.syncPublicView();
+    if (location.pathname === '/admin') this.view='admin';
     if (this.auth.user) {
       this.loadApp();
     }
@@ -86,9 +108,36 @@ export class AppComponent implements OnInit {
     }
   }
 
-  login(): void {
+  ngOnDestroy(): void { this.planningSummaryRequest?.unsubscribe(); this.routeSubscription?.unsubscribe(); }
+
+  openAccess(mode: 'login' | 'register'): void {
+    this.authMode = mode;
+    this.publicView = 'access';
     this.error = '';
-    this.auth.login(this.loginForm.email, this.loginForm.password).subscribe({
+    history.replaceState({}, '', location.pathname + location.search + (mode === 'register' ? '#registro' : '#acceso'));
+    window.scrollTo({top: 0, behavior: 'instant'});
+  }
+
+  returnToLanding(): void {
+    this.publicView = 'landing';
+    this.error = '';
+    history.replaceState({}, '', location.pathname + location.search);
+    window.scrollTo({top: 0, behavior: 'instant'});
+  }
+
+  @HostListener('window:hashchange')
+  syncPublicView(): void {
+    if (this.auth.user) return;
+    const hash = location.hash;
+    this.publicView = hash === '#acceso' || hash === '#registro' ? 'access' : 'landing';
+    if (this.publicView === 'access') this.authMode = hash === '#registro' ? 'register' : 'login';
+  }
+
+  login(): void {
+    if (this.authSubmitting) return;
+    this.authSubmitting = true;
+    this.error = '';
+    this.auth.login(this.loginForm.email, this.loginForm.password).pipe(finalize(() => this.authSubmitting = false)).subscribe({
       next: () => this.loadApp(),
       error: e => {
         console.error('Login failed', e);
@@ -98,12 +147,14 @@ export class AppComponent implements OnInit {
   }
 
   register(): void {
+    if (this.authSubmitting) return;
     this.error = '';
     if (this.registerForm.password !== this.registerForm.confirmPassword) {
       this.error = 'Las contrasenas no coinciden.';
       return;
     }
-    this.auth.register(this.registerForm.name, this.registerForm.email, this.registerForm.password).subscribe({
+    this.authSubmitting = true;
+    this.auth.register(this.registerForm.name, this.registerForm.email, this.registerForm.password).pipe(finalize(() => this.authSubmitting = false)).subscribe({
       next: () => {
         this.showToast('Tu cuenta esta lista');
         this.loadApp();
@@ -116,7 +167,13 @@ export class AppComponent implements OnInit {
   }
 
   logout(): void {
+    this.planningSummaryRequest?.unsubscribe();
+    this.planningSummary = undefined;
+    this.planningSummaryError = '';
+    this.selectedCurrency='';
+    void this.router.navigateByUrl('/');
     this.auth.logout();
+    this.returnToLanding();
     this.view = 'dashboard';
     this.dashboard = undefined;
     this.transactions = [];
@@ -124,8 +181,12 @@ export class AppComponent implements OnInit {
     this.selectedMerchant = undefined;
   }
 
+  openAdmin(): void { void this.router.navigateByUrl('/admin'); }
+
   go(view: typeof this.view): void {
+    if (this.router.url.startsWith('/admin')) void this.router.navigateByUrl('/');
     this.view = view;
+    if (view === 'dashboard') this.loadPlanningSummary();
     if (view === 'movements') {
       this.loadTransactions();
     }
@@ -138,10 +199,12 @@ export class AppComponent implements OnInit {
   }
 
   saveTransaction(): void {
+    if (this.savingTransaction) return;
+    this.savingTransaction = true;
     const action = this.editingId
       ? this.api.updateTransaction(this.editingId, this.txForm)
       : this.api.createTransaction(this.txForm);
-    action.subscribe({
+    action.pipe(finalize(() => this.savingTransaction = false)).subscribe({
       next: () => {
         this.showToast(this.editingId ? 'Movimiento actualizado' : 'Movimiento guardado');
         this.cancelEdit();
@@ -166,7 +229,9 @@ export class AppComponent implements OnInit {
   }
 
   deleteTransaction(id: number): void {
-    this.api.deleteTransaction(id).subscribe({
+    if (this.deletingTransactionIds.has(id)) return;
+    this.deletingTransactionIds.add(id);
+    this.api.deleteTransaction(id).pipe(finalize(() => this.deletingTransactionIds.delete(id))).subscribe({
       next: () => {
         this.showToast('Movimiento eliminado');
         this.loadDashboard();
@@ -256,8 +321,12 @@ export class AppComponent implements OnInit {
     this.go('feedback');
   }
 
-  money(value: number | string | undefined): string {
-    return `S/ ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  money(value: number | string | undefined, currency?: string): string {
+    const unit=currency||this.dashboard?.currency||'PEN';
+    const amount=Number(value||0);
+    if(unit==='UNK')return `${amount.toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})} (moneda no registrada)`;
+    if(unit==='PEN')return `S/ ${amount.toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    try{return new Intl.NumberFormat('es-PE',{style:'currency',currency:unit}).format(amount);}catch{return `${amount} ${unit}`;}
   }
 
   selectSpendingRange(range: 7 | 30): void {
@@ -283,6 +352,10 @@ export class AppComponent implements OnInit {
       const y = 100 - (point.value / max) * 82 - 8;
       return `${x},${y}`;
     }).join(' ');
+  }
+
+  trackSpendingPoint(index: number, item: CategorySpendingPoint): string {
+    return item.macroCategory || item.merchant || item.name;
   }
 
   categoryDistribution(): CategorySpendingPoint[] {
@@ -411,6 +484,12 @@ export class AppComponent implements OnInit {
     return tx.merchant?.trim() || tx.description;
   }
 
+  movementTypeLabel(type: string): string {
+    const labels: Record<string, string> = { EXPENSE: 'Gasto', INCOME: 'Ingreso', TRANSFER: 'Transferencia',
+      SAVINGS_WITHDRAWAL: 'Retiro de ahorro', SAVINGS_DEPOSIT: 'Aporte al ahorro', CASH_WITHDRAWAL: 'Retiro en efectivo', REFUND: 'Devolución' };
+    return labels[type] || type;
+  }
+
   movementDate(date: string): string {
     return new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'short' })
       .format(new Date(`${date}T12:00:00`));
@@ -431,21 +510,51 @@ export class AppComponent implements OnInit {
     }).format(new Date(this.gmail.lastSyncAt));
   }
 
+  loadPlanningSummary(): void {
+    this.planningSummaryRequest?.unsubscribe();
+    this.planningSummaryLoading = true;
+    this.planningSummaryError = '';
+    this.planningSummaryRequest = this.api.getPlanningState().pipe(
+      finalize(() => this.planningSummaryLoading = false)
+    ).subscribe({
+      next: state => this.planningSummary = state,
+      error: () => this.planningSummaryError = 'No pudimos cargar tu plan. Puedes volver a intentarlo.'
+    });
+  }
+
+  monthLabel(): string {
+    const month = this.dashboard?.month;
+    if (!month || !/^\d{4}-\d{2}$/.test(month)) return 'Este mes';
+    return new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' }).format(new Date(`${month}-15T12:00:00`));
+  }
+
+  recurringTotal(): number {
+    return (this.dashboard?.recurring ?? []).reduce((total, tx) => total + Number(tx.amount), 0);
+  }
+
+  dailyPeak(): number { return Math.max(...this.dailyPoints().map(point => point.value), 0); }
+
   private loadApp(): void {
+    this.auth.refreshCurrent().subscribe({next:()=>{if(new URLSearchParams(location.search).get('returnUrl')==='/admin'&&this.auth.isAdmin)void this.router.navigateByUrl('/admin');},error:()=>{}});
+    history.replaceState({}, '', location.pathname + location.search);
     this.loadDashboard();
+    this.loadPlanningSummary();
     this.loadCategories();
     this.loadGmail();
   }
 
-  private loadDashboard(): void {
-    this.api.dashboard().subscribe({
-      next: d => this.dashboard = d,
-      error: e => this.showToast(this.message(e))
+  loadDashboard(): void {
+    this.dashboardLoading = true;
+    this.dashboardError = '';
+    this.api.dashboard(this.selectedCurrency||undefined).pipe(finalize(() => this.dashboardLoading = false)).subscribe({
+      next: d => {this.dashboard = d;this.selectedCurrency=d.currency||'';},
+      error: e => this.dashboardError = this.message(e)
     });
   }
 
   private loadTransactions(): void {
-    this.api.transactions().subscribe({ next: t => this.transactions = t, error: e => this.showToast(this.message(e)) });
+    this.transactionsLoading = true;
+    this.api.transactions().pipe(finalize(() => this.transactionsLoading = false)).subscribe({ next: t => this.transactions = t, error: e => this.showToast(this.message(e)) });
   }
 
   private loadCategories(): void {

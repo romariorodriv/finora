@@ -20,6 +20,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
+  private dashboardCurrency = '';
   private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(private readonly http: HttpClient) {}
@@ -33,12 +34,14 @@ export class ApiService {
     return this.http.get<string[]>(`${this.baseUrl}/categories`);
   }
 
-  dashboard(): Observable<DashboardResponse> {
-    return this.http.get<DashboardResponse>(`${this.baseUrl}/dashboard`).pipe(map(normalizeDashboard));
+  dashboard(currency?:string): Observable<DashboardResponse> {
+    return this.http.get<DashboardResponse>(`${this.baseUrl}/dashboard`,{params:currency?{currency}:{}}).pipe(map(response=>{
+      this.dashboardCurrency=response.currency||'';return normalizeDashboard(response);
+    }));
   }
 
   categoryDetail(macroCategory: string): Observable<CategoryDetailResponse> {
-    return this.http.get<CategoryDetailResponse>(`${this.baseUrl}/dashboard/categories/${macroCategory}`).pipe(
+    return this.http.get<CategoryDetailResponse>(`${this.baseUrl}/dashboard/categories/${macroCategory}`,{params:this.dashboardCurrency?{currency:this.dashboardCurrency}:{}}).pipe(
       map(detail => ({
         ...detail,
         total: Number(detail.total),
@@ -49,7 +52,7 @@ export class ApiService {
   }
 
   merchantDetail(merchant: string): Observable<MerchantDetailResponse> {
-    return this.http.get<MerchantDetailResponse>(`${this.baseUrl}/dashboard/merchants/${encodeURIComponent(merchant)}`).pipe(
+    return this.http.get<MerchantDetailResponse>(`${this.baseUrl}/dashboard/merchants/${encodeURIComponent(merchant)}`,{params:this.dashboardCurrency?{currency:this.dashboardCurrency}:{}}).pipe(
       map(detail => ({
         ...detail,
         total: Number(detail.total),

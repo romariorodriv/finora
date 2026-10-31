@@ -24,15 +24,26 @@ import org.springframework.stereotype.Service;
 public class DashboardService {
   private final TransactionRepository repo;
   private final CategoryClassifier classifier;
+  private com.finora.app.admin.ManagedCategoryRepository catalog;
+  @org.springframework.beans.factory.annotation.Autowired public void setCatalog(com.finora.app.admin.ManagedCategoryRepository c){catalog=c;}
+  private String categoryKey(Transaction t){return t.categoryId==null?macroCategory(t).name():"CAT_"+t.categoryId;}
+  private String label(String key){if(key.startsWith("CAT_")&&catalog!=null)return catalog.findById(Long.parseLong(key.substring(4))).map(c->c.name).orElse("Otros");return MacroCategory.valueOf(key).label();}
+  private String color(String key){return key.startsWith("CAT_")&&catalog!=null?catalog.findById(Long.parseLong(key.substring(4))).map(c->c.color).orElse(null):null;}
+  private String currency(Transaction t){return t.currency==null?"UNK":t.currency;}
+  private String selectedCurrency(List<Transaction> rows,String requested){var values=rows.stream().map(this::currency).distinct().sorted().toList();if(requested!=null&&!requested.isBlank()){if(!requested.matches("[A-Z]{3}"))throw new ApiException(400,"INVALID_CURRENCY","Moneda inválida");return requested;}return values.contains("PEN")?"PEN":values.isEmpty()?"PEN":values.get(0);}
+
 
   public DashboardService(TransactionRepository repo, CategoryClassifier classifier) {
     this.repo = repo;
     this.classifier = classifier;
   }
 
-  public DashboardResponse dashboard(Long userId, Integer year, Integer month) {
+  public DashboardResponse dashboard(Long userId,Integer year,Integer month){return dashboard(userId,year,month,null);}
+  public DashboardResponse dashboard(Long userId, Integer year, Integer month, String requestedCurrency) {
     YearMonth ym = yearMonth(year, month);
-    List<Transaction> tx = repo.findByUserIdAndDateBetweenOrderByDateDesc(userId, ym.atDay(1), ym.atEndOfMonth());
+    List<Transaction> all = repo.findByUserIdAndDateBetweenOrderByDateDesc(userId, ym.atDay(1), ym.atEndOfMonth());
+    String chosen=selectedCurrency(all,requestedCurrency);
+    List<Transaction> tx=all.stream().filter(t->chosen.equals(currency(t))).toList();
     BigDecimal expenses = sum(tx, "EXPENSE");
     BigDecimal income = sum(tx, "INCOME");
     List<Transaction> expensesOnly = tx.stream().filter(this::isExpense).toList();
@@ -41,16 +52,16 @@ public class DashboardService {
         ? BigDecimal.ZERO
         : expenses.divide(BigDecimal.valueOf(expenseCount), 2, RoundingMode.HALF_UP);
 
-    Map<MacroCategory, BigDecimal> macroTotals = expensesOnly.stream().collect(Collectors
-        .groupingBy(this::macroCategory, () -> new EnumMap<>(MacroCategory.class),
+    Map<String, BigDecimal> macroTotals = expensesOnly.stream().collect(Collectors
+        .groupingBy(this::categoryKey, LinkedHashMap::new,
             Collectors.reducing(BigDecimal.ZERO, t -> t.amount, BigDecimal::add)));
     Map<String, BigDecimal> cats = macroTotals.entrySet().stream()
-        .sorted(Map.Entry.<MacroCategory, BigDecimal>comparingByValue().reversed())
-        .collect(Collectors.toMap(e -> e.getKey().label(), Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+        .sorted(Map.Entry.<String, BigDecimal>comparingByValue().reversed())
+        .collect(Collectors.toMap(e -> label(e.getKey()), Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
     List<DashboardResponse.CategorySummary> macroCategories = macroTotals.entrySet().stream()
-        .sorted(Map.Entry.<MacroCategory, BigDecimal>comparingByValue().reversed())
-        .map(e -> new DashboardResponse.CategorySummary(e.getKey().name(), e.getKey().label(), e.getValue(),
-            percentage(e.getValue(), expenses)))
+        .sorted(Map.Entry.<String, BigDecimal>comparingByValue().reversed())
+        .map(e -> new DashboardResponse.CategorySummary(e.getKey(), label(e.getKey()), e.getValue(),
+            percentage(e.getValue(), expenses),color(e.getKey())))
         .toList();
     List<DashboardResponse.MerchantSummary> merchants = merchantSummaries(expensesOnly, expenses);
 
@@ -67,39 +78,25 @@ public class DashboardService {
         dailyAverage, projection,
         cats, macroCategories, merchants, insight[0], insight[1], daily,
         tx.stream().limit(8).map(TransactionResponse::from).toList(),
-        tx.stream().filter(t -> t.recurring).map(TransactionResponse::from).toList());
+        tx.stream().filter(t -> t.recurring).map(TransactionResponse::from).toList(),chosen,all.stream().map(this::currency).distinct().sorted().toList());
   }
 
-  public DashboardResponse.CategoryDetail categoryDetail(Long userId, String macroCategory, Integer year, Integer month) {
-    MacroCategory requested;
-    try {
-      requested = MacroCategory.valueOf(macroCategory);
-    } catch (IllegalArgumentException e) {
-      throw new ApiException(400, "INVALID_CATEGORY", "Categoria no valida");
-    }
-    YearMonth ym = yearMonth(year, month);
-    List<Transaction> matching = repo.findByUserIdAndDateBetweenOrderByDateDesc(userId, ym.atDay(1), ym.atEndOfMonth())
-        .stream()
-        .filter(this::isExpense)
-        .filter(t -> requested == macroCategory(t))
-        .toList();
-    BigDecimal total = matching.stream().map(t -> t.amount).reduce(BigDecimal.ZERO, BigDecimal::add);
-    List<DashboardResponse.SubcategorySummary> subcategories = matching.stream()
-        .collect(Collectors.groupingBy(t -> categoryLabel(macroCategory(t)),
-            Collectors.reducing(BigDecimal.ZERO, t -> t.amount, BigDecimal::add)))
-        .entrySet().stream()
-        .sorted(Map.Entry.<String, BigDecimal>comparingByValue().reversed())
-        .map(e -> new DashboardResponse.SubcategorySummary(e.getKey(), e.getValue()))
-        .toList();
-    return new DashboardResponse.CategoryDetail(requested.name(), requested.label(), total, subcategories,
-        matching.stream().map(TransactionResponse::from).toList());
+  public DashboardResponse.CategoryDetail categoryDetail(Long uid,String key,Integer year,Integer month){return categoryDetail(uid,key,year,month,null);}
+  public DashboardResponse.CategoryDetail categoryDetail(Long uid,String key,Integer year,Integer month,String requestedCurrency){
+    String categoryLabel;try{categoryLabel=label(key);}catch(Exception e){throw new ApiException(400,"INVALID_CATEGORY","Categoría no válida");}
+    YearMonth ym=yearMonth(year,month);var all=repo.findByUserIdAndDateBetweenOrderByDateDesc(uid,ym.atDay(1),ym.atEndOfMonth());String chosen=selectedCurrency(all,requestedCurrency);
+    var matching=all.stream().filter(this::isExpense).filter(t->key.equals(categoryKey(t))&&chosen.equals(currency(t))).toList();
+    var total=matching.stream().map(t->t.amount).reduce(BigDecimal.ZERO,BigDecimal::add);
+    var sub=matching.stream().collect(Collectors.groupingBy(t->key.startsWith("CAT_")?t.category:categoryLabel(macroCategory(t)),Collectors.reducing(BigDecimal.ZERO,t->t.amount,BigDecimal::add))).entrySet().stream().sorted(Map.Entry.<String,BigDecimal>comparingByValue().reversed()).map(e->new DashboardResponse.SubcategorySummary(e.getKey(),e.getValue())).toList();
+    return new DashboardResponse.CategoryDetail(key,categoryLabel,total,sub,matching.stream().map(TransactionResponse::from).toList());
   }
 
-  public DashboardResponse.MerchantDetail merchantDetail(Long userId, String merchant, Integer year, Integer month) {
+  public DashboardResponse.MerchantDetail merchantDetail(Long uid,String merchant,Integer year,Integer month){return merchantDetail(uid,merchant,year,month,null);}
+  public DashboardResponse.MerchantDetail merchantDetail(Long userId, String merchant, Integer year, Integer month,String requestedCurrency) {
     String requested = MerchantNormalizer.normalize(merchant);
     YearMonth ym = yearMonth(year, month);
-    List<Transaction> matching = repo.findByUserIdAndDateBetweenOrderByDateDesc(userId, ym.atDay(1), ym.atEndOfMonth())
-        .stream()
+    var all=repo.findByUserIdAndDateBetweenOrderByDateDesc(userId, ym.atDay(1), ym.atEndOfMonth());String chosen=selectedCurrency(all,requestedCurrency);
+    List<Transaction> matching = all.stream().filter(t->chosen.equals(currency(t)))
         .filter(this::isExpense)
         .filter(t -> requested.equals(merchant(t)))
         .toList();
