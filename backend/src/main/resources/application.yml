@@ -10,6 +10,8 @@ spring:
   h2.console.enabled: ${H2_CONSOLE_ENABLED:false}
 server.port: ${PORT:8080}
 app:
+  categories:
+    seed-defaults: ${CATEGORY_SEED_DEFAULTS:false}
   jwt-secret: ${JWT_SECRET:finora-demo-secret-change-in-production-2026-strong}
   demo-data: ${DEMO_DATA:true}
   frontend-url: ${FRONTEND_BASE_URL:http://localhost:4200}

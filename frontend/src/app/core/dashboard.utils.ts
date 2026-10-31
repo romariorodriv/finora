@@ -112,7 +112,7 @@ export function generateFinancialInsight(categories: CategorySpendingPoint[], ex
     return 'No tenemos suficientes movimientos todavia para darte una recomendacion.';
   }
   const largest = categories[0];
-  if (largest.macroCategory === 'OTROS' || largest.name.toLocaleLowerCase('es') === 'otros') {
+  if (largest.macroCategory === 'UNCATEGORIZED' || largest.macroCategory === 'OTROS' || largest.name.toLocaleLowerCase('es') === 'otros') {
     return 'Hay movimientos que Sarela todavia no pudo clasificar.';
   }
   return `${largest.name} lidera tus gastos y representa el ${Math.round(largest.percentage)}% de tus gastos del mes.`;
