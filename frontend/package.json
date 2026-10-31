@@ -33,5 +33,11 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.7.2"
+  },
+  "overrides": {
+    "piscina": "4.9.4",
+    "proxy-addr": "2.0.8",
+    "shell-quote": "1.11.0",
+    "pacote": "20.0.1"
   }
 }

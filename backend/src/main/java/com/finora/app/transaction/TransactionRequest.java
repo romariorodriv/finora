@@ -11,5 +11,8 @@ public record TransactionRequest(
     @NotBlank String category,
     String type,
     String merchant,
-    boolean recurring
-) {}
+    boolean recurring,
+    @Pattern(regexp="[A-Z]{3}") String currency
+) {
+ public TransactionRequest(String d,BigDecimal a,LocalDate date,String c,String type,String merchant,boolean recurring){this(d,a,date,c,type,merchant,recurring,null);}
+}

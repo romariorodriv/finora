@@ -10,6 +10,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.*;
 import java.util.*;
 
+@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
   @Bean
@@ -24,6 +25,7 @@ public class SecurityConfig {
         .csrf(c -> c.disable())
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(a -> {
+          a.requestMatchers("/api/admin/**", "/api/v1/admin/**").hasRole("ADMIN");
           a.requestMatchers("/api/auth/**", "/api/v1/auth/**", "/api/health", "/api/v1/health").permitAll();
           a.requestMatchers("/api/integrations/gmail/callback", "/api/v1/integrations/gmail/callback").permitAll();
           a.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll();

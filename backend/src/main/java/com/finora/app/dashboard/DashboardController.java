@@ -14,19 +14,19 @@ public class DashboardController {
 
   @GetMapping
   public DashboardResponse dashboard(Authentication a, @RequestParam(required = false) Integer year,
-      @RequestParam(required = false) Integer month) {
-    return service.dashboard((Long) a.getPrincipal(), year, month);
+      @RequestParam(required = false) Integer month, @RequestParam(required=false) String currency) {
+    return service.dashboard((Long) a.getPrincipal(), year, month,currency);
   }
 
   @GetMapping("/categories/{macroCategory}")
   public DashboardResponse.CategoryDetail categoryDetail(Authentication a, @PathVariable String macroCategory,
-      @RequestParam(required = false) Integer year, @RequestParam(required = false) Integer month) {
-    return service.categoryDetail((Long) a.getPrincipal(), macroCategory, year, month);
+      @RequestParam(required = false) Integer year, @RequestParam(required = false) Integer month, @RequestParam(required=false) String currency) {
+    return service.categoryDetail((Long) a.getPrincipal(), macroCategory, year, month,currency);
   }
 
   @GetMapping("/merchants/{merchant}")
   public DashboardResponse.MerchantDetail merchantDetail(Authentication a, @PathVariable String merchant,
-      @RequestParam(required = false) Integer year, @RequestParam(required = false) Integer month) {
-    return service.merchantDetail((Long) a.getPrincipal(), merchant, year, month);
+      @RequestParam(required = false) Integer year, @RequestParam(required = false) Integer month, @RequestParam(required=false) String currency) {
+    return service.merchantDetail((Long) a.getPrincipal(), merchant, year, month,currency);
   }
 }

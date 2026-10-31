@@ -4,6 +4,7 @@ import { map, Observable } from 'rxjs';
 import { normalizeDashboard } from '../dashboard.utils';
 import { environment } from '../../../environments/environment';
 import {
+  PlanningState, PlanningProfile, PlanningPaymentInput,
   AssistantAnswer,
   CategoryDetailResponse,
   DashboardResponse,
@@ -19,20 +20,28 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
+  private dashboardCurrency = '';
   private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(private readonly http: HttpClient) {}
+
+  getPlanningState(): Observable<PlanningState> { return this.http.get<PlanningState>(`${this.baseUrl}/planning/state`); }
+  savePlanningProfile(profile: PlanningProfile): Observable<PlanningState> { return this.http.put<PlanningState>(`${this.baseUrl}/planning/state`, profile); }
+  addPlanningPayment(payment: PlanningPaymentInput): Observable<PlanningState> { return this.http.post<PlanningState>(`${this.baseUrl}/planning/payments`, payment); }
+  deletePlanningPayment(id: number): Observable<PlanningState> { return this.http.delete<PlanningState>(`${this.baseUrl}/planning/payments/${id}`); }
 
   categories(): Observable<string[]> {
     return this.http.get<string[]>(`${this.baseUrl}/categories`);
   }
 
-  dashboard(): Observable<DashboardResponse> {
-    return this.http.get<DashboardResponse>(`${this.baseUrl}/dashboard`).pipe(map(normalizeDashboard));
+  dashboard(currency?:string): Observable<DashboardResponse> {
+    return this.http.get<DashboardResponse>(`${this.baseUrl}/dashboard`,{params:currency?{currency}:{}}).pipe(map(response=>{
+      this.dashboardCurrency=response.currency||'';return normalizeDashboard(response);
+    }));
   }
 
   categoryDetail(macroCategory: string): Observable<CategoryDetailResponse> {
-    return this.http.get<CategoryDetailResponse>(`${this.baseUrl}/dashboard/categories/${macroCategory}`).pipe(
+    return this.http.get<CategoryDetailResponse>(`${this.baseUrl}/dashboard/categories/${macroCategory}`,{params:this.dashboardCurrency?{currency:this.dashboardCurrency}:{}}).pipe(
       map(detail => ({
         ...detail,
         total: Number(detail.total),
@@ -43,7 +52,7 @@ export class ApiService {
   }
 
   merchantDetail(merchant: string): Observable<MerchantDetailResponse> {
-    return this.http.get<MerchantDetailResponse>(`${this.baseUrl}/dashboard/merchants/${encodeURIComponent(merchant)}`).pipe(
+    return this.http.get<MerchantDetailResponse>(`${this.baseUrl}/dashboard/merchants/${encodeURIComponent(merchant)}`,{params:this.dashboardCurrency?{currency:this.dashboardCurrency}:{}}).pipe(
       map(detail => ({
         ...detail,
         total: Number(detail.total),

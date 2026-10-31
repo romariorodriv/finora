@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthResponse } from '../models/api.models';
+import { AuthResponse, AccountProfile } from '../models/api.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -20,6 +20,13 @@ export class AuthService {
 
   get user(): AuthResponse | null {
     return this.userSubject.value;
+  }
+
+  get isAdmin(): boolean { return this.user?.role === 'ADMIN'; }
+  refreshCurrent(): Observable<AccountProfile> {
+    return this.http.get<AccountProfile>(`${this.baseUrl}/account`).pipe(tap(profile => {
+      if (this.user) this.store({...this.user,...profile});
+    }));
   }
 
   login(email: string, password: string): Observable<AuthResponse> {
@@ -44,6 +51,6 @@ export class AuthService {
 
   private readUser(): AuthResponse | null {
     const raw = localStorage.getItem(this.userKey);
-    return raw ? JSON.parse(raw) as AuthResponse : null;
+    try { return raw ? JSON.parse(raw) as AuthResponse : null; } catch { return null; }
   }
 }
