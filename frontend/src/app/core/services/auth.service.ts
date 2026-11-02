@@ -1,56 +1,36 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, AccountProfile } from '../models/api.models';
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly tokenKey = 'finoraToken';
-  private readonly userKey = 'finoraUser';
   private readonly baseUrl = environment.apiBaseUrl;
-  private readonly userSubject = new BehaviorSubject<AuthResponse | null>(this.readUser());
+  private readonly userSubject = new BehaviorSubject<AuthResponse | null>(null);
   readonly user$ = this.userSubject.asObservable();
-
-  constructor(private readonly http: HttpClient) {}
-
-  get token(): string {
-    return localStorage.getItem(this.tokenKey) || '';
+  constructor(private readonly http: HttpClient) {
+    // Google tokens and opaque session cookies never enter browser storage.
+    localStorage.removeItem('finoraToken');
+    localStorage.removeItem('finoraUser');
   }
-
-  get user(): AuthResponse | null {
-    return this.userSubject.value;
-  }
-
+  get token(): string { return ''; }
+  get user(): AuthResponse | null { return this.userSubject.value; }
   get isAdmin(): boolean { return this.user?.role === 'ADMIN'; }
   refreshCurrent(): Observable<AccountProfile> {
-    return this.http.get<AccountProfile>(`${this.baseUrl}/account`).pipe(tap(profile => {
-      if (this.user) this.store({...this.user,...profile});
-    }));
+    return this.http.get<AccountProfile>(this.baseUrl + '/account').pipe(
+      tap(profile => this.userSubject.next({token: '', ...profile}))
+    );
   }
-
-  login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, { email, password }).pipe(tap(user => this.store(user)));
+  restoreSession(): Observable<AccountProfile | null> {
+    return this.refreshCurrent().pipe(catchError(error => error.status === 401 || error.status === 403 ? of(null) : throwError(() => error)));
   }
-
-  register(name: string, email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register`, { name, email, password }).pipe(tap(user => this.store(user)));
+  googleStart(): Observable<{authorizationUrl: string}> {
+    return this.http.post<{authorizationUrl: string}>(this.baseUrl + '/auth/google/start', {});
   }
-
-  logout(): void {
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.userKey);
-    this.userSubject.next(null);
+  linkGoogle(password: string): Observable<{status: string}> {
+    return this.http.post<{status: string}>(this.baseUrl + '/auth/google/link', {password});
   }
-
-  private store(user: AuthResponse): void {
-    localStorage.setItem(this.tokenKey, user.token);
-    localStorage.setItem(this.userKey, JSON.stringify(user));
-    this.userSubject.next(user);
-  }
-
-  private readUser(): AuthResponse | null {
-    const raw = localStorage.getItem(this.userKey);
-    try { return raw ? JSON.parse(raw) as AuthResponse : null; } catch { return null; }
+  logout(): Observable<void> {
+    return this.http.post<void>(this.baseUrl + '/auth/google/logout', {}).pipe(tap(() => this.userSubject.next(null)));
   }
 }

@@ -20,10 +20,11 @@ public record TransactionResponse(
     String currency,
     Long categoryId,
     String classificationSource,
-    String reviewStatus
+    String reviewStatus,
+    String dateSource
 ) {
   public static TransactionResponse from(Transaction t) {
     return new TransactionResponse(t.id, t.userId, t.description, t.amount, t.date, t.category, t.macroCategory, t.type, t.source,
-        t.externalId, t.merchant, t.recurring, t.createdAt, t.currency, t.categoryId, t.classificationSource, t.reviewStatus);
+        t.externalId, t.merchant, t.recurring, t.createdAt, t.currency, t.categoryId, t.classificationSource, t.reviewStatus, t.dateSource);
   }
 }

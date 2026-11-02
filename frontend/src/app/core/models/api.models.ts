@@ -19,6 +19,7 @@ export interface TransactionRequest {
 }
 
 export interface TransactionResponse extends TransactionRequest {
+  dateSource?: string;
   categoryId?: number;
   classificationSource?: string;
   reviewStatus?: string;
@@ -101,6 +102,7 @@ export interface FeedbackResponse extends Omit<FeedbackRequest, 'understoodSpend
 }
 
 export interface GmailStatus {
+  initialSyncDays?: number;
   connected: boolean;
   configured: boolean;
   email?: string;
@@ -114,13 +116,17 @@ export interface GmailAuthUrl {
 }
 
 export interface GmailSyncResponse {
-  messagesFound: number;
-  messagesProcessed: number;
-  transactionsCreated: number;
-  duplicatesSkipped: number;
-  reviewRequired: number;
-  rejected: number;
-  failed: number;
+  runId?: string;
+  status: 'NOT_STARTED'|'PENDING'|'IMPORTING'|'COMPLETED'|'PARTIAL'|'ERROR'|'CANCELLED';
+  periodFrom?: string; periodUntil?: string;
+  startedAt?: string; completedAt?: string; updatedAt?: string; nextAttemptAt?: string;
+  messagesFound: number; messagesProcessed: number; transactionsCreated: number;
+  duplicatesSkipped: number; reviewRequired: number; unsupported: number; rejected: number; failed: number;
+  retryCount: number; errorCode?: string; message: string; stale: boolean; hasMorePages: boolean;
+}
+export interface GmailReviewPage {
+  items: {id: number; subject: string; status: string; receivedAt?: string; reason?: string}[];
+  total: number; page: number; totalPages: number;
 }
 
 export interface AssistantAnswer {

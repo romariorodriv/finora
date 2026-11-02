@@ -56,7 +56,7 @@ public class DashboardService {
         categoryKey(t, categories), original.type(), original.source(), original.externalId(),
         original.merchant(), original.recurring(), original.createdAt(), original.currency(),
         category == null ? null : category.id, original.classificationSource(),
-        category == null ? "PENDING" : original.reviewStatus());
+        category == null ? "PENDING" : original.reviewStatus(), original.dateSource());
   }
 
   private String currency(Transaction t){return t.currency==null?"UNK":t.currency;}

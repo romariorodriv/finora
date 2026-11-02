@@ -2,7 +2,6 @@ package com.finora.app.importer;
 
 import com.finora.app.merchant.MerchantNormalizer;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,13 +10,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class PeruBankParser implements BankEmailParser {
   private enum RecognizedOperation {
-    PURCHASE, REJECTED_PURCHASE, TRANSFER, CASH_WITHDRAWAL, WARDADITO_WITHDRAWAL, WARDADITO_DEPOSIT, REFUND
+    PURCHASE, REJECTED_PURCHASE, PAYROLL, TRANSFER, CASH_WITHDRAWAL, WARDADITO_WITHDRAWAL, WARDADITO_DEPOSIT, REFUND
   }
 
   private static final String MERCHANT_END =
       "(?=\\.(?:\\s|$)|[\\r\\n]|\\s+(?:por tu seguridad|te enviamos|datos de (?:la|tu) operaci[oó]n|monto\\s*:|total del consumo)|$)";
   private static final Pattern AMOUNT =
-      Pattern.compile("(?:S/|PEN)\\s*([0-9]+(?:[.,][0-9]{1,2})?)", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("(?:S/|PEN)\\s*([0-9][0-9.,]*)(?![0-9.,])", Pattern.CASE_INSENSITIVE);
+  private static final Pattern OPERATION_AMOUNT = Pattern.compile("(?:realizaste\\s+un\\s+(?:consumo|retiro)\\s+de|monto\\s*:?|importe\\s*:?)\\s*" + AMOUNT.pattern(), Pattern.CASE_INSENSITIVE);
+  private static final Pattern OTHER_CURRENCY_AMOUNT = Pattern.compile("(?:USD|US\\$|\\$)\\s*[0-9]",Pattern.CASE_INSENSITIVE);
   private static final Pattern BCP_SENDER =
       Pattern.compile("(^|[<\\s])notificaciones@notificacionesbcp\\.com\\.pe([>\\s]|$)", Pattern.CASE_INSENSITIVE);
   private static final Pattern BCP_PURCHASE = Pattern.compile(
@@ -81,30 +82,46 @@ public class PeruBankParser implements BankEmailParser {
     if (operation == null) {
       throw new IllegalArgumentException("Email bancario no soportado");
     }
-    Matcher amountMatcher = AMOUNT.matcher(text);
-    if (!amountMatcher.find()) {
-      throw new IllegalArgumentException("No encontramos un monto");
+    if(OTHER_CURRENCY_AMOUNT.matcher(text).find())throw new IllegalArgumentException("Moneda no compatible o mensaje mixto");
+    Matcher specificAmount=OPERATION_AMOUNT.matcher(text);
+    boolean explicit=specificAmount.find();
+    Matcher amountMatcher=explicit?specificAmount:AMOUNT.matcher(text);
+    if(!explicit&&!amountMatcher.find())throw new IllegalArgumentException("No encontramos un monto");
+    BigDecimal amount=parseAmount(amountMatcher.group(1));
+    if(!explicit){
+      var values=new java.util.HashSet<BigDecimal>();var allAmounts=AMOUNT.matcher(text);
+      while(allAmounts.find())values.add(parseAmount(allAmounts.group(1)).stripTrailingZeros());
+      if(values.size()!=1)throw new IllegalArgumentException("El correo contiene importes ambiguos");
     }
-    BigDecimal amount = new BigDecimal(amountMatcher.group(1).replace(',', '.'));
     return switch (operation) {
       case PURCHASE, REJECTED_PURCHASE -> parsePurchase(sender, text, amount, operation);
-      case TRANSFER -> new Parsed("Transferencia BCP", amount, "PEN", LocalDate.now(), "BCP", "Transferencias",
+      case PAYROLL -> new Parsed("Abono de sueldo BCP", amount, "PEN", null, "BCP", "Ingresos", .95, MovementType.INCOME, OperationStatus.COMPLETED);
+      case TRANSFER -> new Parsed("Transferencia BCP", amount, "PEN", null, "BCP", "Transferencias",
           .95, MovementType.TRANSFER, OperationStatus.COMPLETED);
-      case CASH_WITHDRAWAL -> new Parsed("Retiro en cajero BCP", amount, "PEN", LocalDate.now(), "BCP", "Efectivo",
+      case CASH_WITHDRAWAL -> new Parsed("Retiro en cajero BCP", amount, "PEN", null, "BCP", "Efectivo",
           .95, MovementType.CASH_WITHDRAWAL, OperationStatus.COMPLETED);
-      case WARDADITO_WITHDRAWAL -> new Parsed("Retiro de Wardadito", amount, "PEN", LocalDate.now(), "Wardadito",
+      case WARDADITO_WITHDRAWAL -> new Parsed("Retiro de Wardadito", amount, "PEN", null, "Wardadito",
           "Ahorro", .95, MovementType.SAVINGS_WITHDRAWAL, OperationStatus.COMPLETED);
-      case WARDADITO_DEPOSIT -> new Parsed("Aporte a Wardadito", amount, "PEN", LocalDate.now(), "Wardadito",
+      case WARDADITO_DEPOSIT -> new Parsed("Aporte a Wardadito", amount, "PEN", null, "Wardadito",
           "Ahorro", .95, MovementType.SAVINGS_DEPOSIT, OperationStatus.COMPLETED);
-      case REFUND -> new Parsed("Devolucion BCP", amount, "PEN", LocalDate.now(), "BCP", "Devoluciones",
+      case REFUND -> new Parsed("Devolucion BCP", amount, "PEN", null, "BCP", "Devoluciones",
           .95, MovementType.REFUND, OperationStatus.REFUNDED);
     };
+  }
+
+  private BigDecimal parseAmount(String raw) {
+    String value=raw.replaceAll("[.,]+$","");
+    if(!value.matches("(?:[0-9]+(?:[.,][0-9]{1,2})?|[0-9]{1,3}(?:,[0-9]{3})+(?:\\.[0-9]{1,2})?)"))
+      throw new IllegalArgumentException("Monto ambiguo");
+    String normalized=value.contains(".")?value.replace(",",""):
+      value.matches("[0-9]{1,3}(?:,[0-9]{3})+")?value.replace(",",""):value.replace(',','.');
+    return new BigDecimal(normalized);
   }
 
   private Parsed parsePurchase(String sender, String text, BigDecimal amount, RecognizedOperation operation) {
     String rawMerchant = extractMerchant(sender, text);
     String merchant = normalizeMerchant(rawMerchant);
-    return new Parsed("Consumo en " + merchant, amount, "PEN", LocalDate.now(), merchant, categorize(merchant),
+    return new Parsed("Consumo en " + merchant, amount, "PEN", null, merchant, categorize(merchant),
         isValidMerchant(rawMerchant) ? .95 : .80, MovementType.EXPENSE,
         operation == RecognizedOperation.REJECTED_PURCHASE ? OperationStatus.REJECTED : OperationStatus.COMPLETED);
   }
@@ -145,6 +162,7 @@ public class PeruBankParser implements BankEmailParser {
 
   private RecognizedOperation recognize(String sender, String content) {
     String text = content == null ? "" : content;
+    if (isBcpSender(sender) && text.toLowerCase(Locale.ROOT).matches("(?s).*(?:abono de (?:tu )?sueldo|pago de haberes).*")) return RecognizedOperation.PAYROLL;
     if (REJECTED_OPERATION.matcher(text).find()) {
       return RecognizedOperation.REJECTED_PURCHASE;
     }

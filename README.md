@@ -1,5 +1,7 @@
 # Sarela
 
+> Acceso Google y Gmail: consulta [la guía vigente](docs/GOOGLE_GMAIL_ONBOARDING.md), la migración V2_4 y la configuración antes de desplegar. El acceso público por contraseña fue sustituido; no se ha habilitado todavía el acceso Gmail para público general.
+
 Sarela está separada en dos aplicaciones:
 
 ```text
@@ -29,7 +31,7 @@ Requisitos: JDK 21 y Maven 3.9+.
 
 ```powershell
 cd backend
-mvn spring-boot:run
+mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
 API local:
@@ -50,12 +52,17 @@ TOKEN_ENCRYPTION_KEY
 GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET
 GOOGLE_REDIRECT_URI
+GOOGLE_LOGIN_REDIRECT_URI
+AUTH_SECURE_COOKIES
+GMAIL_JOBS_ENABLED
 FRONTEND_BASE_URL
 CORS_ALLOWED_ORIGIN
 DEMO_DATA
 ```
 
-Perfil local opcional:
+El perfil local usa H2 y creación de esquema solo para desarrollo; producción exige migración previa y validate. Para entrar con Google localmente, configura las credenciales del cliente de pruebas y sus dos redirecciones.
+
+Perfil local:
 
 ```powershell
 mvn spring-boot:run "-Dspring-boot.run.profiles=local"
@@ -73,7 +80,7 @@ npm start
 
 Angular queda en `http://localhost:4200` y consume `http://localhost:8080/api/v1`.
 
-El JWT se conserva en `localStorage` para mantener compatibilidad con el flujo anterior. Es simple para desarrollo, pero en producción exige cuidado contra XSS.
+La sesión nueva usa una cookie HttpOnly administrada por backend; el frontend no guarda tokens en localStorage. El Bearer anterior solo se admite para compatibilidad de clientes existentes.
 
 ## Docker
 
@@ -100,5 +107,6 @@ Configura Google siguiendo [docs/GMAIL_SETUP.md](docs/GMAIL_SETUP.md). Para desa
 
 ```text
 GOOGLE_REDIRECT_URI=http://localhost:8080/api/v1/integrations/gmail/callback
+GOOGLE_LOGIN_REDIRECT_URI=http://localhost:8080/api/v1/auth/google/callback
 FRONTEND_BASE_URL=http://localhost:4200
 ```

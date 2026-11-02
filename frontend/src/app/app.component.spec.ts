@@ -61,7 +61,7 @@ describe('Premium UI functional flows', () => {
   });
   it('preserves Gmail synchronization and its status confirmation', () => {
     click('.connection-banner button');expect(services.api.gmailSync).toHaveBeenCalled();
-    expect(fixture.componentInstance.gmailUpdateStatus).toContain('Todo esta al dia');
+    expect(fixture.componentInstance.gmailUpdateStatus).toContain('Importación completada');
     fixture.componentInstance.go('import');fixture.detectChanges();click('.connection-actions .ghost');expect(services.api.gmailDisconnect).toHaveBeenCalled();
   });
   it('validates and submits feedback then renders confirmation', () => {
@@ -85,11 +85,11 @@ describe('Premium UI functional flows', () => {
     const request=new Subject<PlanningState>();services.api.getPlanningState.and.returnValue(request);fixture.componentInstance.loadPlanningSummary();
     fixture.componentInstance.logout();request.next(testPlan);expect(services.auth.logout).toHaveBeenCalled();expect(fixture.componentInstance.planningSummary).toBeUndefined();
   });
-  it('preserves registration password confirmation and login error handling', () => {
-    fixture.componentInstance.registerForm={name:'QA',email:'qa@example.test',password:'first123',confirmPassword:'other123'};
-    fixture.componentInstance.register();expect(services.auth.register).not.toHaveBeenCalled();expect(fixture.componentInstance.error).toContain('no coinciden');
-    spyOn(console,'error');(services.auth.login as jasmine.Spy).and.returnValue(throwError(()=>({status:401})));
-    fixture.componentInstance.login();expect(fixture.componentInstance.error).toContain('Revisa tu correo');
+  it('shows a safe Google sign-in error and never exposes a password login', () => {
+    (services.auth.googleStart as jasmine.Spy).and.returnValue(throwError(()=>({error:{message:'Google no está configurado'}})));
+    fixture.componentInstance.continueWithGoogle();
+    expect(fixture.componentInstance.error).toContain('Google no está configurado');
+    expect(fixture.componentInstance.authSubmitting).toBeFalse();
   });
   it('prevents repeated transaction writes while the server is processing them', () => {
     const pending = new Subject<typeof testTransaction>();services.api.createTransaction.and.returnValue(pending);
@@ -97,4 +97,94 @@ describe('Premium UI functional flows', () => {
     expect(services.api.createTransaction).toHaveBeenCalledTimes(1);expect(fixture.componentInstance.savingTransaction).toBeTrue();
     pending.next(testTransaction);pending.complete();expect(fixture.componentInstance.savingTransaction).toBeFalse();
   });
+  it('offers Gmail reconnection after revoked authorization without logging out of Sarela', () => {
+    services.api.gmailStatus.and.returnValue(of({
+      connected: false, configured: true, status: 'REAUTHORIZATION_REQUIRED', email: 'qa@example.test'
+    }));
+    services.api.gmailSync.and.returnValue(throwError(() => ({
+      status: 401, error: {code: 'GMAIL_RECONNECT_REQUIRED', message: 'Vuelve a conectar Gmail'}
+    })));
+    fixture.componentInstance.go('import');
+    fixture.componentInstance.syncGmail();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.syncingGmail).toBeFalse();
+    expect(fixture.componentInstance.gmail?.connected).toBeFalse();
+    expect(root().querySelector('.connection-actions')?.textContent).toContain('Conectar Gmail');
+    expect(root().querySelector('.gmail-panel, .connection-panel, .connection-card')?.textContent
+      || root().textContent).toContain('venció o fue revocada');
+    expect(services.auth.logout).not.toHaveBeenCalled();
+  });
+
+  it('keeps Gmail connected on a temporary Google failure and releases the sync button', () => {
+    services.api.gmailSync.and.returnValue(throwError(() => ({
+      status: 503, error: {code: 'GMAIL_TEMPORARILY_UNAVAILABLE', message: 'Google no está disponible'}
+    })));
+    fixture.componentInstance.syncGmail();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.gmail?.connected).toBeTrue();
+    expect(fixture.componentInstance.gmailUpdateStatus).toContain('Google no está disponible');
+    expect(fixture.componentInstance.syncingGmail).toBeFalse();
+    expect(services.auth.logout).not.toHaveBeenCalled();
+  });
+
+  it('explains Gmail before asking Google for consent and allows skipping it', () => {
+    fixture.componentInstance.go('import');fixture.componentInstance.connectGmail();fixture.detectChanges();
+    expect(root().querySelector('.gmail-consent')?.textContent).toContain('solo lectura');
+    expect(root().querySelector('.gmail-consent')?.textContent).toContain('90');
+    expect(services.api.gmailAuthorizationUrl).not.toHaveBeenCalled();
+    const skip=Array.from(root().querySelectorAll<HTMLButtonElement>('.gmail-consent button')).find(button=>button.textContent?.includes('Ahora no'))!;
+    skip.click();fixture.detectChanges();
+    expect(fixture.componentInstance.view).toBe('dashboard');
+    expect(services.api.gmailAuthorizationUrl).not.toHaveBeenCalled();
+  });
+
+  it('shows pending import instead of presenting an empty dashboard as no expenses', () => {
+    services.api.dashboard.and.returnValue(of({...testDashboard,expenses:0,income:0,balance:0,transactions:[],recurring:[],macroCategories:[],merchants:[],daily:{}}));
+    fixture.componentInstance.loadDashboard();
+    services.api.gmailSyncStatus.and.returnValue(of({
+      status:'PENDING',runId:'queued',message:'Importación pendiente.',messagesFound:0,messagesProcessed:0,transactionsCreated:0,
+      duplicatesSkipped:0,reviewRequired:0,unsupported:0,rejected:0,failed:0,retryCount:0,stale:true,hasMorePages:false
+    }));
+    fixture.componentInstance.loadGmailJob();fixture.detectChanges();
+    expect(root().querySelector('.import-wait')?.textContent).toContain('no significa que no tengas gastos');
+    expect(root().querySelector('.dashboard-view')).toBeNull();
+    fixture.destroy();
+  });
+
+  it('labels partial imports and exposes real review counts', () => {
+    fixture.componentInstance.go('import');
+    services.api.gmailSyncStatus.and.returnValue(of({
+      status:'PARTIAL',runId:'partial',message:'Importación parcial.',messagesFound:5,messagesProcessed:4,transactionsCreated:2,
+      duplicatesSkipped:1,reviewRequired:1,unsupported:0,rejected:0,failed:1,retryCount:0,stale:true,hasMorePages:false
+    }));
+    fixture.componentInstance.loadGmailJob();fixture.detectChanges();
+    expect(root().querySelector('.gmail-job')?.textContent).toContain('Parcial');
+    expect(root().querySelector('.gmail-job')?.textContent).toContain('información está incompleta');
+    expect(root().querySelector('.import-counts')?.textContent).toContain('Por revisar');
+    expect(fixture.componentInstance.syncResult?.transactionsCreated).toBe(2);
+  });
+
+  it('keeps existing data visible when an import fails instead of claiming everything is up to date', () => {
+    services.api.gmailSyncStatus.and.returnValue(of({
+      status:'ERROR',message:'No se pudo completar la importación.',messagesFound:0,messagesProcessed:0,transactionsCreated:0,
+      duplicatesSkipped:0,reviewRequired:0,unsupported:0,rejected:0,failed:0,retryCount:6,stale:true,hasMorePages:false
+    }));
+    fixture.componentInstance.loadGmailJob();fixture.detectChanges();
+    expect(fixture.componentInstance.dashboard?.expenses).toBe(testDashboard.expenses);
+    expect(root().querySelector('.import-notice')?.textContent).toContain('solo movimientos registrados');
+    expect(root().querySelector('.import-notice')?.textContent).not.toContain('al día');
+  });
+
+  it('warns about uninterpreted messages even when the candidate scan has finished', () => {
+    services.api.gmailSyncStatus.and.returnValue(of({
+      status:'COMPLETED',message:'Lectura completada.',messagesFound:3,messagesProcessed:3,transactionsCreated:0,
+      duplicatesSkipped:0,reviewRequired:1,unsupported:2,rejected:0,failed:0,retryCount:0,stale:false,hasMorePages:false
+    }));
+    fixture.componentInstance.loadGmailJob();fixture.detectChanges();
+    const notice=root().querySelector('.import-notice')?.textContent || '';
+    expect(notice).toContain('1 correos por revisar');
+    expect(notice).toContain('2 no interpretados');
+    expect(notice).toContain('no representa todo tu historial bancario');
+  });
+
 });

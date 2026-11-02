@@ -6,7 +6,7 @@ import { PlanningComponent } from './planning/planning.component';
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize, Subscription } from 'rxjs';
+import { finalize, Subscription, timer } from 'rxjs';
 import { ApiService } from './core/services/api.service';
 import { AuthService } from './core/services/auth.service';
 import {
@@ -52,11 +52,19 @@ export class AppComponent implements OnInit, OnDestroy {
   deletingTransactionIds = new Set<number>();
   authMode: 'login' | 'register' = 'login';
   readonly showDevTools = false;
-  loginForm = { email: '', password: '' };
-  registerForm = { name: '', email: '', password: '', confirmPassword: '' };
+  linkRequired = false;
+  linkPassword = '';
+  gmailConsentOpen = false;
+  gmailJobError = '';
+  gmailReview?: import('./core/models/api.models').GmailReviewPage;
+  deletionMessage = '';
+  private gmailPoll?: Subscription;
+  private onboardingRequested = false;
+  private autoOpenSummary = false;
   txForm: TransactionRequest = this.emptyTransaction();
   editingId: number | null = null;
   importForm = {
+    date: '',
     sender: 'notificaciones@bcp.com.pe',
     content: 'Realizaste un consumo de S/ 38.90 en Rappi con tu tarjeta BCP.'
   };
@@ -96,19 +104,53 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.syncPublicView();
-    if (location.pathname === '/admin') this.view='admin';
-    if (this.auth.user) {
-      this.loadApp();
+    const params = new URLSearchParams(location.search);
+    const authResult = params.get('auth');
+    const gmailResult = params.get('gmail');
+    this.linkRequired = authResult === 'link_required';
+    this.onboardingRequested = authResult === 'connected';
+    this.autoOpenSummary = gmailResult === 'connected';
+    if (this.linkRequired || authResult === 'failed' || authResult === 'cancelled') this.publicView = 'access';
+    if (authResult === 'failed') this.error = 'No pudimos verificar el acceso con Google. Intenta nuevamente.';
+    if (authResult === 'cancelled') this.error = 'No autorizaste el acceso. Puedes intentarlo cuando quieras.';
+    if (location.pathname === '/admin') this.view = 'admin';
+    if (gmailResult) {
+      this.view = 'import';
+      this.showToast(gmailResult === 'connected' ? 'Gmail conectado. La importación está en cola.'
+        : gmailResult === 'cancelled' ? 'Puedes usar Sarela sin autorizar Gmail y conectarlo más adelante.'
+        : 'No se completó la conexión con Gmail. Revisa su estado e intenta nuevamente.');
     }
-    const gmailParam = new URLSearchParams(location.search).get('gmail');
-    if (gmailParam) {
-      history.replaceState({}, '', location.pathname);
-      this.view = 'dashboard';
-      this.showToast(gmailParam === 'connected' ? 'Gmail conectado correctamente' : 'No se autorizo la conexion');
-    }
+    params.delete('auth'); params.delete('gmail');
+    history.replaceState({}, '', location.pathname + (params.toString() ? '?' + params.toString() : '') + location.hash);
+    if (this.auth.user) this.loadApp();
+    else if (!this.linkRequired) this.auth.restoreSession().subscribe({
+      next: profile => { if (profile) this.loadApp(); },
+      error: () => { this.publicView = 'access'; this.error = 'No pudimos comprobar tu sesión. Revisa la conexión e intenta nuevamente.'; }
+    });
   }
 
-  ngOnDestroy(): void { this.planningSummaryRequest?.unsubscribe(); this.routeSubscription?.unsubscribe(); }
+  ngOnDestroy(): void { this.gmailPoll?.unsubscribe(); this.planningSummaryRequest?.unsubscribe(); this.routeSubscription?.unsubscribe(); }
+
+  continueWithGoogle(): void {
+    if (this.authSubmitting) return;
+    this.authSubmitting = true; this.error = '';
+    this.auth.googleStart().pipe(finalize(() => this.authSubmitting = false)).subscribe({
+      next: result => location.assign(result.authorizationUrl),
+      error: error => this.error = this.message(error)
+    });
+  }
+
+  linkGoogleAccount(): void {
+    if (this.authSubmitting || !this.linkPassword) return;
+    this.authSubmitting = true; this.error = '';
+    this.auth.linkGoogle(this.linkPassword).pipe(finalize(() => { this.authSubmitting = false; this.linkPassword = ''; })).subscribe({
+      next: () => this.auth.refreshCurrent().subscribe({
+        next: () => { this.linkRequired = false; this.onboardingRequested = true; this.loadApp(); },
+        error: error => this.error = this.message(error)
+      }),
+      error: error => this.error = this.message(error)
+    });
+  }
 
   openAccess(mode: 'login' | 'register'): void {
     this.authMode = mode;
@@ -133,52 +175,19 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.publicView === 'access') this.authMode = hash === '#registro' ? 'register' : 'login';
   }
 
-  login(): void {
-    if (this.authSubmitting) return;
-    this.authSubmitting = true;
-    this.error = '';
-    this.auth.login(this.loginForm.email, this.loginForm.password).pipe(finalize(() => this.authSubmitting = false)).subscribe({
-      next: () => this.loadApp(),
-      error: e => {
-        console.error('Login failed', e);
-        this.error = this.authMessage(e, 'login');
-      }
-    });
-  }
-
-  register(): void {
-    if (this.authSubmitting) return;
-    this.error = '';
-    if (this.registerForm.password !== this.registerForm.confirmPassword) {
-      this.error = 'Las contrasenas no coinciden.';
-      return;
-    }
-    this.authSubmitting = true;
-    this.auth.register(this.registerForm.name, this.registerForm.email, this.registerForm.password).pipe(finalize(() => this.authSubmitting = false)).subscribe({
-      next: () => {
-        this.showToast('Tu cuenta esta lista');
-        this.loadApp();
-      },
-      error: e => {
-        console.error('Registration failed', e);
-        this.error = this.authMessage(e, 'register');
-      }
-    });
-  }
-
   logout(): void {
-    this.planningSummaryRequest?.unsubscribe();
-    this.planningSummary = undefined;
-    this.planningSummaryError = '';
-    this.selectedCurrency='';
-    void this.router.navigateByUrl('/');
-    this.auth.logout();
-    this.returnToLanding();
-    this.view = 'dashboard';
-    this.dashboard = undefined;
-    this.transactions = [];
-    this.selectedCategory = undefined;
-    this.selectedMerchant = undefined;
+    this.auth.logout().subscribe({
+      next: () => {
+        this.gmailPoll?.unsubscribe(); this.planningSummaryRequest?.unsubscribe();
+        this.planningSummary = undefined; this.planningSummaryError = '';
+        this.selectedCurrency = ''; this.dashboard = undefined; this.transactions = [];
+        this.selectedCategory = undefined; this.selectedMerchant = undefined;
+        this.gmail = undefined; this.syncResult = undefined;
+        void this.router.navigateByUrl('/');
+        this.returnToLanding(); this.view = 'dashboard';
+      },
+      error: error => this.showToast('No se pudo cerrar la sesión: ' + this.message(error))
+    });
   }
 
   openAdmin(): void { void this.router.navigateByUrl('/admin'); }
@@ -247,7 +256,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   importEmail(): void {
-    this.api.importBankEmail(this.importForm.sender, this.importForm.content).subscribe({
+    this.api.importBankEmail(this.importForm.sender, this.importForm.content, this.importForm.date).subscribe({
       next: r => {
         this.showToast(`Gasto importado con ${Math.round(r.confidence * 100)}% de confianza`);
         this.loadDashboard();
@@ -256,7 +265,9 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  connectGmail(): void {
+  connectGmail(): void { this.gmailConsentOpen = true; }
+
+  authorizeGmail(): void {
     this.api.gmailAuthorizationUrl().subscribe({
       next: r => location.href = r.authorizationUrl,
       error: e => this.showToast(this.message(e))
@@ -264,23 +275,26 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   syncGmail(): void {
-    if (this.syncingGmail) {
+    if (this.syncingGmail || this.importActive()) {
       return;
     }
     this.syncingGmail = true;
     this.gmailUpdateStatus = 'Actualizando tus movimientos...';
     this.api.gmailSync().pipe(finalize(() => this.syncingGmail = false)).subscribe({
-      next: r => {
-        this.syncResult = r;
-        this.gmailUpdateStatus = r.transactionsCreated > 0
-          ? `Actualizado hace unos segundos. ${r.transactionsCreated} movimientos nuevos.`
-          : 'Todo esta al dia. No encontramos movimientos nuevos.';
-        this.showToast(`${r.transactionsCreated} movimientos importados`);
-        this.loadDashboard();
-        this.loadGmail();
+      next: job => {
+        this.syncResult = job;
+        this.gmailUpdateStatus = job.message;
+        this.gmailConsentOpen = false;
+        this.loadGmailJob();
       },
       error: e => {
-        this.gmailUpdateStatus = 'No pudimos actualizar tus movimientos. Intenta nuevamente.';
+        if (e?.error?.code === 'GMAIL_RECONNECT_REQUIRED') {
+          this.gmailUpdateStatus = 'Vuelve a conectar Gmail para continuar.';
+          if (this.gmail) this.gmail = {...this.gmail, connected: false, status: 'REAUTHORIZATION_REQUIRED'};
+          this.loadGmail();
+        } else {
+          this.gmailUpdateStatus = this.message(e);
+        }
         this.showToast(this.message(e));
       }
     });
@@ -570,7 +584,45 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private loadGmail(): void {
-    this.api.gmailStatus().subscribe({ next: s => this.gmail = s, error: e => this.showToast(this.message(e)) });
+    this.api.gmailStatus().subscribe({
+      next: status => {
+        this.gmail = status;
+        if (this.onboardingRequested) { this.view = status.connected ? 'dashboard' : 'import'; this.onboardingRequested = false; }
+        if (status.connected) this.loadGmailJob();
+      },
+      error: error => this.showToast(this.message(error))
+    });
+  }
+
+  loadGmailJob(): void {
+    this.gmailPoll?.unsubscribe();
+    this.api.gmailSyncStatus().subscribe({
+      next: job => {
+        const previous = this.syncResult;
+        this.syncResult = job; this.gmailJobError = ''; this.gmailUpdateStatus = job.message;
+        if (this.importActive()) this.gmailPoll = timer(3000).subscribe(() => this.loadGmailJob());
+        else if (job.status === 'COMPLETED' || job.status === 'PARTIAL') {
+          if (previous?.status !== job.status || previous?.runId !== job.runId) this.loadDashboard();
+          if (this.autoOpenSummary && job.status === 'COMPLETED') { this.view = 'dashboard'; this.autoOpenSummary = false; }
+        }
+        if (job.errorCode === 'GMAIL_RECONNECT_REQUIRED') this.api.gmailStatus().subscribe({next: state => this.gmail = state});
+      },
+      error: error => this.gmailJobError = 'No pudimos consultar el progreso: ' + this.message(error)
+    });
+  }
+
+  importActive(): boolean { return this.syncResult?.status === 'PENDING' || this.syncResult?.status === 'IMPORTING'; }
+  waitingForImport(): boolean {
+    return !!this.gmail?.connected && this.syncResult?.status !== 'COMPLETED' && !(this.dashboard?.transactions?.length);
+  }
+  importStatusLabel(): string {
+    return ({NOT_STARTED:'Sin iniciar',PENDING:'Pendiente',IMPORTING:'Importando',COMPLETED:'Completada',PARTIAL:'Parcial',ERROR:'Error',CANCELLED:'Detenida'} as Record<string,string>)[this.syncResult?.status || 'NOT_STARTED'];
+  }
+  importDate(value?: string): string { return value ? new Intl.DateTimeFormat('es-PE',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)) : '—'; }
+  loadGmailReview(page=0): void { this.api.gmailReview(page).subscribe({next: result => this.gmailReview = result,error: error => this.showToast(this.message(error))}); }
+  requestDataDeletion(): void {
+    if (!window.confirm('¿Solicitar la eliminación de tu cuenta y sus datos? Se desconectará Gmail y se detendrán las importaciones. El operador tramitará la eliminación; no es inmediata.')) return;
+    this.api.requestDataDeletion().subscribe({next: result => { this.deletionMessage = result.message; this.loadGmail(); this.loadGmailJob(); },error: error => this.showToast(this.message(error))});
   }
 
   private emptyTransaction(): TransactionRequest {
@@ -607,6 +659,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!this.gmail.configured) {
       return 'No disponible';
     }
+    if (this.gmail.status === 'REAUTHORIZATION_REQUIRED') return 'Reconexión necesaria';
     if (!this.gmail.connected) {
       return 'No conectado';
     }
@@ -622,6 +675,9 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     if (!this.gmail.configured) {
       return 'La integracion todavia no esta configurada para este entorno.';
+    }
+    if (this.gmail.status === 'REAUTHORIZATION_REQUIRED') {
+      return 'La autorización de Gmail venció o fue revocada. Vuelve a conectar Gmail para continuar.';
     }
     if (!this.gmail.connected) {
       return 'Conecta Gmail cuando quieras importar movimientos desde notificaciones bancarias.';

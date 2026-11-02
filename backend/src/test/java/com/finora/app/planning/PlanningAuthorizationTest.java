@@ -62,11 +62,11 @@ class PlanningAuthorizationTest {
   }
   @Test void requiresAuthenticationOnEveryPlanningOperationAndAlias() throws Exception {
     for (var base : new String[]{"/api/planning","/api/v1/planning"}) {
-      mvc.perform(get(base+"/state")).andExpect(status().isForbidden());
-      mvc.perform(put(base+"/state").contentType("application/json").content(profile())).andExpect(status().isForbidden());
-      mvc.perform(post(base+"/payments").contentType("application/json").content("{}")).andExpect(status().isForbidden());
-      mvc.perform(delete(base+"/payments/1")).andExpect(status().isForbidden());
-      mvc.perform(post(base+"/preview").contentType("application/json").content("{}")).andExpect(status().isForbidden());
+      mvc.perform(get(base+"/state")).andExpect(status().isUnauthorized());
+      mvc.perform(put(base+"/state").contentType("application/json").content(profile())).andExpect(status().isUnauthorized());
+      mvc.perform(post(base+"/payments").contentType("application/json").content("{}")).andExpect(status().isUnauthorized());
+      mvc.perform(delete(base+"/payments/1")).andExpect(status().isUnauthorized());
+      mvc.perform(post(base+"/preview").contentType("application/json").content("{}")).andExpect(status().isUnauthorized());
     }
   }
   @Test void rejectsMalformedAndOutOfRangeInputsWithoutServerErrors() throws Exception {

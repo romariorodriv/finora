@@ -11,6 +11,8 @@ public class User {
   @Column(nullable=false) public String passwordHash;
   @Column(nullable=false) public Instant createdAt = Instant.now();
   @Column(nullable=false,length=16) public String role="USER";
+  @Column(name="google_subject",unique=true,length=255) public String googleSubject;
+  public Instant googleLinkedAt;
   protected User() {}
   public User(String name,String email,String passwordHash){this.name=name;this.email=email;this.passwordHash=passwordHash;}
 }

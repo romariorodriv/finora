@@ -9,6 +9,8 @@ public class GmailOAuthState {
     @Column(name = "user_id", nullable = false) public Long userId;
     @Column(name = "state_hash", nullable = false, length = 64) public String stateHash;
     @Column(nullable = false) public Instant expiresAt;
+    @Column(length=64) public String browserHash;
+    @Column(length=4096) public String encryptedVerifier;
     public Instant usedAt;
     public Instant createdAt = Instant.now();
     public GmailOAuthState() {}

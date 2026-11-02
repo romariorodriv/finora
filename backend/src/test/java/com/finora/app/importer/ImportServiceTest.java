@@ -37,7 +37,7 @@ class ImportServiceTest {
         "notificaciones@notificacionesbcp.com.pe",
         "Realizaste un consumo",
         "Realizaste un consumo de S/ 19.00 con tu Tarjeta de Débito BCP en PedidosYa*Montao Nicola.",
-        "completed-message"));
+        "completed-message", LocalDate.of(2026,10,1)));
 
     ArgumentCaptor<Transaction> transaction = ArgumentCaptor.forClass(Transaction.class);
     verify(repository).save(transaction.capture());
@@ -56,7 +56,7 @@ class ImportServiceTest {
         "notificaciones@notificacionesbcp.com.pe",
         "Realizaste un consumo",
         "Realizaste un consumo de S/ 100.00 con tu Tarjeta de Debito BCP en ALLE ESTACIONES SAC.",
-        "alle-message"));
+        "alle-message", LocalDate.of(2026,10,1)));
 
     ArgumentCaptor<Transaction> transaction = ArgumentCaptor.forClass(Transaction.class);
     verify(repository).save(transaction.capture());
@@ -73,7 +73,7 @@ class ImportServiceTest {
             "notificaciones@notificacionesbcp.com.pe",
             "Se rechazó tu compra por fondos insuficientes - Servicio de Notificaciones BCP",
             "Monto: S/ 32.90\nNombre del comercio: DLC*Spotify\nMotivo de rechazo: Fondos Insuficientes",
-            "rejected-message")));
+            "rejected-message", LocalDate.of(2026,10,1))));
 
     assertEquals("IMPORT_REJECTED_OPERATION", error.code);
     verify(repository, never()).existsByUserIdAndExternalId(any(), any());
@@ -88,7 +88,7 @@ class ImportServiceTest {
         "notificaciones@notificacionesbcp.com.pe",
         "Realizaste un retiro de tu wardadito.",
         "Realizaste un retiro de S/ 22.00 en tu wardadito caja de ahorro.",
-        "wardadito-message"));
+        "wardadito-message", LocalDate.of(2026,10,1)));
 
     ArgumentCaptor<Transaction> transaction = ArgumentCaptor.forClass(Transaction.class);
     verify(repository).save(transaction.capture());
@@ -104,7 +104,7 @@ class ImportServiceTest {
             "notificaciones@notificacionesbcp.com.pe",
             "STOP: Esto te va a tentar en Sodimac Angamos",
             "Compra tu SOAT y participa por S/ 1000",
-            "promo-message")));
+            "promo-message", LocalDate.of(2026,10,1))));
 
     assertEquals("IMPORT_UNSUPPORTED_EMAIL", error.code);
     verify(repository, never()).existsByUserIdAndExternalId(any(), any());
@@ -119,7 +119,7 @@ class ImportServiceTest {
         "notificaciones@notificacionesbcp.com.pe",
         "Constancia de Transferencia a Otros Bancos - Servicio de Notificaciones BCP",
         "Importe: S/ 15432.10",
-        "transfer-message"));
+        "transfer-message", LocalDate.of(2026,10,1)));
 
     ArgumentCaptor<Transaction> transaction = ArgumentCaptor.forClass(Transaction.class);
     verify(repository).save(transaction.capture());
@@ -135,11 +135,20 @@ class ImportServiceTest {
         "notificaciones@notificacionesbcp.com.pe",
         "Realizaste un retiro en un cajero automatico BCP - Servicio de Notificaciones BCP",
         "Retiro de S/ 1800.00 en cajero BCP.",
-        "cash-message"));
+        "cash-message", LocalDate.of(2026,10,1)));
 
     ArgumentCaptor<Transaction> transaction = ArgumentCaptor.forClass(Transaction.class);
     verify(repository).save(transaction.capture());
     assertEquals("CASH_WITHDRAWAL", transaction.getValue().type);
     assertEquals(new BigDecimal("1800.00"), transaction.getValue().amount);
   }
+  @Test
+  void dateMustBeExplicitInsteadOfInventedFromServerClock() {
+    var error=assertThrows(ApiException.class,()->service.importBankEmail(7L,new ImportDtos.BankEmailRequest(
+      "notificaciones@notificacionesbcp.com.pe","Realizaste un consumo",
+      "Realizaste un consumo de S/ 19.00 con tu Tarjeta de Débito BCP en OXXO.","missing-date")));
+    assertEquals("IMPORT_DATE_REQUIRED",error.code);
+    verify(repository,never()).save(any());
+  }
+
 }

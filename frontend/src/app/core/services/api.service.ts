@@ -77,10 +77,10 @@ export class ApiService {
     return this.http.delete<void>(`${this.baseUrl}/transactions/${id}`);
   }
 
-  importBankEmail(sender: string, content: string) {
+  importBankEmail(sender: string, content: string, date: string) {
     return this.http.post<{ transaction: TransactionResponse; confidence: number; method: string }>(
       `${this.baseUrl}/import/bank-email`,
-      { sender, subject: `Notificación bancaria ${Date.now()}`, content }
+      { sender, subject: `Notificación bancaria ${Date.now()}`, content, date }
     );
   }
 
@@ -104,6 +104,15 @@ export class ApiService {
     return this.http.post<GmailSyncResponse>(`${this.baseUrl}/integrations/gmail/sync`, {});
   }
 
+  gmailSyncStatus(): Observable<GmailSyncResponse> {
+    return this.http.get<GmailSyncResponse>(this.baseUrl + '/integrations/gmail/sync/status');
+  }
+  gmailReview(page=0) {
+    return this.http.get<import('../models/api.models').GmailReviewPage>(this.baseUrl + '/integrations/gmail/review', {params: {page}});
+  }
+  requestDataDeletion() {
+    return this.http.post<{status:string;message:string}>(this.baseUrl + '/account/deletion-request', {confirmed:true});
+  }
   gmailDisconnect(): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/integrations/gmail`);
   }

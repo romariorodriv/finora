@@ -28,26 +28,30 @@ describe('Public Sarela landing and access flow', () => {
     expect(services.api.dashboard).not.toHaveBeenCalled();expect(services.api.getPlanningState).not.toHaveBeenCalled();
     expect(root().querySelector('app-landing')?.textContent).not.toContain('S/ 3,240');
   });
-  it('opens registration from the main CTA and returns to the landing',()=>{
+  it('opens Google access from the main CTA and returns to the landing',()=>{
     click('.hero-actions .primary');expect(root().querySelector('app-landing')).toBeNull();
     expect(fixture.componentInstance.authMode).toBe('register');expect(location.hash).toBe('#registro');
-    expect(root().querySelector('input[name="confirmPassword"]')).not.toBeNull();
+    expect(root().querySelector('.google-access')?.textContent).toContain('Continuar con Google');
+    expect(root().querySelector('input[type="password"]')).toBeNull();
     click('.auth-back');expect(root().querySelector('app-landing')).not.toBeNull();expect(location.hash).toBe('');
   });
-  it('opens login from navigation and retains the registration switch',()=>{
-    click('.nav-actions .login-link');expect(fixture.componentInstance.authMode).toBe('login');expect(location.hash).toBe('#acceso');
-    expect(root().querySelector('input[name="password"]')).not.toBeNull();
-    click('.auth-tabs button:nth-child(2)');expect(fixture.componentInstance.authMode).toBe('register');expect(location.hash).toBe('#registro');
+  it('opens Google access from navigation without public password fields',()=>{
+    click('.nav-actions .login-link');expect(location.hash).toBe('#acceso');
+    expect(root().querySelector('.google-access')).not.toBeNull();
+    expect(root().querySelector('input[type="password"]')).toBeNull();
   });
   it('restores direct access links without requiring an authenticated session',()=>{
     history.replaceState({},'',location.pathname+location.search+'#registro');fixture.componentInstance.syncPublicView();fixture.detectChanges();
-    expect(root().querySelector('app-landing')).toBeNull();expect(root().querySelector('input[name="confirmPassword"]')).not.toBeNull();
+    expect(root().querySelector('app-landing')).toBeNull();expect(root().querySelector('.google-access')?.textContent).toContain('Continuar con Google');
+    expect(root().querySelector('input[type="password"]')).toBeNull();
   });
-  it('retains the dashboard after login and shows the landing on logout',()=>{
-    (services.auth.login as jasmine.Spy).and.callFake(()=>{(services.auth as unknown as {user:AuthService['user']}).user=signedInUser;return of(signedInUser);});
-    (services.auth.logout as jasmine.Spy).and.callFake(()=>{(services.auth as unknown as {user:AuthService['user']}).user=null;});
-    click('.nav-actions .login-link');fixture.componentInstance.login();fixture.detectChanges();
-    expect(root().querySelector('.dashboard-view')).not.toBeNull();expect(root().querySelector('app-landing')).toBeNull();expect(location.hash).toBe('');
+  it('restores a server session and returns to the landing only after logout succeeds',()=>{
+    (services.auth as unknown as {user:AuthService['user']}).user=signedInUser;
+    (services.auth.logout as jasmine.Spy).and.callFake(()=>{
+      (services.auth as unknown as {user:AuthService['user']}).user=null;return of(undefined);
+    });
+    fixture.detectChanges();
+    expect(root().querySelector('.dashboard-view')).not.toBeNull();
     fixture.componentInstance.logout();fixture.detectChanges();expect(root().querySelector('app-landing')).not.toBeNull();
   });
   it('uses working section anchors and native accessible FAQ controls',()=>{

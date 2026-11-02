@@ -4,5 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 public interface GmailConnectionRepository extends JpaRepository<GmailConnection, Long> {
     Optional<GmailConnection> findFirstByUserIdAndStatusNotOrderByUpdatedAtDesc(Long userId, GmailConnection.Status status);
+    java.util.List<GmailConnection> findByUserId(Long userId);
+    java.util.List<GmailConnection> findByUserIdAndStatus(Long userId,GmailConnection.Status status);
+    java.util.List<GmailConnection> findByStatusOrderByUpdatedAtDesc(GmailConnection.Status status);
     Optional<GmailConnection> findByUserIdAndGmailAddress(Long userId, String gmailAddress);
 }
