@@ -1,4 +1,4 @@
-<app-landing *ngIf="!auth.user && publicView === 'landing'" (accessRequested)="openAccess($event)"></app-landing>
+<app-landing *ngIf="!auth.user && publicView === 'landing'" (accessRequested)="openAccess($event); continueWithGoogle()"></app-landing>
 <section *ngIf="!auth.user && publicView === 'access'" class="auth">
   <button class="auth-back" type="button" (click)="returnToLanding()" [disabled]="authSubmitting"><app-icon name="arrow" [size]="15" />Volver a Sarela</button>
   <div class="auth-copy">

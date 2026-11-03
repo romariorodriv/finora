@@ -125,7 +125,8 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.auth.user) this.loadApp();
     else if (!this.linkRequired) this.auth.restoreSession().subscribe({
       next: profile => { if (profile) this.loadApp(); },
-      error: () => { this.publicView = 'access'; this.error = 'No pudimos comprobar tu sesión. Revisa la conexión e intenta nuevamente.'; }
+      // A public landing must remain available even when the API cannot check the session.
+      error: () => { this.error = 'No pudimos comprobar tu sesión. Revisa la conexión e intenta nuevamente.'; }
     });
   }
 
