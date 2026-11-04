@@ -28,6 +28,7 @@ export class ApiService {
   getPlanningState(): Observable<PlanningState> { return this.http.get<PlanningState>(`${this.baseUrl}/planning/state`); }
   savePlanningProfile(profile: PlanningProfile): Observable<PlanningState> { return this.http.put<PlanningState>(`${this.baseUrl}/planning/state`, profile); }
   addPlanningPayment(payment: PlanningPaymentInput): Observable<PlanningState> { return this.http.post<PlanningState>(`${this.baseUrl}/planning/payments`, payment); }
+  completePlanningPayment(id: number, resultingBalance: number): Observable<PlanningState> { return this.http.post<PlanningState>(`${this.baseUrl}/planning/payments/${id}/complete`, {resultingBalance}); }
   deletePlanningPayment(id: number): Observable<PlanningState> { return this.http.delete<PlanningState>(`${this.baseUrl}/planning/payments/${id}`); }
 
   categories(): Observable<string[]> {
@@ -61,6 +62,12 @@ export class ApiService {
     );
   }
 
+  transactionHistory(filters: {search: string; from: string; to: string; category: string; type: string; currency: string}, page: number, size: number): Observable<{items: TransactionResponse[]; total: number; page: number; totalPages: number}> {
+    const params: Record<string,string> = {page: String(page),size: String(size)};
+    for (const [key,value] of Object.entries(filters)) if(value) params[key] = value;
+    return this.http.get<{items: TransactionResponse[]; total: number; page: number; totalPages: number}>(`${this.baseUrl}/transactions/history`,{params});
+  }
+
   transactions(): Observable<TransactionResponse[]> {
     return this.http.get<TransactionResponse[]>(`${this.baseUrl}/transactions`);
   }
@@ -84,8 +91,8 @@ export class ApiService {
     );
   }
 
-  askAssistant(message: string): Observable<AssistantAnswer> {
-    return this.http.post<AssistantAnswer>(`${this.baseUrl}/assistant`, { message });
+  askAssistant(message: string, currency?: string): Observable<AssistantAnswer> {
+    return this.http.post<AssistantAnswer>(`${this.baseUrl}/assistant`, { message, currency });
   }
 
   sendFeedback(request: FeedbackRequest): Observable<FeedbackResponse> {

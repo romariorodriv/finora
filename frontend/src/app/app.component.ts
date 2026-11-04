@@ -43,6 +43,9 @@ export class AppComponent implements OnInit, OnDestroy {
   dashboardLoading = false;
   dashboardError = '';
   transactionsLoading = false;
+  movementTotal = 0;
+  movementError = '';
+  private movementsRequest?: Subscription;
   selectedCurrency = '';
   private routeSubscription?: Subscription;
   private planningSummaryRequest?: Subscription;
@@ -91,7 +94,8 @@ export class AppComponent implements OnInit, OnDestroy {
     from: '',
     to: '',
     category: '',
-    type: ''
+    type: '',
+    currency: ''
   };
   movementPage = 1;
   readonly movementPageSize = 12;
@@ -130,7 +134,7 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void { this.gmailPoll?.unsubscribe(); this.planningSummaryRequest?.unsubscribe(); this.routeSubscription?.unsubscribe(); }
+  ngOnDestroy(): void { this.movementsRequest?.unsubscribe(); this.gmailPoll?.unsubscribe(); this.planningSummaryRequest?.unsubscribe(); this.routeSubscription?.unsubscribe(); }
 
   continueWithGoogle(): void {
     if (this.authSubmitting) return;
@@ -181,6 +185,7 @@ export class AppComponent implements OnInit, OnDestroy {
       next: () => {
         this.gmailPoll?.unsubscribe(); this.planningSummaryRequest?.unsubscribe();
         this.planningSummary = undefined; this.planningSummaryError = '';
+        this.movementsRequest?.unsubscribe(); this.movementTotal = 0; this.movementError = ''; this.resetMovementFilters(false);
         this.selectedCurrency = ''; this.dashboard = undefined; this.transactions = [];
         this.selectedCategory = undefined; this.selectedMerchant = undefined;
         this.gmail = undefined; this.syncResult = undefined;
@@ -450,49 +455,33 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.dashboard?.averageTicket ?? 0;
   }
 
-  filteredTransactions(): TransactionResponse[] {
-    const search = this.normalizeSearch(this.movementFilters.search);
-    return this.transactions.filter(tx => {
-      const text = this.normalizeSearch(`${tx.merchant || ''} ${tx.description || ''}`);
-      const matchesSearch = !search || text.includes(search);
-      const matchesCategory = !this.movementFilters.category
-        || tx.category === this.movementFilters.category
-        || tx.macroCategory === this.movementFilters.category;
-      const matchesType = !this.movementFilters.type || tx.type === this.movementFilters.type;
-      const matchesFrom = !this.movementFilters.from || tx.date >= this.movementFilters.from;
-      const matchesTo = !this.movementFilters.to || tx.date <= this.movementFilters.to;
-      return matchesSearch && matchesCategory && matchesType && matchesFrom && matchesTo;
-    });
-  }
-
-  pagedTransactions(): TransactionResponse[] {
-    const start = (this.movementPage - 1) * this.movementPageSize;
-    return this.filteredTransactions().slice(start, start + this.movementPageSize);
-  }
+  pagedTransactions(): TransactionResponse[] { return this.transactions; }
 
   movementTotalPages(): number {
-    return Math.max(1, Math.ceil(this.filteredTransactions().length / this.movementPageSize));
+    return Math.max(1, Math.ceil(this.movementTotal / this.movementPageSize));
   }
 
   updateMovementFilters(): void {
     this.movementPage = 1;
+    this.loadTransactions();
   }
 
-  resetMovementFilters(): void {
-    this.movementFilters = { search: '', from: '', to: '', category: '', type: '' };
+  resetMovementFilters(reload = true): void {
+    this.movementFilters = { search: '', from: '', to: '', category: '', type: '', currency: '' };
     this.movementPage = 1;
+    if(reload) this.loadTransactions();
   }
 
-  hasMovementFilters(): boolean {
-    return Object.values(this.movementFilters).some(Boolean);
-  }
+  hasMovementFilters(): boolean { return Object.values(this.movementFilters).some(Boolean); }
 
   previousMovementPage(): void {
     this.movementPage = Math.max(1, this.movementPage - 1);
+    this.loadTransactions();
   }
 
   nextMovementPage(): void {
     this.movementPage = Math.min(this.movementTotalPages(), this.movementPage + 1);
+    this.loadTransactions();
   }
 
   movementTitle(tx: TransactionResponse): string {
@@ -550,7 +539,7 @@ export class AppComponent implements OnInit, OnDestroy {
     return (this.planningSummary?.payments ?? [])
       .filter(payment => {
         const due = this.planningPaymentTime(payment.dueDate);
-        return Number.isFinite(due) && due >= start && due <= end;
+        return !payment.paidAt && Number.isFinite(due) && due <= end;
       })
       .sort((a, b) => this.planningPaymentTime(a.dueDate) - this.planningPaymentTime(b.dueDate))
       .slice(0, 3);
@@ -608,9 +597,27 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadTransactions(): void {
+  loadTransactions(): void {
+    this.movementsRequest?.unsubscribe();
+    this.movementError = '';
+    this.transactions = [];
+    this.movementTotal = 0;
+    if(this.movementFilters.from && this.movementFilters.to && this.movementFilters.from > this.movementFilters.to) {
+      this.movementError = 'La fecha inicial no puede ser posterior a la fecha final.';
+      return;
+    }
     this.transactionsLoading = true;
-    this.api.transactions().pipe(finalize(() => this.transactionsLoading = false)).subscribe({ next: t => this.transactions = t, error: e => this.showToast(this.message(e)) });
+    this.movementsRequest = this.api.transactionHistory(this.movementFilters, this.movementPage - 1, this.movementPageSize)
+      .pipe(finalize(() => this.transactionsLoading = false)).subscribe({
+        next: result => {
+          this.movementTotal = result.total;
+          if(this.movementPage > this.movementTotalPages()) {
+            this.movementPage = this.movementTotalPages(); this.loadTransactions(); return;
+          }
+          this.transactions = result.items;
+        },
+        error: e => this.movementError = this.message(e)
+      });
   }
 
   private loadCategories(): void {
@@ -725,10 +732,6 @@ export class AppComponent implements OnInit, OnDestroy {
       return 'Conecta Gmail cuando quieras importar movimientos desde notificaciones bancarias.';
     }
     return `Cuenta: ${this.gmail.email || 'Gmail'} | Ultima actualizacion: ${this.lastSyncLabel()}`;
-  }
-
-  private normalizeSearch(value: string): string {
-    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es').trim();
   }
 
   private message(error: any): string {

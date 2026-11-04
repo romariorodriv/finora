@@ -22,6 +22,10 @@ export class PlanningComponent implements OnInit, OnDestroy {
   planningObligations: PlanningPayment[] = [];
   planningAlerts: string[] = [];
   planningSaved = false;
+  balanceConfirmedAt: string | null = null;
+  completingPayment: PlanningPayment | null = null;
+  resultingBalance: number | null = null;
+  pendingPaymentCount(): number { return this.planningObligations.filter(p => !p.paidAt).length; }
   planningNew = { name: '', dueDate: '', amount: 0 };
   planningResult?: PlanningProjection;
   planningDirty = false;
@@ -61,7 +65,7 @@ export class PlanningComponent implements OnInit, OnDestroy {
   addObligation(): void {
     if (this.planningLoading) return;
     const entry = { ...this.planningNew };
-    if (!entry.name.trim() || !entry.dueDate || !/^\d{4}-\d{2}-\d{2}$/.test(entry.dueDate) || !Number.isFinite(entry.amount) || entry.amount <= 0 || entry.amount > 100000000 || this.planningObligations.length >= 200) {
+    if (!entry.name.trim() || !entry.dueDate || !/^\d{4}-\d{2}-\d{2}$/.test(entry.dueDate) || !Number.isFinite(entry.amount) || entry.amount <= 0 || entry.amount > 100000000 || this.pendingPaymentCount() >= 200) {
       this.planningError = 'Completa nombre, fecha y monto positivo del pago.';
       return;
     }
@@ -72,6 +76,26 @@ export class PlanningComponent implements OnInit, OnDestroy {
       next: state => { this.applyPlanningState(state, true); this.planningSuccess = 'Pago añadido a tu plan.'; this.planningNew = {name:'',dueDate:'',amount:0}; },
       error: err => this.planningError = this.message(err)
     });
+  }
+
+  beginCompletePayment(item: PlanningPayment): void {
+    if(this.planningDirty) { this.planningError = 'Guarda primero los cambios del plan y luego confirma el pago.'; return; }
+    this.completingPayment = item;
+    this.resultingBalance = null;
+  }
+
+  completePayment(): void {
+    if(this.planningLoading || !this.completingPayment) return;
+    if(this.planningDirty) { this.planningError = 'Guarda primero los cambios del plan y luego confirma el pago.'; return; }
+    if(this.resultingBalance === null || !Number.isFinite(this.resultingBalance) || this.resultingBalance < 0 || this.resultingBalance > 100000000) {
+      this.planningError = 'Confirma el saldo real en PEN que tienes despues de realizar el pago.'; return;
+    }
+    this.planningLoading = true; this.planningError = '';
+    this.api.completePlanningPayment(this.completingPayment.id, this.resultingBalance)
+      .pipe(finalize(() => this.planningLoading = false), takeUntil(this.destroyed)).subscribe({
+        next: state => { this.applyPlanningState(state); this.completingPayment = null; this.planningSuccess = 'Pago realizado y saldo actual confirmado.'; },
+        error: err => this.planningError = this.message(err)
+      });
   }
 
   removeObligation(index: number): void {
@@ -112,6 +136,7 @@ export class PlanningComponent implements OnInit, OnDestroy {
     const keepDraft = preserveDraft && this.planningDirty;
     this.planningLoaded = true;
     this.planningSaved = !!state.profile;
+    this.balanceConfirmedAt = state.balanceConfirmedAt || null;
     if (state.profile && !keepDraft) {
       this.planningBalance = state.profile.confirmedBalance;
       this.planningReserve = state.profile.reserve;

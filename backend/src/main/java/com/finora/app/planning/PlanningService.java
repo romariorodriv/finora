@@ -34,7 +34,7 @@ public class PlanningService {
         throw new IllegalArgumentException("Cada obligación requiere nombre, fecha y monto.");
       BigDecimal amount = money(obligation.amount());
       if (amount.signum() < 0) throw new IllegalArgumentException("No se admiten obligaciones negativas.");
-      if (!obligation.dueDate().isBefore(request.asOf()) && obligation.dueDate().isBefore(request.nextIncomeDate()))
+      if (obligation.dueDate().isBefore(request.nextIncomeDate()))
         committed = committed.add(amount);
     }
     BigDecimal available = balance.subtract(committed).subtract(reserve);

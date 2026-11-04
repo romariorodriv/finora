@@ -22,11 +22,12 @@ export const testPlan: PlanningState = {
   alerts: ['Pago próximo: Pago QA']
 };
 export function premiumTestServices() {
-  const api = jasmine.createSpyObj<ApiService>('ApiService', ['dashboard','getPlanningState','categories','gmailStatus','transactions','categoryDetail','merchantDetail','savePlanningProfile','addPlanningPayment','deletePlanningPayment','sendFeedback','gmailSync','gmailSyncStatus','gmailReview','requestDataDeletion','gmailDisconnect','gmailAuthorizationUrl','createTransaction','updateTransaction','deleteTransaction']);
+  const api = jasmine.createSpyObj<ApiService>('ApiService', ['dashboard','getPlanningState','categories','gmailStatus','transactions','transactionHistory','categoryDetail','merchantDetail','savePlanningProfile','addPlanningPayment','deletePlanningPayment','sendFeedback','gmailSync','gmailSyncStatus','gmailReview','requestDataDeletion','gmailDisconnect','gmailAuthorizationUrl','createTransaction','updateTransaction','deleteTransaction']);
   api.dashboard.and.returnValue(of(testDashboard)); api.getPlanningState.and.returnValue(of(testPlan));
   api.categories.and.returnValue(of(['Suscripciones','Gasolina','Otros']));
   api.gmailStatus.and.returnValue(of({connected: true,configured: true,status: 'CONNECTED',email: 'qa@example.test'}));
   api.transactions.and.returnValue(of([testTransaction]));
+  api.transactionHistory.and.returnValue(of({items:[testTransaction],total:1,page:0,totalPages:1}));
   api.categoryDetail.and.returnValue(of({macroCategory: 'SUSCRIPCIONES',label: 'Suscripciones',total: 120,subcategories: [{name: 'Software',total: 120}],transactions: [testTransaction]}));
   api.merchantDetail.and.returnValue(of({merchant: 'Comercio QA',label: 'Comercio QA',total: 120,transactions: [testTransaction]}));
   api.savePlanningProfile.and.returnValue(of(testPlan)); api.addPlanningPayment.and.returnValue(of(testPlan));

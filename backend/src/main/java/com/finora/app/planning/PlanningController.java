@@ -13,6 +13,7 @@ public class PlanningController {
   @GetMapping("/state") public PlanningStateService.State getState(Authentication auth){return state.state((Long)auth.getPrincipal());}
   @PutMapping("/state") public PlanningStateService.State saveState(Authentication auth,@RequestBody PlanningStateService.ProfileInput input){return state.saveProfile((Long)auth.getPrincipal(),input);}
   @PostMapping("/payments") public PlanningStateService.State addPayment(Authentication auth,@RequestBody PlanningStateService.PaymentInput input){return state.addPayment((Long)auth.getPrincipal(),input);}
+  @PostMapping("/payments/{id}/complete") public PlanningStateService.State completePayment(Authentication auth,@PathVariable Long id,@RequestBody PlanningStateService.CompletePaymentInput input){return state.completePayment((Long)auth.getPrincipal(),id,input);}
   @DeleteMapping("/payments/{id}") public PlanningStateService.State deletePayment(Authentication auth,@PathVariable Long id){return state.deletePayment((Long)auth.getPrincipal(),id);}
 
 

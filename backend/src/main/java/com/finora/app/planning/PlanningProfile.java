@@ -14,6 +14,8 @@ public class PlanningProfile {
   @ManyToOne(fetch=FetchType.LAZY, optional=false)
   @JoinColumn(name="user_id", insertable=false, updatable=false, foreignKey=@ForeignKey(name="fk_planningprofile_user"))
   private com.finora.app.auth.User user;
+  @Column(name="balance_confirmed_at") public java.time.Instant balanceConfirmedAt;
+  @Version public Long version;
   protected PlanningProfile() {}
   public PlanningProfile(Long userId, BigDecimal confirmedBalance, BigDecimal reserve, LocalDate nextIncomeDate) {
     this.userId=userId;this.confirmedBalance=confirmedBalance;this.reserve=reserve;this.nextIncomeDate=nextIncomeDate;
