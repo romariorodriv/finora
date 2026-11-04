@@ -21,7 +21,7 @@ describe('Admin route authorization',()=>{
   const result=TestBed.runInInjectionContext(()=>adminGuard({} as never,{} as never));const decision=isObservable(result)?await firstValueFrom(result):await result;
   if(role==='ADMIN')expect(decision).toBeTrue();else expect(decision instanceof UrlTree).toBeTrue();
  });
- it('requires login for direct /admin access',()=>{TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:null}}]});const result=TestBed.runInInjectionContext(()=>adminGuard({} as never,{} as never));expect(result instanceof UrlTree).toBeTrue();});
+ it('restores the server session before deciding direct /admin access',async()=>{TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:null,refreshCurrent:()=>throwError(()=>({status:401}))}}]});const result=TestBed.runInInjectionContext(()=>adminGuard({} as never,{} as never));const decision=isObservable(result)?await firstValueFrom(result):await result;expect(decision instanceof UrlTree).toBeTrue();});
 });
 describe('Admin workflows',()=>{
  let api:ReturnType<typeof apiMock>;

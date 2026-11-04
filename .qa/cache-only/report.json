@@ -1,0 +1,311 @@
+{
+  "url": "http://127.0.0.1:56290/",
+  "syntheticApiOnly": true,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "checks": [
+        {
+          "name": "observer budget not reached",
+          "passed": true
+        },
+        {
+          "name": "dashboard data",
+          "passed": true
+        },
+        {
+          "name": "two painted charts",
+          "passed": true
+        },
+        {
+          "name": "no continuing mutation loop",
+          "passed": true
+        },
+        {
+          "name": "no continuing resize loop",
+          "passed": true
+        },
+        {
+          "name": "animation stops when idle",
+          "passed": true
+        },
+        {
+          "name": "movements and form open",
+          "passed": true
+        },
+        {
+          "name": "assistant and form closed",
+          "passed": true
+        },
+        {
+          "name": "connections",
+          "passed": true
+        },
+        {
+          "name": "dashboard return",
+          "passed": true
+        },
+        {
+          "name": "range control",
+          "passed": true
+        },
+        {
+          "name": "persisted session reload",
+          "passed": true
+        },
+        {
+          "name": "no horizontal overflow",
+          "passed": true
+        },
+        {
+          "name": "document complete",
+          "passed": true
+        },
+        {
+          "name": "logout clears session",
+          "passed": true
+        },
+        {
+          "name": "no console errors",
+          "passed": true
+        },
+        {
+          "name": "no real transaction writes",
+          "passed": true
+        }
+      ],
+      "afterLogin": {
+        "mutationCallbacks": 0,
+        "resizeCallbacks": 2,
+        "frames": 7,
+        "timers": 8,
+        "observerBudgetExceeded": false,
+        "samples": [],
+        "longTasks": [
+          144
+        ]
+      },
+      "afterIdle": {
+        "mutationCallbacks": 0,
+        "resizeCallbacks": 2,
+        "frames": 7,
+        "timers": 8,
+        "observerBudgetExceeded": false,
+        "samples": [],
+        "longTasks": [
+          144
+        ]
+      },
+      "charts": [
+        {
+          "width": 1054,
+          "height": 270,
+          "painted": 10704
+        },
+        {
+          "width": 304,
+          "height": 230,
+          "painted": 22688
+        }
+      ],
+      "errors": [],
+      "apiCalls": [
+        {
+          "method": "POST",
+          "path": "/auth/login"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/transactions"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        }
+      ],
+      "pending": [],
+      "hashAfterLogin": [
+        "acceso"
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "checks": [
+        {
+          "name": "observer budget not reached",
+          "passed": true
+        },
+        {
+          "name": "dashboard data",
+          "passed": true
+        },
+        {
+          "name": "two painted charts",
+          "passed": true
+        },
+        {
+          "name": "no continuing mutation loop",
+          "passed": true
+        },
+        {
+          "name": "no continuing resize loop",
+          "passed": true
+        },
+        {
+          "name": "animation stops when idle",
+          "passed": true
+        },
+        {
+          "name": "movements and form open",
+          "passed": true
+        },
+        {
+          "name": "assistant and form closed",
+          "passed": true
+        },
+        {
+          "name": "connections",
+          "passed": true
+        },
+        {
+          "name": "dashboard return",
+          "passed": true
+        },
+        {
+          "name": "range control",
+          "passed": true
+        },
+        {
+          "name": "persisted session reload",
+          "passed": true
+        },
+        {
+          "name": "no horizontal overflow",
+          "passed": true
+        },
+        {
+          "name": "document complete",
+          "passed": true
+        },
+        {
+          "name": "logout clears session",
+          "passed": true
+        },
+        {
+          "name": "no console errors",
+          "passed": true
+        },
+        {
+          "name": "no real transaction writes",
+          "passed": true
+        }
+      ],
+      "afterLogin": {
+        "mutationCallbacks": 0,
+        "resizeCallbacks": 2,
+        "frames": 108,
+        "timers": 7,
+        "observerBudgetExceeded": false,
+        "samples": [],
+        "longTasks": [
+          108,
+          132
+        ]
+      },
+      "afterIdle": {
+        "mutationCallbacks": 0,
+        "resizeCallbacks": 2,
+        "frames": 108,
+        "timers": 7,
+        "observerBudgetExceeded": false,
+        "samples": [],
+        "longTasks": [
+          108,
+          132
+        ]
+      },
+      "charts": [
+        {
+          "width": 308,
+          "height": 220,
+          "painted": 3990
+        },
+        {
+          "width": 308,
+          "height": 220,
+          "painted": 20716
+        }
+      ],
+      "errors": [],
+      "apiCalls": [
+        {
+          "method": "POST",
+          "path": "/auth/login"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/transactions"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        }
+      ],
+      "pending": [],
+      "hashAfterLogin": [
+        "acceso"
+      ]
+    }
+  ],
+  "browser": "155.0.4283.62"
+}

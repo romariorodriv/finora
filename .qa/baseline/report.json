@@ -1,0 +1,461 @@
+{
+  "url": "http://127.0.0.1:51049/",
+  "syntheticApiOnly": true,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "checks": [
+        {
+          "name": "observer budget not reached",
+          "passed": false
+        },
+        {
+          "name": "dashboard data",
+          "passed": true
+        },
+        {
+          "name": "two painted charts",
+          "passed": true
+        },
+        {
+          "name": "no continuing mutation loop",
+          "passed": true
+        },
+        {
+          "name": "no continuing resize loop",
+          "passed": true
+        },
+        {
+          "name": "animation stops when idle",
+          "passed": true
+        },
+        {
+          "name": "movements and form open",
+          "passed": true
+        },
+        {
+          "name": "assistant and form closed",
+          "passed": true
+        },
+        {
+          "name": "connections",
+          "passed": true
+        },
+        {
+          "name": "dashboard return",
+          "passed": true
+        },
+        {
+          "name": "range control",
+          "passed": true
+        },
+        {
+          "name": "persisted session reload",
+          "passed": true
+        },
+        {
+          "name": "no horizontal overflow",
+          "passed": true
+        },
+        {
+          "name": "document complete",
+          "passed": true
+        },
+        {
+          "name": "logout clears session",
+          "passed": true
+        },
+        {
+          "name": "no console errors",
+          "passed": true
+        },
+        {
+          "name": "no real transaction writes",
+          "passed": true
+        }
+      ],
+      "afterLogin": {
+        "mutationCallbacks": 502,
+        "resizeCallbacks": 2,
+        "frames": 6,
+        "timers": 8,
+        "observerBudgetExceeded": true,
+        "samples": [
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          }
+        ],
+        "longTasks": [
+          130,
+          157
+        ]
+      },
+      "afterIdle": {
+        "mutationCallbacks": 502,
+        "resizeCallbacks": 2,
+        "frames": 6,
+        "timers": 8,
+        "observerBudgetExceeded": true,
+        "samples": [
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          }
+        ],
+        "longTasks": [
+          130,
+          157
+        ]
+      },
+      "charts": [
+        {
+          "width": 1054,
+          "height": 270,
+          "painted": 10704
+        },
+        {
+          "width": 304,
+          "height": 230,
+          "painted": 22688
+        }
+      ],
+      "errors": [],
+      "apiCalls": [
+        {
+          "method": "POST",
+          "path": "/auth/login"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/transactions"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        }
+      ],
+      "pending": [],
+      "hashAfterLogin": [
+        "acceso"
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "checks": [
+        {
+          "name": "observer budget not reached",
+          "passed": false
+        },
+        {
+          "name": "dashboard data",
+          "passed": true
+        },
+        {
+          "name": "two painted charts",
+          "passed": true
+        },
+        {
+          "name": "no continuing mutation loop",
+          "passed": true
+        },
+        {
+          "name": "no continuing resize loop",
+          "passed": true
+        },
+        {
+          "name": "animation stops when idle",
+          "passed": true
+        },
+        {
+          "name": "movements and form open",
+          "passed": true
+        },
+        {
+          "name": "assistant and form closed",
+          "passed": true
+        },
+        {
+          "name": "connections",
+          "passed": true
+        },
+        {
+          "name": "dashboard return",
+          "passed": true
+        },
+        {
+          "name": "range control",
+          "passed": true
+        },
+        {
+          "name": "persisted session reload",
+          "passed": true
+        },
+        {
+          "name": "no horizontal overflow",
+          "passed": true
+        },
+        {
+          "name": "document complete",
+          "passed": true
+        },
+        {
+          "name": "logout clears session",
+          "passed": true
+        },
+        {
+          "name": "no console errors",
+          "passed": true
+        },
+        {
+          "name": "no real transaction writes",
+          "passed": true
+        }
+      ],
+      "afterLogin": {
+        "mutationCallbacks": 502,
+        "resizeCallbacks": 2,
+        "frames": 107,
+        "timers": 9,
+        "observerBudgetExceeded": true,
+        "samples": [
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          }
+        ],
+        "longTasks": [
+          102,
+          158
+        ]
+      },
+      "afterIdle": {
+        "mutationCallbacks": 502,
+        "resizeCallbacks": 2,
+        "frames": 107,
+        "timers": 9,
+        "observerBudgetExceeded": true,
+        "samples": [
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:51049/polyfills-5CFQRCPP.js:1:13337)\n    at bP (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:188140)\n    at vp.addEventListener (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:189530)\n    at r (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230550)\n    at l (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230757)\n    at e.bindResponsiveEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230882)\n    at e.bindEvents (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:230174)\n    at e._initialize (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221669)\n    at new e (http://127.0.0.1:51049/main-ZGFTEHWR.js:8:221188)"
+          }
+        ],
+        "longTasks": [
+          102,
+          158
+        ]
+      },
+      "charts": [
+        {
+          "width": 308,
+          "height": 220,
+          "painted": 3990
+        },
+        {
+          "width": 308,
+          "height": 220,
+          "painted": 20716
+        }
+      ],
+      "errors": [],
+      "apiCalls": [
+        {
+          "method": "POST",
+          "path": "/auth/login"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/transactions"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        }
+      ],
+      "pending": [],
+      "hashAfterLogin": [
+        "acceso"
+      ]
+    }
+  ],
+  "browser": "155.0.4283.62"
+}

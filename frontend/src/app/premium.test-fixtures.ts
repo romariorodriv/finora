@@ -22,7 +22,7 @@ export const testPlan: PlanningState = {
   alerts: ['Pago próximo: Pago QA']
 };
 export function premiumTestServices() {
-  const api = jasmine.createSpyObj<ApiService>('ApiService', ['dashboard','getPlanningState','categories','gmailStatus','transactions','categoryDetail','merchantDetail','savePlanningProfile','addPlanningPayment','deletePlanningPayment','sendFeedback','gmailSync','gmailDisconnect','gmailAuthorizationUrl','createTransaction','updateTransaction','deleteTransaction']);
+  const api = jasmine.createSpyObj<ApiService>('ApiService', ['dashboard','getPlanningState','categories','gmailStatus','transactions','categoryDetail','merchantDetail','savePlanningProfile','addPlanningPayment','deletePlanningPayment','sendFeedback','gmailSync','gmailSyncStatus','gmailReview','requestDataDeletion','gmailDisconnect','gmailAuthorizationUrl','createTransaction','updateTransaction','deleteTransaction']);
   api.dashboard.and.returnValue(of(testDashboard)); api.getPlanningState.and.returnValue(of(testPlan));
   api.categories.and.returnValue(of(['Suscripciones','Gasolina','Otros']));
   api.gmailStatus.and.returnValue(of({connected: true,configured: true,status: 'CONNECTED',email: 'qa@example.test'}));
@@ -32,9 +32,10 @@ export function premiumTestServices() {
   api.savePlanningProfile.and.returnValue(of(testPlan)); api.addPlanningPayment.and.returnValue(of(testPlan));
   api.deletePlanningPayment.and.returnValue(of({...testPlan,payments: []}));
   api.sendFeedback.and.returnValue(of({id: 3,rating: 5,understoodSpending: 'YES',createdAt: '2026-10-30T12:00:00Z'}));
-  api.gmailSync.and.returnValue(of({messagesFound: 0,messagesProcessed: 0,transactionsCreated: 0,duplicatesSkipped: 0,reviewRequired: 0,rejected: 0,failed: 0}));
+  const completeJob = {status:'COMPLETED' as const,message:'Importación completada.',stale:false,hasMorePages:false,retryCount:0,unsupported:0,messagesFound: 0,messagesProcessed: 0,transactionsCreated: 0,duplicatesSkipped: 0,reviewRequired: 0,rejected: 0,failed: 0};
+  api.gmailSync.and.returnValue(of(completeJob));api.gmailSyncStatus.and.returnValue(of(completeJob));api.gmailReview.and.returnValue(of({items:[],total:0,page:0,totalPages:0}));api.requestDataDeletion.and.returnValue(of({status:'PENDING',message:'Solicitud registrada'}));
   api.gmailDisconnect.and.returnValue(of(undefined)); api.deleteTransaction.and.returnValue(of(undefined));
   api.createTransaction.and.returnValue(of(testTransaction)); api.updateTransaction.and.returnValue(of(testTransaction));
-  const auth = {user: {token: 'test-only',userId: 1,name: 'Cuenta QA',email: 'qa@example.test'},isAdmin:false,refreshCurrent:jasmine.createSpy('refreshCurrent').and.returnValue(of({userId:1,name:'Cuenta QA',email:'qa@example.test',role:'USER'})),logout: jasmine.createSpy('logout'),login: jasmine.createSpy('login'),register: jasmine.createSpy('register')} as unknown as AuthService;
+  const auth = {user: {token: 'test-only',userId: 1,name: 'Cuenta QA',email: 'qa@example.test'},isAdmin:false,refreshCurrent:jasmine.createSpy('refreshCurrent').and.returnValue(of({userId:1,name:'Cuenta QA',email:'qa@example.test',role:'USER'})),restoreSession:jasmine.createSpy('restoreSession').and.returnValue(of(null)),googleStart:jasmine.createSpy('googleStart'),linkGoogle:jasmine.createSpy('linkGoogle'),logout: jasmine.createSpy('logout').and.returnValue(of(undefined))} as unknown as AuthService;
   return {api,auth};
 }

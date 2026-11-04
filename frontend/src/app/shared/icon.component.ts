@@ -1,5 +1,11 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 const paths = {
+  home: 'M3 10l9-7 9 7 M5 9v12h5v-7h4v7h5V9',
+  user: 'M4 21v-3a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v3 M16 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
+  car: 'M3 12l2-7h14l2 7v7H3z M3 12h18 M7 16h.01 M17 16h.01 M5 19v2 M19 19v2',
+  bag: 'M5 7h14l2 14H3z M8 8V6a4 4 0 0 1 8 0v2',
+  utensils: 'M4 3v6a3 3 0 0 0 6 0V3 M7 3v18 M18 3c-3 3-4 8 0 9h2 M20 3v18',
+  bars: 'M3 14h4v7H3z M10 8h4v13h-4z M17 3h4v18h-4z',
   grid: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
   wallet: 'M20 7V5a2 2 0 0 0-2-2H6a3 3 0 0 0 0 6h14v11H6a3 3 0 0 1-3-3V6 M20 12h-5v5h5 M16.5 14.5h.01',
   rows: 'M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01',

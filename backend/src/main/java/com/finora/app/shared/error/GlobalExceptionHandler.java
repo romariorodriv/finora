@@ -9,6 +9,7 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+  private static final org.slf4j.Logger log=org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
   @ExceptionHandler(ApiException.class)
   ResponseEntity<?> api(ApiException e, HttpServletRequest r) {
     return ResponseEntity.status(e.status).body(body(e.status, e.code, e.getMessage(), r));
@@ -43,6 +44,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   ResponseEntity<?> unknown(Exception e, HttpServletRequest r) {
+    log.error("Unhandled exception on {} {}",r.getMethod(),r.getRequestURI(),e);
     return ResponseEntity.status(500).body(body(500, "INTERNAL_ERROR", "Ocurrió un error inesperado", r));
   }
 

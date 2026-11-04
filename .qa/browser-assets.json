@@ -1,0 +1,78 @@
+[
+  {
+    "url": "https://sarela.pgoapp.com/",
+    "status": 200,
+    "headers": {
+      "accept-ranges": "bytes",
+      "age": "3389",
+      "content-length": "905",
+      "content-type": "text/html",
+      "date": "Fri, 23 Oct 2026 23:46:24 GMT",
+      "etag": "\"eac7abc6979a6aa525652ddb0e885cdb\"",
+      "last-modified": "Fri, 02 Oct 2026 00:34:48 GMT",
+      "server": "AmazonS3",
+      "via": "1.1 efff942f5fbfeab2d6cc3eafc9a95662.cloudfront.net (CloudFront)",
+      "x-amz-cf-id": "eTgp-dKNDQZV5f8pRQqQqtiV5sTiNu35MSBbsUbAs1T61oULKpymlw==",
+      "x-amz-cf-pop": "LIM50-P2",
+      "x-amz-server-side-encryption": "AES256",
+      "x-cache": "Hit from cloudfront"
+    }
+  },
+  {
+    "url": "https://sarela.pgoapp.com/styles-WVRIL56O.css",
+    "status": 200,
+    "headers": {
+      "etag": "\"57ac44790b158e9f422b4faea7c56255\"",
+      "age": "3389",
+      "via": "1.1 efff942f5fbfeab2d6cc3eafc9a95662.cloudfront.net (CloudFront)",
+      "accept-ranges": "bytes",
+      "x-cache": "Hit from cloudfront",
+      "content-length": "413",
+      "x-amz-cf-id": "0wEDw8_D2N-bO17TXOYwayQlC-mCvEk72JMAWx-s3c-AYhTqrd285A==",
+      "date": "Fri, 23 Oct 2026 23:46:24 GMT",
+      "content-type": "text/css",
+      "last-modified": "Fri, 02 Oct 2026 00:34:47 GMT",
+      "server": "AmazonS3",
+      "x-amz-cf-pop": "LIM50-P2",
+      "x-amz-server-side-encryption": "AES256"
+    }
+  },
+  {
+    "url": "https://sarela.pgoapp.com/polyfills-5CFQRCPP.js",
+    "status": 200,
+    "headers": {
+      "x-amz-cf-pop": "LIM50-P2",
+      "content-encoding": "br",
+      "etag": "W/\"41da3262ca56b0745a8b7fe7e7600db7\"",
+      "age": "3389",
+      "via": "1.1 efff942f5fbfeab2d6cc3eafc9a95662.cloudfront.net (CloudFront)",
+      "x-cache": "Hit from cloudfront",
+      "x-amz-cf-id": "LGGyiUDBMhGj-rZ1Hkz4l4HjegIe_m6WvWoq5GpRSaZBiyt_r76OtA==",
+      "date": "Fri, 23 Oct 2026 23:46:25 GMT",
+      "content-type": "application/javascript",
+      "vary": "Accept-Encoding",
+      "server": "AmazonS3",
+      "last-modified": "Fri, 02 Oct 2026 00:34:47 GMT",
+      "x-amz-server-side-encryption": "AES256"
+    }
+  },
+  {
+    "url": "https://sarela.pgoapp.com/main-7G6O4ENY.js",
+    "status": 200,
+    "headers": {
+      "x-amz-cf-pop": "LIM50-P2",
+      "content-encoding": "br",
+      "etag": "W/\"c0a02e5493ea088cd97ebabe49fa7684\"",
+      "age": "3389",
+      "via": "1.1 efff942f5fbfeab2d6cc3eafc9a95662.cloudfront.net (CloudFront)",
+      "x-cache": "Hit from cloudfront",
+      "x-amz-cf-id": "cdJcj4yUFU7FogTvnwSu44TOAEeZy8QEgTFis1QnT5RLyHAUBXP8ng==",
+      "date": "Fri, 23 Oct 2026 23:46:25 GMT",
+      "content-type": "application/javascript",
+      "vary": "Accept-Encoding",
+      "server": "AmazonS3",
+      "last-modified": "Fri, 02 Oct 2026 00:34:46 GMT",
+      "x-amz-server-side-encryption": "AES256"
+    }
+  }
+]

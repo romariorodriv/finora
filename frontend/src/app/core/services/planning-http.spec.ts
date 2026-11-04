@@ -6,7 +6,7 @@ import { authInterceptor } from '../interceptors/auth.interceptor';
 import { environment } from '../../../environments/environment';
 import { testPlan } from '../../premium.test-fixtures';
 
-describe('Planning HTTP contract and JWT preservation', () => {
+describe('Planning HTTP contract and secure session preservation', () => {
   let api: ApiService, http: HttpTestingController;
   beforeEach(() => {
     TestBed.configureTestingModule({providers: [provideHttpClient(withInterceptors([authInterceptor])),provideHttpClientTesting()]});
@@ -14,10 +14,10 @@ describe('Planning HTTP contract and JWT preservation', () => {
     localStorage.setItem('finoraToken','unit-test-token');
   });
   afterEach(() => { http.verify();localStorage.removeItem('finoraToken'); });
-  it('reads saved state with the JWT and unchanged endpoint', () => {
+  it('reads saved state with credentials and the unchanged endpoint', () => {
     api.getPlanningState().subscribe(state=>expect(state).toEqual(testPlan));
     const request=http.expectOne(`${environment.apiBaseUrl}/planning/state`);
-    expect(request.request.method).toBe('GET');expect(request.request.headers.get('Authorization')).toBe('Bearer unit-test-token');request.flush(testPlan);
+    expect(request.request.method).toBe('GET');expect(request.request.withCredentials).toBeTrue();expect(request.request.headers.has('Authorization')).toBeFalse();request.flush(testPlan);
   });
   it('saves only the profile contract and creates/deletes payments with existing endpoints', () => {
     api.savePlanningProfile(testPlan.profile!).subscribe();

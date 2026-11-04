@@ -1,0 +1,341 @@
+{
+  "url": "http://127.0.0.1:62040/",
+  "syntheticApiOnly": true,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "checks": [
+        {
+          "name": "observer budget not reached",
+          "passed": true
+        },
+        {
+          "name": "dashboard data",
+          "passed": true
+        },
+        {
+          "name": "two painted charts",
+          "passed": true
+        },
+        {
+          "name": "spending data line painted",
+          "passed": true
+        },
+        {
+          "name": "no continuing mutation loop",
+          "passed": true
+        },
+        {
+          "name": "no continuing resize loop",
+          "passed": true
+        },
+        {
+          "name": "animation stops when idle",
+          "passed": true
+        },
+        {
+          "name": "movements and form open",
+          "passed": true
+        },
+        {
+          "name": "modal close",
+          "passed": true
+        },
+        {
+          "name": "assistant and form closed",
+          "passed": true
+        },
+        {
+          "name": "connections",
+          "passed": true
+        },
+        {
+          "name": "dashboard return",
+          "passed": true
+        },
+        {
+          "name": "range control",
+          "passed": true
+        },
+        {
+          "name": "persisted session reload",
+          "passed": true
+        },
+        {
+          "name": "no horizontal overflow",
+          "passed": true
+        },
+        {
+          "name": "document complete",
+          "passed": true
+        },
+        {
+          "name": "logout clears session",
+          "passed": true
+        },
+        {
+          "name": "no console errors",
+          "passed": true
+        },
+        {
+          "name": "no real transaction writes",
+          "passed": true
+        }
+      ],
+      "afterLogin": {
+        "mutationCallbacks": 0,
+        "resizeCallbacks": 2,
+        "frames": 105,
+        "timers": 8,
+        "observerBudgetExceeded": false,
+        "samples": [],
+        "longTasks": [
+          124,
+          67
+        ]
+      },
+      "afterIdle": {
+        "mutationCallbacks": 0,
+        "resizeCallbacks": 2,
+        "frames": 105,
+        "timers": 8,
+        "observerBudgetExceeded": false,
+        "samples": [],
+        "longTasks": [
+          124,
+          67
+        ]
+      },
+      "charts": [
+        {
+          "width": 692,
+          "height": 220,
+          "painted": 18570,
+          "green": 1036
+        },
+        {
+          "width": 175,
+          "height": 175,
+          "painted": 13328,
+          "green": 0
+        }
+      ],
+      "errors": [],
+      "apiCalls": [
+        {
+          "method": "POST",
+          "path": "/auth/login"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/transactions"
+        },
+        {
+          "method": "GET",
+          "path": "/transactions"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        }
+      ],
+      "pending": [],
+      "hashAfterLogin": [
+        "acceso"
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "checks": [
+        {
+          "name": "observer budget not reached",
+          "passed": true
+        },
+        {
+          "name": "dashboard data",
+          "passed": true
+        },
+        {
+          "name": "two painted charts",
+          "passed": true
+        },
+        {
+          "name": "spending data line painted",
+          "passed": true
+        },
+        {
+          "name": "no continuing mutation loop",
+          "passed": true
+        },
+        {
+          "name": "no continuing resize loop",
+          "passed": true
+        },
+        {
+          "name": "animation stops when idle",
+          "passed": true
+        },
+        {
+          "name": "movements and form open",
+          "passed": true
+        },
+        {
+          "name": "modal close",
+          "passed": true
+        },
+        {
+          "name": "assistant and form closed",
+          "passed": true
+        },
+        {
+          "name": "connections",
+          "passed": true
+        },
+        {
+          "name": "dashboard return",
+          "passed": true
+        },
+        {
+          "name": "range control",
+          "passed": true
+        },
+        {
+          "name": "persisted session reload",
+          "passed": true
+        },
+        {
+          "name": "no horizontal overflow",
+          "passed": true
+        },
+        {
+          "name": "document complete",
+          "passed": true
+        },
+        {
+          "name": "logout clears session",
+          "passed": true
+        },
+        {
+          "name": "no console errors",
+          "passed": true
+        },
+        {
+          "name": "no real transaction writes",
+          "passed": true
+        }
+      ],
+      "afterLogin": {
+        "mutationCallbacks": 0,
+        "resizeCallbacks": 2,
+        "frames": 105,
+        "timers": 9,
+        "observerBudgetExceeded": false,
+        "samples": [],
+        "longTasks": [
+          114,
+          64
+        ]
+      },
+      "afterIdle": {
+        "mutationCallbacks": 0,
+        "resizeCallbacks": 2,
+        "frames": 105,
+        "timers": 9,
+        "observerBudgetExceeded": false,
+        "samples": [],
+        "longTasks": [
+          114,
+          64
+        ]
+      },
+      "charts": [
+        {
+          "width": 324,
+          "height": 200,
+          "painted": 7341,
+          "green": 586
+        },
+        {
+          "width": 175,
+          "height": 175,
+          "painted": 13328,
+          "green": 0
+        }
+      ],
+      "errors": [],
+      "apiCalls": [
+        {
+          "method": "POST",
+          "path": "/auth/login"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/transactions"
+        },
+        {
+          "method": "GET",
+          "path": "/transactions"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        }
+      ],
+      "pending": [],
+      "hashAfterLogin": [
+        "acceso"
+      ]
+    }
+  ],
+  "browser": "155.0.4283.62"
+}

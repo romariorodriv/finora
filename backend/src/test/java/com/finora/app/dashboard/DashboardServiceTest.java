@@ -6,7 +6,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.finora.app.category.CategoryClassifier;
+import com.finora.app.admin.ManagedCategory;
+import com.finora.app.admin.ManagedCategoryRepository;
+import org.junit.jupiter.api.BeforeEach;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import com.finora.app.transaction.Transaction;
 import com.finora.app.transaction.TransactionRepository;
 import java.math.BigDecimal;
@@ -16,7 +23,32 @@ import org.junit.jupiter.api.Test;
 
 class DashboardServiceTest {
   private final TransactionRepository repository = mock(TransactionRepository.class);
-  private final DashboardService service = new DashboardService(repository, new CategoryClassifier());
+  private final ManagedCategoryRepository catalog = mock(ManagedCategoryRepository.class);
+  private final Map<Long, ManagedCategory> managed = new LinkedHashMap<>();
+  private final DashboardService service = new DashboardService(repository, catalog);
+
+  @BeforeEach
+  void catalogIsAuthoritative() {
+    when(catalog.findAllById(any())).thenAnswer(call -> {
+      var found = new java.util.ArrayList<ManagedCategory>();
+      for (Long id : call.<Iterable<Long>>getArgument(0)) {
+        if (managed.containsKey(id)) found.add(managed.get(id));
+      }
+      return found;
+    });
+    when(catalog.findById(any())).thenAnswer(call -> Optional.ofNullable(managed.get(call.<Long>getArgument(0))));
+  }
+
+  private long managedCategory(String name) {
+    var existing = managed.values().stream().filter(c -> c.name.equals(name)).findFirst();
+    if (existing.isPresent()) return existing.get().id;
+    var c = new ManagedCategory();
+    c.id = (long) managed.size() + 1;
+    c.name = name;
+    c.color = "#123456";
+    managed.put(c.id, c);
+    return c.id;
+  }
 
   @Test
   void savingsWithdrawalAppearsInMovementsButDoesNotAffectAccountingMetrics() {
@@ -37,7 +69,7 @@ class DashboardServiceTest {
     assertEquals(new BigDecimal("-100.00"), dashboard.balance());
     assertEquals(1, dashboard.categories().size());
     assertEquals(new BigDecimal("100.00"), dashboard.categories().get("Alimentacion"));
-    assertEquals("ALIMENTACION", dashboard.macroCategories().get(0).macroCategory());
+    assertEquals("CAT_1", dashboard.macroCategories().get(0).macroCategory());
     assertEquals("Tambo", dashboard.merchants().get(0).merchant());
     assertEquals(1, dashboard.daily().size());
     assertEquals(new BigDecimal("100.00"), dashboard.daily().get(LocalDate.of(2026, 9, 10)));
@@ -60,7 +92,7 @@ class DashboardServiceTest {
         .thenReturn(List.of(income, transfer, uber, oxxo, tambo));
 
     DashboardResponse dashboard = service.dashboard(7L, 2026, 9);
-    DashboardResponse.CategoryDetail categoryDetail = service.categoryDetail(7L, "ALIMENTACION", 2026, 9);
+    DashboardResponse.CategoryDetail categoryDetail = service.categoryDetail(7L, "CAT_1", 2026, 9);
     DashboardResponse.MerchantDetail merchantDetail = service.merchantDetail(7L, "Tambo", 2026, 9);
 
     assertEquals(new BigDecimal("100.00"), dashboard.expenses());
@@ -79,7 +111,7 @@ class DashboardServiceTest {
   }
 
   @Test
-  void topMerchantsCollapseRemainingAsOtherMerchantsAndHistoricalCategoriesAreMapped() {
+  void topMerchantsCollapseRemainingAndLegacyExpensesAreUncategorized() {
     List<Transaction> tx = List.of(
         legacy("PedidosYa", "25.00", "DIA_A_DIA"),
         transaction("Uber", "20.00", "EXPENSE", "Transporte", "Uber"),
@@ -93,14 +125,15 @@ class DashboardServiceTest {
 
     DashboardResponse dashboard = service.dashboard(7L, 2026, 9);
 
-    assertEquals(new BigDecimal("40.00"), dashboard.categories().get("Alimentacion"));
+    assertEquals(new BigDecimal("15.00"), dashboard.categories().get("Alimentacion"));
+    assertEquals(new BigDecimal("25.00"), dashboard.categories().get("Sin categoría"));
     assertEquals(6, dashboard.merchants().size());
     assertEquals("Otros comercios", dashboard.merchants().get(5).label());
     assertEquals(new BigDecimal("12.00"), dashboard.merchants().get(5).total());
   }
 
   @Test
-  void historicalMacroCategoryIsReclassifiedFromTransactionDataInsteadOfBeingForced() {
+  void historicalLabelsDoNotRecreateCategoriesOnRead() {
     List<Transaction> tx = List.of(
         legacy("Spotify", "5.00", "ESTILO_DE_VIDA", "Suscripciones"),
         legacy("Uber", "20.00", "DIA_A_DIA", "Transporte"),
@@ -111,15 +144,14 @@ class DashboardServiceTest {
 
     DashboardResponse dashboard = service.dashboard(7L, 2026, 9);
 
-    assertEquals(new BigDecimal("20.00"), dashboard.categories().get("Transporte"));
-    assertEquals(new BigDecimal("15.00"), dashboard.categories().get("Salud"));
-    assertEquals(new BigDecimal("10.00"), dashboard.categories().get("Alimentacion"));
-    assertEquals(new BigDecimal("5.00"), dashboard.categories().get("Suscripciones"));
-    assertTrue(!dashboard.categories().containsKey("Servicios"));
+    assertEquals(Map.of("Sin categoría", new BigDecimal("50.00")), dashboard.categories());
+    assertEquals("UNCATEGORIZED", dashboard.macroCategories().get(0).macroCategory());
+    assertTrue(dashboard.transactions().stream().allMatch(t -> "Sin categoría".equals(t.category())));
+    assertEquals("Suscripciones", tx.get(0).category);
   }
 
   @Test
-  void nullHistoricalMacroCategoryIsReclassifiedAsSubscriptionOnRead() {
+  void emptyCatalogGroupsLegacySubscriptionsAsUncategorized() {
     List<Transaction> tx = List.of(
         legacy("Spotify", "5.00", null, "Suscripciones"),
         legacy("PARAMOUNT+", "9.00", null, "Otros"),
@@ -128,11 +160,12 @@ class DashboardServiceTest {
     when(repository.findByUserIdAndDateBetweenOrderByDateDesc(7L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
         .thenReturn(tx);
 
+    managed.clear();
     DashboardResponse dashboard = service.dashboard(7L, 2026, 9);
-    DashboardResponse.CategoryDetail detail = service.categoryDetail(7L, "SUSCRIPCIONES", 2026, 9);
+    DashboardResponse.CategoryDetail detail = service.categoryDetail(7L, "UNCATEGORIZED", 2026, 9);
 
-    assertEquals(new BigDecimal("44.00"), dashboard.categories().get("Suscripciones"));
-    assertEquals("SUSCRIPCIONES", dashboard.macroCategories().get(0).macroCategory());
+    assertEquals(new BigDecimal("44.00"), dashboard.categories().get("Sin categoría"));
+    assertEquals("UNCATEGORIZED", dashboard.macroCategories().get(0).macroCategory());
     assertEquals(4, detail.transactions().size());
     assertTrue(!dashboard.categories().containsKey("Otros"));
   }
@@ -153,6 +186,53 @@ class DashboardServiceTest {
     assertEquals(8, dashboard.transactions().size());
   }
 
+  @Test
+  void deletedCategoryCannotReturnThroughHistoricalNamesOrDetailLinks() {
+    var t = transaction("Spotify", "15.00", "EXPENSE", "Suscripciones", "Spotify");
+    long removedId = t.categoryId;
+    managed.clear();
+    when(repository.findByUserIdAndDateBetweenOrderByDateDesc(any(), any(), any())).thenReturn(List.of(t));
+
+    var dashboard = service.dashboard(7L, 2026, 9);
+    assertEquals(Map.of("Sin categoría", new BigDecimal("15.00")), dashboard.categories());
+    assertNull(dashboard.transactions().get(0).categoryId());
+    assertEquals("PENDING", dashboard.transactions().get(0).reviewStatus());
+    assertThrows(com.finora.app.shared.error.ApiException.class,
+        () -> service.categoryDetail(7L, "CAT_" + removedId, 2026, 9));
+    assertThrows(com.finora.app.shared.error.ApiException.class,
+        () -> service.categoryDetail(7L, "SUSCRIPCIONES", 2026, 9));
+    assertEquals(removedId, t.categoryId);
+    assertEquals("Suscripciones", t.category);
+  }
+
+  @Test
+  void managedNamesColorsAndUncategorizedDetailsRespectCurrency() {
+    var expense = transaction("Netflix", "10.00", "EXPENSE", "Nombre antiguo", "Netflix");
+    var current = managed.get(expense.categoryId);
+    current.name = "Entretenimiento";
+    current.color = "#ABCDEF";
+    current.active = false;
+    var legacy = legacy("Spotify", "20.00", "SUSCRIPCIONES", "Suscripciones");
+    var dollars = legacy("Prime", "90.00", "SUSCRIPCIONES", "Suscripciones");
+    dollars.currency = "USD";
+    var income = transaction("Sueldo", "100.00", "INCOME", "Ingresos", "Empresa");
+    when(repository.findByUserIdAndDateBetweenOrderByDateDesc(any(), any(), any()))
+        .thenReturn(List.of(expense, legacy, dollars, income));
+
+    var dashboard = service.dashboard(7L, 2026, 9, "PEN");
+    assertEquals(new BigDecimal("30.00"), dashboard.expenses());
+    assertEquals(new BigDecimal("100.00"), dashboard.income());
+    assertEquals(new BigDecimal("70.00"), dashboard.balance());
+    assertEquals(new BigDecimal("10.00"), dashboard.categories().get("Entretenimiento"));
+    assertEquals(new BigDecimal("20.00"), dashboard.categories().get("Sin categoría"));
+    assertEquals("#ABCDEF", dashboard.macroCategories().stream()
+        .filter(c -> c.label().equals("Entretenimiento")).findFirst().orElseThrow().color());
+    var detail = service.categoryDetail(7L, "UNCATEGORIZED", 2026, 9, "PEN");
+    assertEquals(1, detail.transactions().size());
+    assertEquals(new BigDecimal("20.00"), detail.total());
+    assertEquals("Sin categoría", detail.transactions().get(0).category());
+  }
+
   private Transaction legacy(String merchant, String amount, String macroCategory) {
     return legacy(merchant, amount, macroCategory, "Supermercado");
   }
@@ -160,6 +240,7 @@ class DashboardServiceTest {
   private Transaction legacy(String merchant, String amount, String macroCategory, String category) {
     Transaction transaction = transaction(merchant, amount, "EXPENSE", category, merchant);
     transaction.macroCategory = macroCategory;
+    transaction.categoryId = null;
     return transaction;
   }
 
@@ -171,6 +252,7 @@ class DashboardServiceTest {
     transaction.date = LocalDate.of(2026, 9, 10);
     transaction.type = type;
     transaction.category = category;
+    transaction.categoryId = managedCategory(category);
     transaction.merchant = merchant;
     return transaction;
   }

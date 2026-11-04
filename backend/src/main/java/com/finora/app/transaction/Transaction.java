@@ -14,6 +14,7 @@ public class Transaction {
  @Column(name="normalized_merchant",length=500) public String normalizedMerchant;
  @Column(name="original_description",columnDefinition="TEXT") public String originalDescription;
  @Column(nullable=false,length=3) public String currency="PEN";
+ @Column(name="date_source",nullable=false,length=30) public String dateSource="USER_PROVIDED";
  @Version public Long version;
  public Transaction(){}
 }

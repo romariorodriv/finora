@@ -27,6 +27,7 @@ public class ImportService {
   public ImportDtos.BankEmailResponse importBankEmail(Long userId, ImportDtos.BankEmailRequest r) {
     String subject = r.subject() == null ? "" : r.subject();
     String content = r.content() == null ? "" : r.content();
+    if(content.length()>200000)throw new ApiException(422,"IMPORT_REVIEW_REQUIRED","El contenido requiere revisión manual.");
     String emailText = subject + "\n" + content;
     Optional<BankEmailParser.Parsed> result = parser.tryParse(r.sender(), emailText);
     if (result.isEmpty()) {
@@ -36,6 +37,8 @@ public class ImportService {
     if (parsed.status() == BankEmailParser.OperationStatus.REJECTED) {
       throw new ApiException(422, "IMPORT_REJECTED_OPERATION", "La operación bancaria fue rechazada y no se registró");
     }
+    if(parsed.confidence()<.90)throw new ApiException(422,"IMPORT_REVIEW_REQUIRED","La notificación es ambigua y requiere revisión.");
+    if(r.date()==null)throw new ApiException(422,"IMPORT_DATE_REQUIRED","Indica la fecha verificada del movimiento; no la inferimos del texto.");
     String externalId = r.externalId() == null
         ? UUID.nameUUIDFromBytes((subject + content).getBytes(StandardCharsets.UTF_8)).toString()
         : r.externalId();
@@ -46,7 +49,8 @@ public class ImportService {
     t.userId = userId;
     t.description = parsed.description();
     t.amount = parsed.amount();
-    t.date = parsed.date();
+    t.date = r.date();
+    t.dateSource="USER_PROVIDED";
     t.merchant = parsed.merchant();
     t.category = parsed.category();
     t.type = parsed.type().name();
@@ -60,6 +64,6 @@ public class ImportService {
     t.currency=parsed.currency()==null?"UNK":parsed.currency();t.originalDescription=t.description;
     if(classificationEngine!=null)classificationEngine.automatic(t);
     repo.save(t);
-    return new ImportDtos.BankEmailResponse(TransactionResponse.from(t), parsed.confidence(), "RULE_WITH_AI_FALLBACK_READY");
+    return new ImportDtos.BankEmailResponse(TransactionResponse.from(t), parsed.confidence(), "RULE_BASED");
   }
 }

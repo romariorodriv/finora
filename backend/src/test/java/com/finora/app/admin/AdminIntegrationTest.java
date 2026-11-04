@@ -33,9 +33,11 @@ class AdminIntegrationTest {
   for(String p:new String[]{"/categories","/category-options","/transactions","/rules","/history","/batches","/batches/missing"})mvc.perform(get("/api/v1/admin"+p).header("Authorization",token)).andExpect(status().isForbidden());
   for(String p:new String[]{"/categories","/rules","/corrections","/rules/1/preview","/categories/1/reassign-preview","/batches/1/apply","/batches/1/revert"})mvc.perform(post("/api/admin"+p).header("Authorization",token).contentType(MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isForbidden());
   for(String p:new String[]{"/categories/1","/rules/1"})mvc.perform(put("/api/v1/admin"+p).header("Authorization",token).contentType(MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isForbidden());
-  mvc.perform(get("/api/admin/categories")).andExpect(status().isForbidden());
-  var registered=json.readTree(mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body(Map.of("name","Registro QA","email","register"+nonce+"@example.test","password","Local-test-123!","role","ADMIN")))).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());
-  assertEquals("USER",registered.get("role").asText());assertEquals("USER",getAs("/account",token).get("role").asText());
+  mvc.perform(get("/api/admin/categories")).andExpect(status().isUnauthorized());
+  long before=users.count();
+  mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body(Map.of("name","Registro QA","email","register"+nonce+"@example.test","password","Local-test-123!","role","ADMIN"))))
+      .andExpect(status().isGone()).andExpect(jsonPath("$.code").value("GOOGLE_SIGN_IN_REQUIRED"));
+  assertEquals(before,users.count());assertEquals("USER",getAs("/account",token).get("role").asText());
  }
  @Test void checksCurrentDatabaseRoleEvenWithAnExistingJwt()throws Exception{getAs("/admin/categories",adminToken);admin.role="USER";users.saveAndFlush(admin);mvc.perform(get("/api/admin/categories").header("Authorization",adminToken)).andExpect(status().isForbidden());}
  @Test void categoryCrudValidatesDuplicatesCountsAssociationsAndPreservesDescriptions()throws Exception{

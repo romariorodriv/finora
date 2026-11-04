@@ -1,7 +1,7 @@
 package com.finora.app.dashboard;
 
-import com.finora.app.category.CategoryClassifier;
-import com.finora.app.category.MacroCategory;
+import com.finora.app.admin.ManagedCategory;
+import com.finora.app.admin.ManagedCategoryRepository;
 import com.finora.app.merchant.MerchantNormalizer;
 import com.finora.app.shared.error.ApiException;
 import com.finora.app.transaction.Transaction;
@@ -12,7 +12,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,19 +22,50 @@ import org.springframework.stereotype.Service;
 @Service
 public class DashboardService {
   private final TransactionRepository repo;
-  private final CategoryClassifier classifier;
-  private com.finora.app.admin.ManagedCategoryRepository catalog;
-  @org.springframework.beans.factory.annotation.Autowired public void setCatalog(com.finora.app.admin.ManagedCategoryRepository c){catalog=c;}
-  private String categoryKey(Transaction t){return t.categoryId==null?macroCategory(t).name():"CAT_"+t.categoryId;}
-  private String label(String key){if(key.startsWith("CAT_")&&catalog!=null)return catalog.findById(Long.parseLong(key.substring(4))).map(c->c.name).orElse("Otros");return MacroCategory.valueOf(key).label();}
-  private String color(String key){return key.startsWith("CAT_")&&catalog!=null?catalog.findById(Long.parseLong(key.substring(4))).map(c->c.color).orElse(null):null;}
+  private static final String UNCATEGORIZED = "UNCATEGORIZED";
+  private final ManagedCategoryRepository catalog;
+
+  private Map<Long, ManagedCategory> categoryCatalog(List<Transaction> rows) {
+    var ids = rows.stream().map(t -> t.categoryId).filter(java.util.Objects::nonNull).distinct().toList();
+    var result = new LinkedHashMap<Long, ManagedCategory>();
+    catalog.findAllById(ids).forEach(c -> result.put(c.id, c));
+    return result;
+  }
+
+  private String categoryKey(Transaction t, Map<Long, ManagedCategory> categories) {
+    return categories.containsKey(t.categoryId) ? "CAT_" + t.categoryId : UNCATEGORIZED;
+  }
+
+  private String label(String key, Map<Long, ManagedCategory> categories) {
+    if (UNCATEGORIZED.equals(key)) return "Sin categoría";
+    if (key != null && key.matches("CAT_[1-9][0-9]*")) {
+      try {
+        var category = categories.get(Long.parseLong(key.substring(4)));
+        if (category != null) return category.name;
+      } catch (NumberFormatException ignored) {}
+    }
+    throw new ApiException(400, "INVALID_CATEGORY", "Categoría no válida");
+  }
+
+  private TransactionResponse response(Transaction t, Map<Long, ManagedCategory> categories) {
+    var original = TransactionResponse.from(t);
+    if (!isExpense(t)) return original;
+    var category = categories.get(t.categoryId);
+    return new TransactionResponse(original.id(), original.userId(), original.description(),
+        original.amount(), original.date(), category == null ? "Sin categoría" : category.name,
+        categoryKey(t, categories), original.type(), original.source(), original.externalId(),
+        original.merchant(), original.recurring(), original.createdAt(), original.currency(),
+        category == null ? null : category.id, original.classificationSource(),
+        category == null ? "PENDING" : original.reviewStatus(), original.dateSource());
+  }
+
   private String currency(Transaction t){return t.currency==null?"UNK":t.currency;}
   private String selectedCurrency(List<Transaction> rows,String requested){var values=rows.stream().map(this::currency).distinct().sorted().toList();if(requested!=null&&!requested.isBlank()){if(!requested.matches("[A-Z]{3}"))throw new ApiException(400,"INVALID_CURRENCY","Moneda inválida");return requested;}return values.contains("PEN")?"PEN":values.isEmpty()?"PEN":values.get(0);}
 
 
-  public DashboardService(TransactionRepository repo, CategoryClassifier classifier) {
+  public DashboardService(TransactionRepository repo, ManagedCategoryRepository catalog) {
     this.repo = repo;
-    this.classifier = classifier;
+    this.catalog = catalog;
   }
 
   public DashboardResponse dashboard(Long userId,Integer year,Integer month){return dashboard(userId,year,month,null);}
@@ -44,6 +74,7 @@ public class DashboardService {
     List<Transaction> all = repo.findByUserIdAndDateBetweenOrderByDateDesc(userId, ym.atDay(1), ym.atEndOfMonth());
     String chosen=selectedCurrency(all,requestedCurrency);
     List<Transaction> tx=all.stream().filter(t->chosen.equals(currency(t))).toList();
+    var categoryCatalog = categoryCatalog(tx);
     BigDecimal expenses = sum(tx, "EXPENSE");
     BigDecimal income = sum(tx, "INCOME");
     List<Transaction> expensesOnly = tx.stream().filter(this::isExpense).toList();
@@ -53,15 +84,16 @@ public class DashboardService {
         : expenses.divide(BigDecimal.valueOf(expenseCount), 2, RoundingMode.HALF_UP);
 
     Map<String, BigDecimal> macroTotals = expensesOnly.stream().collect(Collectors
-        .groupingBy(this::categoryKey, LinkedHashMap::new,
+        .groupingBy(t -> categoryKey(t, categoryCatalog), LinkedHashMap::new,
             Collectors.reducing(BigDecimal.ZERO, t -> t.amount, BigDecimal::add)));
     Map<String, BigDecimal> cats = macroTotals.entrySet().stream()
         .sorted(Map.Entry.<String, BigDecimal>comparingByValue().reversed())
-        .collect(Collectors.toMap(e -> label(e.getKey()), Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+        .collect(Collectors.toMap(e -> label(e.getKey(), categoryCatalog), Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
     List<DashboardResponse.CategorySummary> macroCategories = macroTotals.entrySet().stream()
         .sorted(Map.Entry.<String, BigDecimal>comparingByValue().reversed())
-        .map(e -> new DashboardResponse.CategorySummary(e.getKey(), label(e.getKey()), e.getValue(),
-            percentage(e.getValue(), expenses),color(e.getKey())))
+        .map(e -> new DashboardResponse.CategorySummary(e.getKey(), label(e.getKey(), categoryCatalog), e.getValue(),
+            percentage(e.getValue(), expenses),
+            UNCATEGORIZED.equals(e.getKey()) ? "#A4B5AE" : categoryCatalog.get(Long.parseLong(e.getKey().substring(4))).color))
         .toList();
     List<DashboardResponse.MerchantSummary> merchants = merchantSummaries(expensesOnly, expenses);
 
@@ -77,18 +109,30 @@ public class DashboardService {
     return new DashboardResponse(ym.toString(), expenses, income, income.subtract(expenses), expenseCount, averageTicket,
         dailyAverage, projection,
         cats, macroCategories, merchants, insight[0], insight[1], daily,
-        tx.stream().limit(8).map(TransactionResponse::from).toList(),
-        tx.stream().filter(t -> t.recurring).map(TransactionResponse::from).toList(),chosen,all.stream().map(this::currency).distinct().sorted().toList());
+        tx.stream().limit(8).map(t -> response(t, categoryCatalog)).toList(),
+        tx.stream().filter(t -> t.recurring).map(t -> response(t, categoryCatalog)).toList(),chosen,all.stream().map(this::currency).distinct().sorted().toList());
   }
 
   public DashboardResponse.CategoryDetail categoryDetail(Long uid,String key,Integer year,Integer month){return categoryDetail(uid,key,year,month,null);}
   public DashboardResponse.CategoryDetail categoryDetail(Long uid,String key,Integer year,Integer month,String requestedCurrency){
-    String categoryLabel;try{categoryLabel=label(key);}catch(Exception e){throw new ApiException(400,"INVALID_CATEGORY","Categoría no válida");}
-    YearMonth ym=yearMonth(year,month);var all=repo.findByUserIdAndDateBetweenOrderByDateDesc(uid,ym.atDay(1),ym.atEndOfMonth());String chosen=selectedCurrency(all,requestedCurrency);
-    var matching=all.stream().filter(this::isExpense).filter(t->key.equals(categoryKey(t))&&chosen.equals(currency(t))).toList();
-    var total=matching.stream().map(t->t.amount).reduce(BigDecimal.ZERO,BigDecimal::add);
-    var sub=matching.stream().collect(Collectors.groupingBy(t->key.startsWith("CAT_")?t.category:categoryLabel(macroCategory(t)),Collectors.reducing(BigDecimal.ZERO,t->t.amount,BigDecimal::add))).entrySet().stream().sorted(Map.Entry.<String,BigDecimal>comparingByValue().reversed()).map(e->new DashboardResponse.SubcategorySummary(e.getKey(),e.getValue())).toList();
-    return new DashboardResponse.CategoryDetail(key,categoryLabel,total,sub,matching.stream().map(TransactionResponse::from).toList());
+    YearMonth ym = yearMonth(year, month);
+    var all = repo.findByUserIdAndDateBetweenOrderByDateDesc(uid, ym.atDay(1), ym.atEndOfMonth());
+    var categoryCatalog = categoryCatalog(all);
+    // Resolve a valid empty catalog category too; never reconstruct a deleted label.
+    if (key != null && key.matches("CAT_[1-9][0-9]*")) {
+      try {
+        catalog.findById(Long.parseLong(key.substring(4))).ifPresent(c -> categoryCatalog.put(c.id, c));
+      } catch (NumberFormatException ignored) {}
+    }
+    String categoryLabel = label(key, categoryCatalog);
+    String chosen = selectedCurrency(all, requestedCurrency);
+    var matching = all.stream().filter(this::isExpense)
+        .filter(t -> key.equals(categoryKey(t, categoryCatalog)) && chosen.equals(currency(t))).toList();
+    var total = matching.stream().map(t -> t.amount).reduce(BigDecimal.ZERO, BigDecimal::add);
+    var sub = matching.isEmpty() ? List.<DashboardResponse.SubcategorySummary>of()
+        : List.of(new DashboardResponse.SubcategorySummary(categoryLabel, total));
+    return new DashboardResponse.CategoryDetail(key, categoryLabel, total, sub,
+        matching.stream().map(t -> response(t, categoryCatalog)).toList());
   }
 
   public DashboardResponse.MerchantDetail merchantDetail(Long uid,String merchant,Integer year,Integer month){return merchantDetail(uid,merchant,year,month,null);}
@@ -100,9 +144,10 @@ public class DashboardService {
         .filter(this::isExpense)
         .filter(t -> requested.equals(merchant(t)))
         .toList();
+    var categoryCatalog = categoryCatalog(matching);
     BigDecimal total = matching.stream().map(t -> t.amount).reduce(BigDecimal.ZERO, BigDecimal::add);
     return new DashboardResponse.MerchantDetail(requested, requested, total,
-        matching.stream().map(TransactionResponse::from).toList());
+        matching.stream().map(t -> response(t, categoryCatalog)).toList());
   }
 
   private YearMonth yearMonth(Integer year, Integer month) {
@@ -116,21 +161,6 @@ public class DashboardService {
 
   private boolean isExpense(Transaction transaction) {
     return "EXPENSE".equals(transaction.type);
-  }
-
-  private MacroCategory macroCategory(Transaction transaction) {
-    if (transaction.macroCategory != null && !transaction.macroCategory.isBlank()) {
-      try {
-        return MacroCategory.valueOf(transaction.macroCategory);
-      } catch (IllegalArgumentException ignored) {
-        // Historical macro categories are intentionally re-derived from real transaction data.
-      }
-    }
-    return classifier.classify(transaction.merchant, transaction.description, transaction.category).macroCategory();
-  }
-
-  private String categoryLabel(MacroCategory category) {
-    return category.label();
   }
 
   private String merchant(Transaction transaction) {
@@ -170,7 +200,7 @@ public class DashboardService {
           "No tenemos suficientes movimientos todavia para darte una recomendacion."};
     }
     DashboardResponse.CategorySummary largest = categories.get(0);
-    if (MacroCategory.OTROS.name().equals(largest.macroCategory())) {
+    if (UNCATEGORIZED.equals(largest.macroCategory())) {
       return new String[] {"Podemos entender mejor tus gastos",
           "Hay movimientos que Sarela todavia puede clasificar mejor."};
     }
