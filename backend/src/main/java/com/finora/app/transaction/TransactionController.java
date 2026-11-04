@@ -22,6 +22,15 @@ public class TransactionController {
     return service.list(uid(a), from, to);
   }
 
+  @GetMapping("/history")
+  public TransactionService.HistoryPage history(Authentication a,
+      @RequestParam(required=false) LocalDate from, @RequestParam(required=false) LocalDate to,
+      @RequestParam(required=false) String search, @RequestParam(required=false) String category,
+      @RequestParam(required=false) String type, @RequestParam(required=false) String currency,
+      @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="12") int size) {
+    return service.history(uid(a),from,to,search,category,type,currency,page,size);
+  }
+
   @PostMapping
   public ResponseEntity<TransactionResponse> create(Authentication a, @Valid @RequestBody TransactionRequest r) {
     return ResponseEntity.status(201).body(service.create(uid(a), r));

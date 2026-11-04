@@ -41,7 +41,7 @@ describe('Premium UI responsive layout in real browser viewports', () => {
             for (const button of Array.from(nav.querySelectorAll('button'))) expect(button.getBoundingClientRect().width).toBeGreaterThanOrEqual(44);
           }
           if(view==='dashboard') {
-            const donut=doc.querySelector('.native-donut')!.getBoundingClientRect();
+            const donut=doc.querySelector('.finora-home-donut')!.getBoundingClientRect();
             expect(Math.abs(donut.width-donut.height)).toBeLessThan(1);
           }
         }

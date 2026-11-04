@@ -17,12 +17,12 @@ describe('Premium UI functional flows', () => {
     TestBed.configureTestingModule({imports: [AppComponent],providers: [provideRouter([]),{provide: ApiService,useValue: services.api},{provide: AuthService,useValue: services.auth}]});
     fixture=TestBed.createComponent(AppComponent);fixture.detectChanges();
   });
-  it('renders balance, income, expense, daily chart and recurring charges from API data', () => {
-    expect(root().querySelector('.balance-amount')?.textContent).toContain('1,380.00');
-    expect(root().querySelector('.metrics')?.textContent).toContain('1,500.00');
-    expect(root().querySelector('.line-plot polyline')?.getAttribute('points')).toContain(',');
-    expect(root().querySelector('.recurring-panel')?.textContent).toContain('Comercio QA');
-    expect(root().querySelector('.planning-feature')?.textContent).toContain('650.00');
+  it('renders recorded monthly metrics, expenses and confirmed planning availability from API data', () => {
+    expect(root().querySelector('.finora-home-summary-balance')?.textContent).toContain('1,380.00');
+    expect(root().querySelector('.finora-home-summary')?.textContent).toContain('1,500.00');
+    expect(root().querySelector('.finora-home-donut')?.textContent).toContain('120.00');
+    expect(root().querySelector('.finora-home-recent')?.textContent).toContain('Comercio QA');
+    expect(root().querySelector('.finora-home-headline')?.textContent).toContain('650.00');
   });
   it('keeps all five mobile destinations wired to working views and current-page states', () => {
     for (const [index,view] of ['dashboard','planning','movements','import','feedback'].entries()) {
@@ -30,17 +30,17 @@ describe('Premium UI functional flows', () => {
       expect(fixture.componentInstance.view).toBe(view as typeof fixture.componentInstance.view);
       expect(root().querySelectorAll('.mobile-nav [aria-current="page"]').length).toBe(1);
     }
-    expect(services.api.transactions).toHaveBeenCalled();expect(services.api.gmailStatus).toHaveBeenCalled();
+    expect(services.api.transactionHistory).toHaveBeenCalled();expect(services.api.gmailStatus).toHaveBeenCalled();
   });
   it('reloads persisted planning state when returning from the planner', () => {
     click('.sidebar nav button:nth-child(2)');
     expect(root().querySelector('app-planning .available-amount')?.textContent).toContain('650.00');
     services.api.getPlanningState.and.returnValue(of({...testPlan,projection: {...testPlan.projection!,available: 725}}));
     click('.sidebar nav button:nth-child(1)');
-    expect(root().querySelector('.planning-feature')?.textContent).toContain('725.00');
+    expect(root().querySelector('.finora-home-headline')?.textContent).toContain('725.00');
   });
   it('preserves category and merchant drilldowns, closes with Escape and restores focus', () => {
-    const category=root().querySelector('.category-legend button') as HTMLButtonElement;category.focus();category.click();fixture.detectChanges();
+    const category=root().querySelector('.finora-home-category-list button') as HTMLButtonElement;category.focus();category.click();fixture.detectChanges();
     expect(services.api.categoryDetail).toHaveBeenCalledWith('SUSCRIPCIONES');
     expect(root().querySelector('[role="dialog"]')?.textContent).toContain('Software');
     expect(document.activeElement?.className).toBe('drawer-close');
@@ -48,19 +48,21 @@ describe('Premium UI functional flows', () => {
     expect(document.activeElement?.className).toBe('drawer-close');
     document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));fixture.detectChanges();
     expect(root().querySelector('[role="dialog"]')).toBeNull();expect(document.activeElement).toBe(category);
-    click('.merchant-legend button');expect(services.api.merchantDetail).toHaveBeenCalledWith('Comercio QA');
+    fixture.componentInstance.openMerchant(fixture.componentInstance.merchantDistribution()[0]);fixture.detectChanges();expect(services.api.merchantDetail).toHaveBeenCalledWith('Comercio QA');
     click('.drawer-close');expect(root().querySelector('[role="dialog"]')).toBeNull();
   });
   it('preserves movement filtering, editing, recurring state and deletion', () => {
     fixture.componentInstance.go('movements');fixture.detectChanges();
-    fixture.componentInstance.movementFilters.search='does-not-match';fixture.detectChanges();expect(root().querySelectorAll('.tx-actions').length).toBe(0);
+    services.api.transactionHistory.and.returnValue(of({items:[],total:0,page:0,totalPages:0}));
+    fixture.componentInstance.movementFilters.search='does-not-match';fixture.componentInstance.updateMovementFilters();fixture.detectChanges();expect(root().querySelectorAll('.tx-actions').length).toBe(0);
+    services.api.transactionHistory.and.returnValue(of({items:[testTransaction],total:1,page:0,totalPages:1}));
     fixture.componentInstance.resetMovementFilters();fixture.detectChanges();expect(root().querySelectorAll('.tx-actions').length).toBe(1);
     click('.tx-actions .ghost');expect(fixture.componentInstance.txForm.recurring).toBeTrue();
     fixture.componentInstance.saveTransaction();expect(services.api.updateTransaction).toHaveBeenCalledWith(7,jasmine.objectContaining({recurring:true}));
     click('.tx-actions .danger');expect(services.api.deleteTransaction).toHaveBeenCalledWith(7);
   });
   it('preserves Gmail synchronization and its status confirmation', () => {
-    click('.connection-banner button');expect(services.api.gmailSync).toHaveBeenCalled();
+    fixture.componentInstance.go('import');fixture.detectChanges();click('.connection-actions .primary');expect(services.api.gmailSync).toHaveBeenCalled();
     expect(fixture.componentInstance.gmailUpdateStatus).toContain('Importación completada');
     fixture.componentInstance.go('import');fixture.detectChanges();click('.connection-actions .ghost');expect(services.api.gmailDisconnect).toHaveBeenCalled();
   });
@@ -73,13 +75,13 @@ describe('Premium UI functional flows', () => {
     services.api.dashboard.and.returnValue(of({...testDashboard,expenses:0,income:0,balance:0,daily:{},transactions:[],recurring:[],macroCategories:[],merchants:[]}));
     services.api.getPlanningState.and.returnValue(of({profile:null,payments:[],projection:null,alerts:[]}));
     fixture.componentInstance.loadDashboard();fixture.componentInstance.loadPlanningSummary();fixture.detectChanges();
-    expect(root().querySelector('.line-plot')).toBeNull();expect(root().querySelector('.feature-amount')).toBeNull();expect(root().textContent).toContain('Crear mi plan');
+    expect(root().querySelector('.finora-home-donut')).toBeNull();expect(root().querySelector('.finora-home-headline')).toBeNull();expect(root().textContent).toContain('Crear mi plan');
   });
   it('shows loading and retry states for actual read failures', () => {
     const dashboard=new Subject<DashboardResponse>();services.api.dashboard.and.returnValue(dashboard);
     fixture.componentInstance.loadDashboard();expect(fixture.componentInstance.dashboardLoading).toBeTrue();
     dashboard.error({error:{message:'No disponible'}});fixture.detectChanges();expect(root().querySelector('[role="alert"]')?.textContent).toContain('No disponible');
-    services.api.getPlanningState.and.returnValue(throwError(()=>new Error('offline')));fixture.componentInstance.loadPlanningSummary();fixture.detectChanges();expect(root().querySelector('.summary-error')?.textContent).toContain('Reintentar');
+    services.api.getPlanningState.and.returnValue(throwError(()=>new Error('offline')));fixture.componentInstance.loadPlanningSummary();fixture.detectChanges();expect(root().querySelector('.finora-home-hero-error')?.textContent).toContain('Reintentar');
   });
   it('cancels a pending summary and clears planning data when logging out', () => {
     const request=new Subject<PlanningState>();services.api.getPlanningState.and.returnValue(request);fixture.componentInstance.loadPlanningSummary();
@@ -185,6 +187,29 @@ describe('Premium UI functional flows', () => {
     expect(notice).toContain('1 correos por revisar');
     expect(notice).toContain('2 no interpretados');
     expect(notice).toContain('no representa todo tu historial bancario');
+  });
+  it('loads server pages, resets the page for filters and rejects reversed dates', () => {
+    services.api.transactionHistory.and.returnValue(of({items:[testTransaction],total:25,page:0,totalPages:3}));
+    const c=fixture.componentInstance;c.go('movements');c.nextMovementPage();
+    expect(services.api.transactionHistory).toHaveBeenCalledWith(c.movementFilters,1,12);
+    c.movementFilters.from='2026-08-01';c.movementFilters.to='2026-10-31';c.updateMovementFilters();
+    expect(c.movementPage).toBe(1);
+    expect(services.api.transactionHistory).toHaveBeenCalledWith(jasmine.objectContaining({from:'2026-08-01',to:'2026-10-31'}),0,12);
+    services.api.transactionHistory.calls.reset();c.movementFilters.from='2027-01-01';c.updateMovementFilters();
+    expect(services.api.transactionHistory).not.toHaveBeenCalled();expect(c.movementError).toContain('fecha inicial');
+  });
+  it('cancels stale history requests and renders loading, error and empty results', () => {
+    const first=new Subject<{items:typeof testTransaction[];total:number;page:number;totalPages:number}>();
+    services.api.transactionHistory.and.returnValue(first);
+    const c=fixture.componentInstance;c.go('movements');fixture.detectChanges();
+    expect(c.transactionsLoading).toBeTrue();
+    const second=new Subject<{items:typeof testTransaction[];total:number;page:number;totalPages:number}>();
+    services.api.transactionHistory.and.returnValue(second);c.updateMovementFilters();
+    first.next({items:[testTransaction],total:1,page:0,totalPages:1});expect(c.transactions).toEqual([]);
+    second.error({error:{message:'Historial no disponible'}});fixture.detectChanges();
+    expect(c.transactionsLoading).toBeFalse();expect(root().querySelector('[role="alert"]')?.textContent).toContain('Historial no disponible');
+    services.api.transactionHistory.and.returnValue(of({items:[],total:0,page:0,totalPages:0}));c.loadTransactions();fixture.detectChanges();
+    expect(c.movementError).toBe('');expect(root().textContent).toContain('Registra tu primer movimiento');
   });
 
 });

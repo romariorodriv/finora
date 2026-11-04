@@ -13,7 +13,7 @@ describe('Planning dashboard', () => {
     alerts: ['Pago próximo: Alquiler']
   };
   beforeEach(() => {
-    api=jasmine.createSpyObj('ApiService',['getPlanningState','savePlanningProfile','addPlanningPayment','deletePlanningPayment']);
+    api=jasmine.createSpyObj('ApiService',['getPlanningState','savePlanningProfile','addPlanningPayment','deletePlanningPayment','completePlanningPayment']);
     api.getPlanningState.and.returnValue(of(state));
     TestBed.configureTestingModule({imports: [PlanningComponent],providers: [{provide: ApiService,useValue: api}]});
   });
@@ -83,5 +83,27 @@ describe('Planning dashboard', () => {
     expect(fixture.componentInstance.planningLoaded).toBeFalse();
     expect(fixture.nativeElement.querySelector('.planning-form button[type="submit"]').disabled).toBeTrue();
     expect(fixture.nativeElement.querySelector('.form-error').textContent).toContain('Reintentar');
+  });  it('requires a real resulting balance before marking a payment paid and preserves state on failure', () => {
+    const component=new PlanningComponent(api);component.ngOnInit();
+    component.beginCompletePayment(component.planningObligations[0]);component.completePayment();
+    expect(api.completePlanningPayment).not.toHaveBeenCalled();
+    api.completePlanningPayment.and.returnValue(throwError(()=>({error:{message:'Sin conexion'}})));
+    component.resultingBalance=700;component.completePayment();
+    expect(component.completingPayment?.id).toBe(7);expect(component.planningBalance).toBe(1000);
+    expect(component.planningLoading).toBeFalse();
+    api.completePlanningPayment.and.returnValue(of({...state,profile:{...state.profile!,confirmedBalance:700},payments:[{...state.payments[0],paidAt:'2026-11-04T12:00:00Z'}],balanceConfirmedAt:'2026-11-04T12:00:00Z'}));
+    component.completePayment();expect(api.completePlanningPayment).toHaveBeenCalledWith(7,700);
+    expect(component.planningBalance).toBe(700);expect(component.pendingPaymentCount()).toBe(0);expect(component.completingPayment).toBeNull();
   });
+  it('displays confirmation time in Lima and asks legacy balances to be reconfirmed', () => {
+    api.getPlanningState.and.returnValue(of({...state,balanceConfirmedAt:'2026-11-04T12:34:00Z'}));
+    const fixture=TestBed.createComponent(PlanningComponent);fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('04/11/2026 07:34');
+    expect(fixture.nativeElement.textContent).toContain('(Lima)');
+    api.getPlanningState.and.returnValue(of({...state,projection:null,balanceConfirmedAt:null,alerts:['Confirma tu saldo actual']}));
+    fixture.componentInstance.loadPlanning();fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.available-amount')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Confirma tu saldo actual');
+  });
+
 });

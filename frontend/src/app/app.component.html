@@ -66,6 +66,10 @@
       <p class="form-error" role="alert" *ngIf="dashboardError">{{ dashboardError }} <button class="ghost compact" type="button" (click)="loadDashboard()">Reintentar</button></p>
       <label class="currency-selector finora-home-currency" *ngIf="dashboard?.availableCurrencies && dashboard!.availableCurrencies!.length > 1">Moneda del resumen<select [(ngModel)]="selectedCurrency" (ngModelChange)="loadDashboard()"><option *ngFor="let unit of dashboard?.availableCurrencies" [value]="unit">{{unit === 'UNK' ? 'Sin moneda registrada' : unit}}</option></select></label>
 
+      <p class="import-notice" role="status" *ngIf="syncResult && (syncResult.status !== 'COMPLETED' || syncResult.reviewRequired || syncResult.unsupported)">
+        El resumen muestra solo movimientos registrados; no representa todo tu historial bancario.
+        {{ syncResult.reviewRequired }} correos por revisar y {{ syncResult.unsupported }} no interpretados.
+      </p>
       <section class="finora-home-hero" aria-label="Tu dinero disponible">
         <span class="finora-home-hero-icon"><app-icon name="wallet" [size]="26" /></span>
         <div class="finora-home-hero-content">
@@ -83,6 +87,8 @@
             </ng-template>
           </ng-container>
           <ng-template #finoraHeroLoading><h2>Preparando tu panorama...</h2><p>Estamos consultando tu plan de dinero disponible.</p></ng-template>
+          <p *ngIf="planningSummary?.balanceConfirmedAt">Saldo confirmado el {{ planningSummary?.balanceConfirmedAt | date:'dd/MM/yyyy HH:mm':'-0500' }} (Lima)</p>
+          <p *ngFor="let alert of planningSummary?.alerts" role="status">{{ alert }}</p>
           <p class="finora-home-hero-error" *ngIf="planningSummaryError">{{ planningSummaryError }} <button type="button" (click)="loadPlanningSummary()">Reintentar</button></p>
           <button type="button" class="finora-home-hero-action" (click)="go('planning')">{{ planningSummary?.projection ? 'Ver mi plan' : 'Calcular mi disponible' }}<app-icon name="arrow" [size]="16" /></button>
         </div>
@@ -188,6 +194,7 @@
             <select name="movementCategory" [(ngModel)]="movementFilters.category" (ngModelChange)="updateMovementFilters()">
               <option value="">Todas</option>
               <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+              <option value="Sin categoría">Sin categoría</option>
             </select>
           </label>
           <label>Tipo
@@ -202,21 +209,23 @@
               <option value="REFUND">Devolución</option>
             </select>
           </label>
+          <label>Moneda <input name="movementCurrency" maxlength="3" placeholder="PEN, USD..." [(ngModel)]="movementFilters.currency" (ngModelChange)="updateMovementFilters()"></label>
           <button class="ghost compact" type="button" (click)="resetMovementFilters()" [disabled]="!hasMovementFilters()">Restablecer</button>
         </div>
-        <div class="result-count" *ngIf="transactions.length">{{ filteredTransactions().length }} de {{ transactions.length }} movimientos</div>
-        <div class="empty" *ngIf="transactionsLoading" role="status"><span class="skeleton"></span>Cargando tus movimientos…</div><div class="empty" *ngIf="!transactionsLoading && transactions.length === 0"><app-icon name="rows" [size]="28" /><strong>Todo empieza con un movimiento</strong><p>Registra tu primer ingreso o gasto, o conecta Gmail.</p></div>
-        <div class="empty" *ngIf="transactions.length > 0 && filteredTransactions().length === 0">No hay resultados para estos filtros.</div>
+        <div class="form-error" role="alert" *ngIf="movementError">{{ movementError }} <button type="button" class="ghost compact" (click)="loadTransactions()">Reintentar</button></div>
+        <div class="result-count" *ngIf="!transactionsLoading && !movementError">{{ movementTotal }} movimientos encontrados</div>
+        <div class="empty" *ngIf="transactionsLoading" role="status">Cargando tus movimientos…</div>
+        <div class="empty" *ngIf="!transactionsLoading && !movementError && movementTotal === 0">{{ hasMovementFilters() ? 'No hay resultados para estos filtros.' : 'Registra tu primer movimiento o conecta Gmail.' }}</div>
         <div class="tx tx-actions" *ngFor="let tx of pagedTransactions()">
           <span>{{ movementTitle(tx) }} <small><span class="category-tag">{{ tx.category || tx.macroCategory || 'Otros' }}</span> {{ movementDate(tx.date) }} · {{ movementTypeLabel(tx.type) }} <span class="recurring-tag" *ngIf="tx.recurring">Recurrente</span></small></span>
           <b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : tx.type === 'EXPENSE' ? '−' : '' }}{{ money(tx.amount,tx.currency) }}</b>
           <button class="ghost compact" (click)="editTransaction(tx)">Editar</button>
           <button class="danger compact" (click)="deleteTransaction(tx.id)" [disabled]="deletingTransactionIds.has(tx.id)">{{ deletingTransactionIds.has(tx.id) ? 'Eliminando…' : 'Eliminar' }}</button>
         </div>
-        <div class="pager" *ngIf="filteredTransactions().length > movementPageSize">
-          <button class="ghost compact" type="button" (click)="previousMovementPage()" [disabled]="movementPage === 1">Anterior</button>
+        <div class="pager" *ngIf="movementTotal > movementPageSize">
+          <button class="ghost compact" type="button" (click)="previousMovementPage()" [disabled]="transactionsLoading || movementPage === 1">Anterior</button>
           <span>Página {{ movementPage }} de {{ movementTotalPages() }}</span>
-          <button class="ghost compact" type="button" (click)="nextMovementPage()" [disabled]="movementPage === movementTotalPages()">Siguiente</button>
+          <button class="ghost compact" type="button" (click)="nextMovementPage()" [disabled]="transactionsLoading || movementPage === movementTotalPages()">Siguiente</button>
         </div>
       </article>
     </section>

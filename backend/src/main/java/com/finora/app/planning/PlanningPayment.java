@@ -11,6 +11,8 @@ public class PlanningPayment {
   @Column(nullable=false,length=100) public String name;
   @Column(name="due_date",nullable=false) public LocalDate dueDate;
   @Column(nullable=false,precision=16,scale=2) public BigDecimal amount;
+  @Column(name="paid_at") public java.time.Instant paidAt;
+  @Version public Long version;
   @ManyToOne(fetch=FetchType.LAZY, optional=false)
   @JoinColumn(name="user_id", insertable=false, updatable=false, foreignKey=@ForeignKey(name="fk_planningpayment_user"))
   private com.finora.app.auth.User user;
