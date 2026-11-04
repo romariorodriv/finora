@@ -19,10 +19,13 @@ public class SecurityConfig {
   }
 
   @Bean
-  SecurityFilterChain chain(HttpSecurity h, JwtFilter f, CorsConfigurationSource corsConfigurationSource,
+  SecurityFilterChain chain(HttpSecurity h, JwtFilter f, com.finora.app.auth.google.SessionOriginFilter origins, CorsConfigurationSource corsConfigurationSource,
       @Value("${spring.h2.console.enabled:false}") boolean h2Console) throws Exception {
     return h.cors(c -> c.configurationSource(corsConfigurationSource))
         .csrf(c -> c.disable())
+        .exceptionHandling(e -> e.authenticationEntryPoint((request,response,error)->{
+          response.setStatus(401);response.setContentType("application/json");response.getWriter().write("{\"code\":\"SESSION_REQUIRED\",\"message\":\"Inicia sesión con Google\"}");
+        }))
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(a -> {
           a.requestMatchers("/api/admin/**", "/api/v1/admin/**").hasRole("ADMIN");
@@ -36,6 +39,7 @@ public class SecurityConfig {
         })
         .headers(x -> x.frameOptions(y -> y.sameOrigin()))
         .addFilterBefore(f, UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(origins, JwtFilter.class)
         .build();
   }
 
@@ -46,7 +50,7 @@ public class SecurityConfig {
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
     config.setExposedHeaders(List.of("Location"));
-    config.setAllowCredentials(false);
+    config.setAllowCredentials(true);
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", config);
     return source;

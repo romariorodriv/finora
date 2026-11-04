@@ -67,4 +67,12 @@ describe('dashboard transformations', () => {
     expect(merchants[1].merchant).toBe('__OTHER_MERCHANTS__');
     expect(merchants.map(item => item.percentage)).toEqual([28, 38]);
   });
+  it('shows a review insight for the uncategorized catalog bucket', () => {
+    const categories = calculateMacroCategoryDistribution([
+      {macroCategory: 'UNCATEGORIZED', label: 'Sin categoría', total: 100, percentage: 100}
+    ], colors);
+    expect(generateFinancialInsight(categories, 100)).toContain('todavia no pudo clasificar');
+    expect(categories[0].macroCategory).toBe('UNCATEGORIZED');
+  });
+
 });

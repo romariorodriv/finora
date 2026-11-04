@@ -15,7 +15,7 @@ public class TokenCipher {
     private final SecretKeySpec key;
     private final SecureRandom random = new SecureRandom();
 
-    public TokenCipher(@Value("${app.gmail.token-encryption-key:finora-local-demo-key-change-me}") String secret) {
+    public TokenCipher(@Value("${app.gmail.token-encryption-key}") String secret) {
         try { this.key = new SecretKeySpec(MessageDigest.getInstance("SHA-256").digest(secret.getBytes(StandardCharsets.UTF_8)), "AES"); }
         catch (Exception e) { throw new IllegalStateException("No se pudo inicializar el cifrado", e); }
     }

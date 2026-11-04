@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "imported_messages", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "external_message_id"}))
+@Table(name = "imported_messages", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "gmail_connection_id", "external_message_id"}))
 public class ImportedMessage {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) public Long id;
     @Column(name = "user_id", nullable = false) public Long userId;
@@ -20,6 +20,7 @@ public class ImportedMessage {
     public String parserVersion;
     public Double confidence;
     public String errorCode;
+    @Column(nullable=false) public int processingAttempts;
     public Long createdTransactionId;
     public Instant createdAt = Instant.now();
     public Instant updatedAt = Instant.now();

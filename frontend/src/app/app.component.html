@@ -1,4 +1,4 @@
-<app-landing *ngIf="!auth.user && publicView === 'landing'" (accessRequested)="openAccess($event)"></app-landing>
+<app-landing *ngIf="!auth.user && publicView === 'landing'" (accessRequested)="openAccess($event); continueWithGoogle()"></app-landing>
 <section *ngIf="!auth.user && publicView === 'access'" class="auth">
   <button class="auth-back" type="button" (click)="returnToLanding()" [disabled]="authSubmitting"><app-icon name="arrow" [size]="15" />Volver a Sarela</button>
   <div class="auth-copy">
@@ -11,26 +11,21 @@
   </div>
 
   <div class="login-card">
-    <div class="auth-tabs" role="group" aria-label="Acceso a Sarela">
-      <button type="button" [class.active]="authMode === 'login'" (click)="openAccess('login')" [disabled]="authSubmitting">Ingresar</button>
-      <button type="button" [class.active]="authMode === 'register'" (click)="openAccess('register')" [disabled]="authSubmitting">Crear cuenta</button>
-    </div>
-    <form *ngIf="authMode === 'login'" (ngSubmit)="login()" [attr.aria-busy]="authSubmitting">
-      <p class="eyebrow">BIENVENIDO DE NUEVO</p><h2>Qué bueno verte.</h2>
-      <p class="form-intro">Ingresa para revisar tus finanzas.</p>
-      <label>Correo <input name="email" type="email" autocomplete="email" [(ngModel)]="loginForm.email" required></label>
-      <label>Contraseña <input name="password" type="password" autocomplete="current-password" [(ngModel)]="loginForm.password" required></label>
-      <button class="primary full" type="submit" [disabled]="authSubmitting">{{ authSubmitting ? 'Ingresando…' : 'Ingresar' }}</button>
+    <ng-container *ngIf="!linkRequired">
+      <p class="eyebrow">TU ESPACIO PERSONAL</p><h2>Continúa con Google.</h2>
+      <p class="form-intro">Usamos Google para verificar tu identidad. El permiso para leer Gmail se solicita después y es opcional.</p>
+      <button class="primary full google-access" type="button" (click)="continueWithGoogle()" [disabled]="authSubmitting">{{authSubmitting ? 'Conectando…' : 'Continuar con Google'}}</button>
+      <p class="form-intro">Si ya usabas Sarela, podrás vincular tu cuenta y conservar tus movimientos.</p>
+    </ng-container>
+    <form *ngIf="linkRequired" (ngSubmit)="linkGoogleAccount()">
+      <h2>Conserva tu cuenta anterior.</h2>
+      <p>Google verificó tu identidad. Confirma tu contraseña anterior de Sarela para vincular la cuenta existente, incluidos sus movimientos y permisos.</p>
+      <label>Contraseña anterior de Sarela<input name="linkPassword" type="password" autocomplete="current-password" [(ngModel)]="linkPassword" maxlength="256" required></label>
+      <button class="primary full" [disabled]="authSubmitting || !linkPassword">Vincular cuenta</button>
+      <button class="ghost full" type="button" (click)="linkRequired=false;continueWithGoogle()">Usar otra cuenta de Google</button>
+      <small>Si no recuerdas la contraseña, solicita recuperación al operador. No vinculamos cuentas solo porque coincida el correo.</small>
     </form>
-    <form *ngIf="authMode === 'register'" (ngSubmit)="register()" [attr.aria-busy]="authSubmitting">
-      <p class="eyebrow">TU SIGUIENTE PASO</p><h2>Empieza con claridad.</h2>
-      <p class="form-intro">Crea tu cuenta en menos de un minuto.</p>
-      <label>Nombre <input name="name" autocomplete="name" [(ngModel)]="registerForm.name" required></label>
-      <label>Correo <input name="registerEmail" type="email" autocomplete="email" [(ngModel)]="registerForm.email" required></label>
-      <label>Contraseña <input name="registerPassword" type="password" autocomplete="new-password" minlength="8" [(ngModel)]="registerForm.password" required></label>
-      <label>Confirmar contraseña <input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" [(ngModel)]="registerForm.confirmPassword" required></label>
-      <button class="primary full" type="submit" [disabled]="authSubmitting">{{ authSubmitting ? 'Creando tu cuenta…' : 'Crear cuenta' }}</button>
-    </form>
+    <p class="legal-links"><a href="/privacidad.html" target="_blank" rel="noopener">Privacidad</a> · <a href="/terminos.html" target="_blank" rel="noopener">Términos</a> · <a href="/eliminar-datos.html" target="_blank" rel="noopener">Eliminar datos</a></p>
     <p class="form-error" role="alert" *ngIf="error">{{ error }}</p>
   </div>
 </section>
@@ -57,7 +52,13 @@
     </header>
     <router-outlet></router-outlet>
     <app-planning *ngIf="view === 'planning'"></app-planning>
-    <section *ngIf="view === 'dashboard'" class="view dashboard-view">
+    <section class="panel import-wait" *ngIf="view==='dashboard' && waitingForImport()" role="status">
+      <p class="eyebrow">TU PRIMERA IMPORTACIÓN</p><h2>{{importStatusLabel()}}</h2>
+      <p>{{gmailJobError || syncResult?.message || 'Estamos comprobando el estado de la importación.'}}</p>
+      <p>El resumen todavía no está completo. Esto no significa que no tengas gastos.</p>
+      <button class="primary" (click)="go('import')">Ver progreso y conexión</button>
+    </section>
+    <section *ngIf="view === 'dashboard' && !waitingForImport()" class="view dashboard-view">
       <div class="dashboard-intro"><div><p class="eyebrow">TU PANORAMA FINANCIERO</p><h1>Tu dinero, con más claridad.</h1><p>Hola, {{ auth.user.name.split(' ')[0] }}. Cada decisión empieza por entender dónde estás.</p></div><label class="currency-selector" *ngIf="dashboard?.availableCurrencies && dashboard!.availableCurrencies!.length>1">Moneda del resumen<select [(ngModel)]="selectedCurrency" (ngModelChange)="loadDashboard()"><option *ngFor="let unit of dashboard?.availableCurrencies" [value]="unit">{{unit==='UNK'?'Sin moneda registrada':unit}}</option></select></label><span class="date-chip"><app-icon name="calendar" [size]="16" />{{ monthLabel() }}</span></div>
       <div class="form-error" role="alert" *ngIf="dashboardError">{{ dashboardError }} <button class="ghost compact" type="button" (click)="loadDashboard()">Reintentar</button></div>
       <div class="overview-grid">
@@ -86,7 +87,9 @@
       </div>
       <div class="dashboard-bottom"><article class="panel recent-panel"><div class="panel-heading"><div><p class="eyebrow">LO MÁS RECIENTE</p><h3>Últimos movimientos</h3></div><button class="text-link" type="button" (click)="go('movements')">Ver todos<app-icon name="arrow" [size]="15" /></button></div><div class="empty" *ngIf="!dashboard?.transactions?.length"><app-icon name="rows" [size]="26" /><p>Tu historial empieza con el primer movimiento.</p></div><div class="tx" *ngFor="let tx of dashboard?.transactions"><span class="transaction-mark"><app-icon [name]="tx.type === 'INCOME' ? 'downLeft' : 'upRight'" [size]="17" /></span><span><strong>{{ movementTitle(tx) }}</strong><small>{{ movementDate(tx.date) }} · {{ tx.category || tx.macroCategory || 'Otros' }}</small></span><b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : tx.type === 'EXPENSE' ? '−' : '' }}{{ money(tx.amount,tx.currency) }}</b></div></article>
       <article class="panel recurring-panel"><div class="panel-heading"><div><p class="eyebrow">COMPROMISOS HABITUALES</p><h3>Suscripciones y recurrentes</h3></div><app-icon name="repeat" [size]="19" /></div><p class="section-copy">Cargos registrados como recurrentes este mes.</p><div class="recurring-total" *ngIf="dashboard?.recurring?.length">{{ money(recurringTotal()) }}<small>total registrado</small></div><div class="tx" *ngFor="let tx of dashboard?.recurring"><span><strong>{{ movementTitle(tx) }}</strong><small>{{ tx.category }}</small></span><b>{{ money(tx.amount,tx.currency) }}</b></div><div class="empty" *ngIf="!dashboard?.recurring?.length"><app-icon name="repeat" [size]="26" /><p>Aquí verás los movimientos que marques como recurrentes.</p></div></article></div>
-      <article *ngIf="gmail" class="connection-banner"><span class="banner-icon"><app-icon name="mail" /></span><div><b>{{ gmail.connected ? 'Tu conexión está lista.' : 'Dale menos trabajo a tus finanzas.' }}</b><p>{{ gmail.connected ? (gmailUpdateStatus || gmailStatusCopy()) : 'Conecta Gmail e importa tus notificaciones bancarias.' }}</p></div><button class="ghost compact" type="button" *ngIf="gmail.connected" (click)="syncGmail()" [disabled]="syncingGmail"><app-icon name="refresh" [size]="15" />{{ syncingGmail ? 'Actualizando…' : 'Actualizar' }}</button><button class="ghost compact" type="button" *ngIf="!gmail.connected" (click)="go('import')">Ver conexión<app-icon name="arrow" [size]="15" /></button></article>
+      <p class="panel import-notice" role="status" *ngIf="syncResult && (syncResult.status!=='COMPLETED' || syncResult.reviewRequired>0 || syncResult.unsupported>0 || syncResult.failed>0)">{{syncResult.message}} El resumen muestra solo movimientos registrados hasta ahora.<span *ngIf="syncResult.reviewRequired>0 || syncResult.unsupported>0"> Hay {{syncResult.reviewRequired}} correos por revisar y {{syncResult.unsupported}} no interpretados en el periodo consultado. Esto no representa todo tu historial bancario.</span></p>
+      <p class="import-notice" *ngIf="syncResult?.stale">La información puede estar desactualizada. Última consulta: {{importDate(gmail?.lastSyncAt)}}.</p>
+      <article *ngIf="gmail" class="connection-banner"><span class="banner-icon"><app-icon name="mail" /></span><div><b>{{ gmail.connected ? 'Tu conexión está lista.' : 'Dale menos trabajo a tus finanzas.' }}</b><p>{{ gmail.connected ? (gmailUpdateStatus || gmailStatusCopy()) : 'Conecta Gmail e importa tus notificaciones bancarias.' }}</p></div><button class="ghost compact" type="button" *ngIf="gmail.connected" (click)="syncGmail()" [disabled]="syncingGmail || importActive()"><app-icon name="refresh" [size]="15" />{{ syncingGmail ? 'Actualizando…' : 'Actualizar' }}</button><button class="ghost compact" type="button" *ngIf="!gmail.connected" (click)="go('import')">Ver conexión<app-icon name="arrow" [size]="15" /></button></article>
       <article class="feedback-card"><div><app-icon name="message" /><div><h3>Tu opinión hace la diferencia.</h3><p>Ayúdanos a hacer tus finanzas un poco más claras.</p></div></div><button class="ghost compact" type="button" (click)="openFeedback()">Compartir mi opinión<app-icon name="arrow" [size]="15" /></button></article>
     </section>
     <section *ngIf="view === 'movements'" class="view two movements-view">
@@ -162,17 +165,39 @@
         </div>
         <div class="connection-actions">
           <button class="primary" *ngIf="!gmail?.connected && gmail?.configured" (click)="connectGmail()">Conectar Gmail</button>
-          <button class="primary" *ngIf="gmail?.connected" (click)="syncGmail()" [disabled]="syncingGmail">{{ syncingGmail ? 'Actualizando...' : 'Actualizar movimientos' }}</button>
+          <button class="primary" *ngIf="gmail?.connected" (click)="syncGmail()" [disabled]="syncingGmail || importActive()">{{ syncingGmail ? 'Actualizando...' : 'Actualizar movimientos' }}</button>
           <button class="ghost" *ngIf="gmail?.connected" (click)="disconnectGmail()">Desconectar</button>
         </div>
         <p class="setup-note" *ngIf="gmail && !gmail.connected && !gmail.configured">La conexión estará disponible cuando se complete la configuración.</p>
       </article>
+      <section class="panel gmail-consent" *ngIf="gmailConsentOpen" aria-label="Permiso de Gmail">
+        <h3>Antes de conectar Gmail</h3>
+        <p>Google concederá permiso de solo lectura de Gmail. Sarela buscará notificaciones candidatas de compras, pagos, ingresos y transferencias de los últimos {{gmail?.initialSyncDays || 90}} días. Solo convierte formatos compatibles; no obtiene todo tu historial bancario.</p>
+        <p>Las fechas importadas corresponden a la recepción del correo, no a una fecha bancaria inferida. No enviamos, modificamos ni eliminamos correos. Los tokens permanecen cifrados en el servidor. Conservamos movimientos y metadatos necesarios para evitar duplicados; no guardamos el cuerpo completo del correo.</p>
+        <p>Puedes rechazar el permiso y seguir usando Sarela. Al desconectar Gmail se detiene la importación; los movimientos ya importados se conservan.</p>
+        <a href="/privacidad.html" target="_blank" rel="noopener">Leer privacidad y límites</a>
+        <div class="actions"><button class="primary" (click)="authorizeGmail()">Entendido, autorizar lectura</button><button class="ghost" (click)="gmailConsentOpen=false;go('dashboard')">Ahora no, ir al resumen</button></div>
+      </section>
+      <section class="panel gmail-job" *ngIf="syncResult as job" aria-live="polite">
+        <p class="eyebrow">IMPORTACIÓN DE NOTIFICACIONES</p><h3>{{importStatusLabel()}}</h3>
+        <p>{{job.message}}</p><p>Periodo consultado: {{importDate(job.periodFrom)}} a {{importDate(job.periodUntil)}}</p>
+        <p>Última actividad: {{importDate(job.updatedAt)}}<span *ngIf="job.stale"> · Información pendiente de actualizar</span></p>
+        <dl class="import-counts"><div><dt>Correos revisados</dt><dd>{{job.messagesFound}}</dd></div><div><dt>Movimientos nuevos</dt><dd>{{job.transactionsCreated}}</dd></div><div><dt>Duplicados evitados</dt><dd>{{job.duplicatesSkipped}}</dd></div><div><dt>Por revisar</dt><dd>{{job.reviewRequired}}</dd></div><div><dt>No interpretados</dt><dd>{{job.unsupported}}</dd></div><div><dt>Fallidos</dt><dd>{{job.failed}}</dd></div></dl>
+        <p *ngIf="job.status==='COMPLETED' && job.messagesFound===0">No encontramos correos candidatos en este periodo. Esto no representa todo tu historial bancario.</p>
+        <p *ngIf="job.nextAttemptAt">Próximo reintento: {{importDate(job.nextAttemptAt)}}</p>
+        <p *ngIf="job.status==='PARTIAL' || job.status==='ERROR'">La información está incompleta. Revisa los pendientes y vuelve a actualizar.</p>
+        <button class="ghost" (click)="loadGmailReview()">Ver correos no interpretados o pendientes</button>
+        <button class="ghost" (click)="go('dashboard')">Ver resumen registrado</button>
+      </section>
+      <p class="form-error" role="alert" *ngIf="gmailJobError">{{gmailJobError}} <button class="ghost" (click)="loadGmailJob()">Reintentar consulta</button></p>
+      <section class="panel gmail-review" *ngIf="gmailReview as review"><h3>Correos pendientes o no compatibles</h3><p>Consulta el correo original en Gmail para revisar su información. No se han inventado movimientos para estos casos.</p><ul><li *ngFor="let item of review.items">{{item.subject || 'Sin asunto'}} · {{item.status}} · {{importDate(item.receivedAt)}}</li></ul><p *ngIf="!review.items.length">No hay correos pendientes en esta página.</p><button class="ghost" [disabled]="review.page===0" (click)="loadGmailReview(review.page-1)">Anterior</button><button class="ghost" [disabled]="review.page+1>=review.totalPages" (click)="loadGmailReview(review.page+1)">Siguiente</button></section>
+      <section class="panel privacy-actions"><h3>Tus datos</h3><p>Desconectar Gmail conserva los movimientos ya importados. Si deseas eliminarlos junto con tu cuenta, puedes registrar una solicitud autenticada para el operador.</p><button class="ghost" (click)="requestDataDeletion()">Solicitar eliminación de mis datos</button><p role="status" *ngIf="deletionMessage">{{deletionMessage}}</p><a href="/eliminar-datos.html" target="_blank" rel="noopener">Cómo se tramita la eliminación</a></section>
       <div class="connection-benefits"><article><app-icon name="search" /><h3>Menos trabajo manual</h3><p>Encuentra movimientos en tus notificaciones bancarias.</p></article><article><app-icon name="refresh" /><h3>A tu ritmo</h3><p>Actualiza tus movimientos cuando lo necesites.</p></article><article><app-icon name="shield" /><h3>Tú tienes el control</h3><p>Puedes desconectar tu cuenta desde esta pantalla.</p></article></div>
-      <div class="update-summary" *ngIf="syncResult">
+      <div class="update-summary" *ngIf="syncResult && (syncResult.status==='COMPLETED' || syncResult.status==='PARTIAL')">
         Encontramos {{ syncResult.transactionsCreated }} movimientos nuevos. Omitimos {{ syncResult.duplicatesSkipped }} que ya estaban registrados.
       </div>
       <form class="panel dev-tools" *ngIf="showDevTools" (ngSubmit)="importEmail()">
-        <h3>Herramienta interna de detección</h3>
+        <h3>Herramienta interna de detección</h3><label>Fecha verificada<input type="date" name="verifiedDate" [(ngModel)]="importForm.date" required></label>
         <label>Remitente <input name="sender" [(ngModel)]="importForm.sender"></label>
         <label>Contenido <textarea name="content" rows="6" [(ngModel)]="importForm.content"></textarea></label>
         <button class="primary" type="submit">Revisar movimiento</button>

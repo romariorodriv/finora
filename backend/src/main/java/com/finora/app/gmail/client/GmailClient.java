@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 public interface GmailClient {
-    record Tokens(String accessToken, String refreshToken, long expiresInSeconds) {}
+    record Tokens(String accessToken, String refreshToken, long expiresInSeconds) { @Override public String toString(){return "Tokens[REDACTED]";} }
     record Profile(String emailAddress) {}
     record MessageRef(String id, String threadId) {}
     record Page(List<MessageRef> messages, String nextPageToken) {}

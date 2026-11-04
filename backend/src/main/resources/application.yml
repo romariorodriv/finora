@@ -5,13 +5,18 @@ spring:
     username: ${DB_USERNAME:${DB_USER:sa}}
     password: ${DB_PASSWORD:}
   jpa:
-    hibernate.ddl-auto: ${JPA_DDL_AUTO:update}
+    hibernate.ddl-auto: ${JPA_DDL_AUTO:validate}
     open-in-view: false
   h2.console.enabled: ${H2_CONSOLE_ENABLED:false}
 server.port: ${PORT:8080}
 app:
-  jwt-secret: ${JWT_SECRET:finora-demo-secret-change-in-production-2026-strong}
-  demo-data: ${DEMO_DATA:true}
+  auth:
+    secure-cookies: ${AUTH_SECURE_COOKIES:true}
+    google-redirect-uri: ${GOOGLE_LOGIN_REDIRECT_URI:http://localhost:8080/api/v1/auth/google/callback}
+  categories:
+    seed-defaults: ${CATEGORY_SEED_DEFAULTS:false}
+  jwt-secret: ${JWT_SECRET}
+  demo-data: ${DEMO_DATA:false}
   frontend-url: ${FRONTEND_BASE_URL:http://localhost:4200}
   cors:
     allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:4200}
@@ -19,8 +24,15 @@ app:
     client-id: ${GOOGLE_CLIENT_ID:}
     client-secret: ${GOOGLE_CLIENT_SECRET:}
     redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/api/v1/integrations/gmail/callback}
-    token-encryption-key: ${TOKEN_ENCRYPTION_KEY:finora-local-demo-key-change-me}
-    initial-sync-days: ${GMAIL_INITIAL_SYNC_DAYS:30}
+    token-encryption-key: ${TOKEN_ENCRYPTION_KEY}
+    initial-sync-days: ${GMAIL_INITIAL_SYNC_DAYS:90}
+    jobs:
+      enabled: ${GMAIL_JOBS_ENABLED:true}
+    max-pages: ${GMAIL_MAX_PAGES:1000}
+    page-size: ${GMAIL_PAGE_SIZE:50}
+    overlap-hours: ${GMAIL_OVERLAP_HOURS:48}
+    sync-interval-minutes: ${GMAIL_SYNC_INTERVAL_MINUTES:60}
+    stale-minutes: ${GMAIL_STALE_MINUTES:120}
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

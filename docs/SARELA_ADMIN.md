@@ -89,3 +89,16 @@ Las integraciones cubren anónimo/USER sin acceso administrativo, registro sin a
 - Antes de producción: revisión humana, backup, migración ensayada sobre copia representativa, configuración/secretos propios y autorización explícita de despliegue/migración.
 - No se cambiaron dependencias npm en esta tarea. Véase SARELA_2_2_NPM_AUDIT.md para riesgos anteriores aún pendientes.
 - No se desplegó, no se migró AWS/producción, no se cambió main y no se promovió ninguna cuenta real.
+
+## Corrección posterior: dashboard basado en catálogo administrado
+El dashboard deja de reconstruir categorías a partir de etiquetas y macros históricas. Una transacción EXPENSE sin category_id válido se muestra bajo UNCATEGORIZED / Sin categoría, incluidos los movimientos recientes, recurrentes y detalles del dashboard. Los nombres y colores provienen del catálogo actual. Categorías desactivadas que conservan asociaciones siguen describiendo ese historial; una categoría eliminada no reaparece por clasificación automática al consultar el resumen.
+
+El detalle acepta CAT_<id> o UNCATEGORIZED. Los enlaces antiguos con macros como SUSCRIPCIONES dejan de recuperar categorías borradas y responden INVALID_CATEGORY. No se cambian las filas históricas al consultar; /transactions conserva los datos originales. Totales por moneda, exclusión de transferencias/ahorros y filtros por usuario se mantienen.
+
+La carga de categorías base queda deshabilitada por defecto mediante app.categories.seed-defaults, configurable con CATEGORY_SEED_DEFAULTS. Mantener CATEGORY_SEED_DEFAULTS=false (o sin definir) cuando se administra el catálogo desde cero. true se reserva para carga explícita de ejemplos; las pruebas lo habilitan en su base desechable. La migración original V2_3 también contiene semillas: no volver a ejecutarla para probar este cambio sobre un catálogo vaciado.
+
+Validación de la corrección: mvn clean package, 101 pruebas backend correctas; Angular headless, 52 correctas; build Angular production correcto; git diff --check correcto. El paquete se construyó en una copia temporal idéntica para conservar los procesos locales abiertos. Artefacto independiente: backend/target/finora-catalog-preview.jar.
+
+Para revisar localmente, ejecutar ese JAR con una base de pruebas cuyo catálogo esté vacío: los gastos deben agruparse en Sin categoría. Crear una categoría y corregir un gasto desde Administración: solo ese gasto debe aparecer en la categoría nueva; las sumas totales no cambian. Reiniciar con la carga base deshabilitada conserva el catálogo administrado.
+
+No se cambió la moneda histórica, no se ejecutó SQL remoto ni se desplegó. Esta versión necesita publicación de backend y frontend para verse en AWS. Confirmar que CATEGORY_SEED_DEFAULTS no esté habilitado antes de arrancar el backend actualizado.

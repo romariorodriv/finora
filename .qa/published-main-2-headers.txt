@@ -1,0 +1,11 @@
+HTTP/1.1 403 Forbidden
+Content-Type: application/xml
+Transfer-Encoding: chunked
+Connection: keep-alive
+Server: AmazonS3
+Date: Sat, 24 Oct 2026 00:42:02 GMT
+X-Cache: Error from cloudfront
+Via: 1.1 487a04a5ef9796f39f195e0b354d392c.cloudfront.net (CloudFront)
+X-Amz-Cf-Pop: LIM50-P2
+X-Amz-Cf-Id: Gliunbvrt6CfCiK7T3_-wMjD4D7s5y8s_POdQ2K2OlM7nKR8xpMv8Q==
+

@@ -1,0 +1,331 @@
+{
+  "url": "http://127.0.0.1:61642/",
+  "syntheticApiOnly": true,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "checks": [
+        {
+          "name": "observer budget not reached",
+          "passed": false
+        },
+        {
+          "name": "dashboard data",
+          "passed": false
+        },
+        {
+          "name": "two painted charts",
+          "passed": true
+        },
+        {
+          "name": "no continuing mutation loop",
+          "passed": true
+        },
+        {
+          "name": "no continuing resize loop",
+          "passed": true
+        },
+        {
+          "name": "animation stops when idle",
+          "passed": true
+        }
+      ],
+      "afterLogin": {
+        "mutationCallbacks": 502,
+        "resizeCallbacks": 2,
+        "frames": 108,
+        "timers": 7,
+        "observerBudgetExceeded": true,
+        "samples": [
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          }
+        ],
+        "longTasks": [
+          127,
+          67,
+          254
+        ]
+      },
+      "afterIdle": {
+        "mutationCallbacks": 502,
+        "resizeCallbacks": 2,
+        "frames": 108,
+        "timers": 7,
+        "observerBudgetExceeded": true,
+        "samples": [
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          }
+        ],
+        "longTasks": [
+          127,
+          67,
+          254
+        ]
+      },
+      "charts": [
+        {
+          "width": 692,
+          "height": 220,
+          "painted": 12171
+        },
+        {
+          "width": 175,
+          "height": 175,
+          "painted": 13328
+        }
+      ],
+      "errors": [],
+      "apiCalls": [
+        {
+          "method": "POST",
+          "path": "/auth/login"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "checks": [
+        {
+          "name": "observer budget not reached",
+          "passed": false
+        },
+        {
+          "name": "dashboard data",
+          "passed": false
+        },
+        {
+          "name": "two painted charts",
+          "passed": true
+        },
+        {
+          "name": "no continuing mutation loop",
+          "passed": true
+        },
+        {
+          "name": "no continuing resize loop",
+          "passed": true
+        },
+        {
+          "name": "animation stops when idle",
+          "passed": true
+        }
+      ],
+      "afterLogin": {
+        "mutationCallbacks": 502,
+        "resizeCallbacks": 2,
+        "frames": 107,
+        "timers": 9,
+        "observerBudgetExceeded": true,
+        "samples": [
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          }
+        ],
+        "longTasks": [
+          92,
+          56,
+          215
+        ]
+      },
+      "afterIdle": {
+        "mutationCallbacks": 502,
+        "resizeCallbacks": 2,
+        "frames": 107,
+        "timers": 9,
+        "observerBudgetExceeded": true,
+        "samples": [
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          },
+          {
+            "records": 2,
+            "removed": 1,
+            "added": 1,
+            "origin": "Error\n    at new window.MutationObserver (<anonymous>:13:22)\n    at new Y.<computed> (http://127.0.0.1:61642/polyfills-5CFQRCPP.js:1:13337)\n    at PA (http://127.0.0.1:61642/main-7G6O4ENY.js:8:190507)\n    at Tp.addEventListener (http://127.0.0.1:61642/main-7G6O4ENY.js:8:191897)\n    at r (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232927)\n    at l (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233134)\n    at e.bindResponsiveEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:233259)\n    at e.bindEvents (http://127.0.0.1:61642/main-7G6O4ENY.js:8:232551)\n    at e._initialize (http://127.0.0.1:61642/main-7G6O4ENY.js:8:224046)\n    at new e (http://127.0.0.1:61642/main-7G6O4ENY.js:8:223565)"
+          }
+        ],
+        "longTasks": [
+          92,
+          56,
+          215
+        ]
+      },
+      "charts": [
+        {
+          "width": 324,
+          "height": 200,
+          "painted": 6880
+        },
+        {
+          "width": 175,
+          "height": 175,
+          "painted": 13328
+        }
+      ],
+      "errors": [],
+      "apiCalls": [
+        {
+          "method": "POST",
+          "path": "/auth/login"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/categories"
+        },
+        {
+          "method": "GET",
+          "path": "/integrations/gmail/status"
+        }
+      ],
+      "pending": []
+    }
+  ],
+  "browser": "155.0.4283.62"
+}

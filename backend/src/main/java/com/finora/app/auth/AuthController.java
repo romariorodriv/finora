@@ -15,11 +15,11 @@ public class AuthController {
 
   @PostMapping("/register")
   public ResponseEntity<AuthDtos.AuthResponse> register(@Valid @RequestBody AuthDtos.RegisterRequest r) {
-    return ResponseEntity.status(201).body(auth.register(r));
+    throw new com.finora.app.shared.error.ApiException(410,"GOOGLE_SIGN_IN_REQUIRED","Continúa con Google para crear tu cuenta.");
   }
 
   @PostMapping("/login")
   public AuthDtos.AuthResponse login(@Valid @RequestBody AuthDtos.LoginRequest r) {
-    return auth.login(r);
+    throw new com.finora.app.shared.error.ApiException(410,"GOOGLE_SIGN_IN_REQUIRED","Continúa con Google para ingresar.");
   }
 }
