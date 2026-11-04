@@ -543,6 +543,47 @@ export class AppComponent implements OnInit, OnDestroy {
     return new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' }).format(new Date(`${month}-15T12:00:00`));
   }
 
+  upcomingPlanningPayments(): PlanningState['payments'] {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const end = start + 30 * 86400000;
+    return (this.planningSummary?.payments ?? [])
+      .filter(payment => {
+        const due = this.planningPaymentTime(payment.dueDate);
+        return Number.isFinite(due) && due >= start && due <= end;
+      })
+      .sort((a, b) => this.planningPaymentTime(a.dueDate) - this.planningPaymentTime(b.dueDate))
+      .slice(0, 3);
+  }
+
+  private planningPaymentTime(date: string): number {
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date ?? '')) return Number.NaN;
+    const [year, month, day] = date.split('-').map(Number);
+    const parsed = new Date(year, month - 1, day);
+    return parsed.getFullYear() === year && parsed.getMonth() === month - 1 && parsed.getDate() === day
+      ? parsed.getTime() : Number.NaN;
+  }
+
+  daysUntilPayment(date: string): number {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    return Math.round((this.planningPaymentTime(date) - start) / 86400000);
+  }
+
+  paymentDueLabel(date: string): string {
+    const days = this.daysUntilPayment(date);
+    if (!Number.isFinite(days)) return 'Fecha sin confirmar';
+    if (days === 0) return 'Vence hoy';
+    if (days === 1) return 'Vence mañana';
+    return `Vence en ${days} días`;
+  }
+
+  weeklyGuidance(): number {
+    const projection = this.planningSummary?.projection;
+    if (!projection) return 0;
+    return Math.max(0, Number(projection.dailyLimit) || 0) * Math.min(7, Math.max(0, Number(projection.days) || 0));
+  }
+
   recurringTotal(): number {
     return (this.dashboard?.recurring ?? []).reduce((total, tx) => total + Number(tx.amount), 0);
   }
