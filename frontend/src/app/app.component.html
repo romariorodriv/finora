@@ -33,9 +33,9 @@
 <a class="skip-link" href="#main-content" *ngIf="auth.user">Ir al contenido</a>
 <div *ngIf="auth.user" class="app">
   <aside class="sidebar">
-    <button class="logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al resumen"><span class="brand" aria-hidden="true">S</span><span>Sarela<span class="brand-dot">.</span></span></button>
+    <button class="logo finora-app-logo" type="button" (click)="go('dashboard')" aria-label="Finora, ir al inicio"><span class="finora-app-ring" aria-hidden="true"></span><span>finora</span></button>
     <p class="sidebar-caption">TU ESPACIO</p>
-    <nav aria-label="Navegación principal"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Resumen</span></button>
+    <nav aria-label="Navegación principal"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Inicio</span></button>
       <button type="button" [class.active]="view === 'planning'" [attr.aria-current]="view === 'planning' ? 'page' : null" (click)="go('planning')"><app-icon name="wallet" /><span>Mi dinero disponible</span></button>
       <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>Movimientos</span></button>
       <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>Conexión Gmail</span></button>
@@ -58,39 +58,108 @@
       <p>El resumen todavía no está completo. Esto no significa que no tengas gastos.</p>
       <button class="primary" (click)="go('import')">Ver progreso y conexión</button>
     </section>
-    <section *ngIf="view === 'dashboard' && !waitingForImport()" class="view dashboard-view">
-      <div class="dashboard-intro"><div><p class="eyebrow">TU PANORAMA FINANCIERO</p><h1>Tu dinero, con más claridad.</h1><p>Hola, {{ auth.user.name.split(' ')[0] }}. Cada decisión empieza por entender dónde estás.</p></div><label class="currency-selector" *ngIf="dashboard?.availableCurrencies && dashboard!.availableCurrencies!.length>1">Moneda del resumen<select [(ngModel)]="selectedCurrency" (ngModelChange)="loadDashboard()"><option *ngFor="let unit of dashboard?.availableCurrencies" [value]="unit">{{unit==='UNK'?'Sin moneda registrada':unit}}</option></select></label><span class="date-chip"><app-icon name="calendar" [size]="16" />{{ monthLabel() }}</span></div>
-      <div class="form-error" role="alert" *ngIf="dashboardError">{{ dashboardError }} <button class="ghost compact" type="button" (click)="loadDashboard()">Reintentar</button></div>
-      <div class="overview-grid">
-        <article class="planning-feature" [class.deficit]="planningSummary?.projection?.deficit" aria-live="polite">
-          <div class="feature-top"><span class="feature-icon"><app-icon name="wallet" [size]="24" /></span><span class="eyebrow">MI DINERO DISPONIBLE</span><span class="feature-version">PLAN PERSONAL</span></div>
-          <ng-container *ngIf="!planningSummaryLoading; else planSummaryLoading">
-            <ng-container *ngIf="planningSummary?.projection as projection; else noPlanSummary"><p class="feature-label">Hasta tu próximo ingreso</p><strong class="feature-amount" [class.negative]="projection.deficit">{{ money(projection.available,'PEN') }}</strong><p class="feature-description">Una orientación de <b>{{ money(projection.dailyLimit,'PEN') }} al día</b> durante {{ projection.days }} días.</p><span class="status-badge" [class.danger]="projection.deficit"><app-icon [name]="projection.deficit ? 'info' : 'check'" [size]="13" />{{ projection.deficit ? 'Revisa tus compromisos' : 'Según tu saldo y pagos confirmados' }}</span></ng-container>
-            <ng-template #noPlanSummary><h2>Que tu dinero alcance<br>para lo que viene.</h2><p class="feature-description">Confirma tu saldo, anticipa tus pagos y descubre cuánto puedes reservar para tu día a día.</p></ng-template>
+    <section *ngIf="view === 'dashboard' && !waitingForImport()" class="view dashboard-view finora-home">
+      <header class="finora-home-header">
+        <div><p class="finora-home-kicker">TU DINERO, EN ORDEN</p><h1>Hola, {{ auth.user.name.split(' ')[0] }} <span aria-hidden="true">👋</span></h1><p>Esto es lo importante de tus finanzas hoy.</p></div>
+        <div class="finora-home-period"><app-icon name="calendar" [size]="16" /><span>{{ monthLabel() }}</span></div>
+      </header>
+      <p class="form-error" role="alert" *ngIf="dashboardError">{{ dashboardError }} <button class="ghost compact" type="button" (click)="loadDashboard()">Reintentar</button></p>
+      <label class="currency-selector finora-home-currency" *ngIf="dashboard?.availableCurrencies && dashboard!.availableCurrencies!.length > 1">Moneda del resumen<select [(ngModel)]="selectedCurrency" (ngModelChange)="loadDashboard()"><option *ngFor="let unit of dashboard?.availableCurrencies" [value]="unit">{{unit === 'UNK' ? 'Sin moneda registrada' : unit}}</option></select></label>
+
+      <section class="finora-home-hero" aria-label="Tu dinero disponible">
+        <span class="finora-home-hero-icon"><app-icon name="wallet" [size]="26" /></span>
+        <div class="finora-home-hero-content">
+          <p class="finora-home-hero-eyebrow">TU TRANQUILIDAD FINANCIERA</p>
+          <ng-container *ngIf="!planningSummaryLoading; else finoraHeroLoading">
+            <ng-container *ngIf="planningSummary?.projection as projection; else finoraHeroSetup">
+              <h2 [class.finora-home-deficit]="projection.deficit">{{ projection.deficit ? 'Atención: tus pagos superan tu disponible' : 'Esto te queda para tus próximos días' }}</h2>
+              <strong class="finora-home-headline">{{ money(projection.available, 'PEN') }}</strong>
+              <p>Estimación hasta tu próximo ingreso, después de considerar tu reserva y los pagos que registraste.</p>
+              <div class="finora-home-hero-meta"><span>Orientación diaria: <b>{{ money(projection.dailyLimit, 'PEN') }}</b></span><span>{{ projection.days }} días del plan</span></div>
+            </ng-container>
+            <ng-template #finoraHeroSetup>
+              <h2>¿Cuánto dinero puedes usar con tranquilidad?</h2>
+              <p>Confirma tu saldo y tus próximos pagos para calcular tu dinero disponible. No necesitamos conectarnos a tu banco.</p>
+            </ng-template>
           </ng-container>
-          <ng-template #planSummaryLoading><div class="feature-skeleton" role="status"><span class="skeleton"></span><span class="skeleton"></span><span class="sr-only">Cargando tu disponibilidad</span></div></ng-template>
-          <p class="summary-error" *ngIf="planningSummaryError">{{ planningSummaryError }} <button type="button" (click)="loadPlanningSummary()">Reintentar</button></p>
-          <p class="summary-alert" *ngIf="planningSummary?.profile && planningSummary?.alerts?.length">{{ planningSummary?.alerts?.[0] }}</p>
-          <div class="feature-bottom"><button class="primary" type="button" (click)="go('planning')">{{ planningSummary?.profile ? 'Revisar mi plan' : 'Crear mi plan' }}<app-icon name="arrow" [size]="16" /></button><small>Tu saldo. Tus prioridades.</small></div>
+          <ng-template #finoraHeroLoading><h2>Preparando tu panorama...</h2><p>Estamos consultando tu plan de dinero disponible.</p></ng-template>
+          <p class="finora-home-hero-error" *ngIf="planningSummaryError">{{ planningSummaryError }} <button type="button" (click)="loadPlanningSummary()">Reintentar</button></p>
+          <button type="button" class="finora-home-hero-action" (click)="go('planning')">{{ planningSummary?.projection ? 'Ver mi plan' : 'Calcular mi disponible' }}<app-icon name="arrow" [size]="16" /></button>
+        </div>
+      </section>
+
+      <div class="finora-home-main-grid">
+        <article class="finora-home-card finora-home-spending">
+          <div class="finora-home-card-head"><div><p class="finora-home-kicker">TUS GASTOS</p><h2>¿En qué se fue tu dinero?</h2><p>Así se distribuyen tus movimientos de {{ monthLabel() }}.</p></div><span class="finora-home-card-icon"><app-icon name="grid" [size]="20" /></span></div>
+          <ng-container *ngIf="dashboard && dashboard.expenses > 0 && categoryDistribution().length; else finoraEmptySpending">
+            <div class="finora-home-category-layout">
+              <div class="finora-home-donut" [ngStyle]="donutStyle(categoryDistribution())" role="img" aria-label="Distribución de gastos registrados por categoría"><div><small>Gasto registrado</small><strong>{{ money(dashboard.expenses) }}</strong></div></div>
+              <div class="finora-home-category-list">
+                <button type="button" *ngFor="let item of categoryDistribution().slice(0, 5); trackBy: trackSpendingPoint" (click)="openCategory(item)">
+                  <span class="finora-home-category-dot" [style.background]="item.color"></span>
+                  <span class="finora-home-category-name">{{ item.name }}</span>
+                  <strong>{{ money(item.value) }}</strong>
+                  <small>{{ item.percentage | number:'1.0-0' }}%</small>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #finoraEmptySpending><div class="finora-home-empty"><app-icon name="wallet" [size]="28" /><h3>{{ dashboardLoading ? 'Cargando tus gastos...' : 'Todavía no hay gastos registrados' }}</h3><p>Cuando registres o importes movimientos verás aquí exactamente en qué gastaste.</p><button type="button" class="finora-home-inline-action" (click)="go('movements')">Ver movimientos <app-icon name="arrow" [size]="15" /></button></div></ng-template>
         </article>
-        <article class="panel balance-panel"><div class="panel-heading"><span class="eyebrow">BALANCE DEL MES</span><app-icon name="trend" /></div><strong class="balance-amount" [class.negative]="(dashboard?.balance ?? 0) < 0">{{ dashboard ? money(dashboard.balance) : '—' }}</strong><p class="section-copy">Ingresos menos gastos registrados.<br>Este balance no es tu saldo bancario.</p><div class="balance-flows"><div><span class="flow-icon"><app-icon name="downLeft" [size]="17" /></span><span>Ingresos<b>{{ dashboard ? money(dashboard.income) : '—' }}</b></span></div><div><span class="flow-icon expense"><app-icon name="upRight" [size]="17" /></span><span>Gastos<b>{{ dashboard ? money(dashboard.expenses) : '—' }}</b></span></div></div></article>
+
+        <article class="finora-home-card finora-home-upcoming">
+          <div class="finora-home-card-head"><div><p class="finora-home-kicker">PARA QUE NADA TE SORPRENDA</p><h2>Pagos próximos</h2><p>Compromisos que registraste en tu plan.</p></div><span class="finora-home-card-icon"><app-icon name="calendar" [size]="20" /></span></div>
+          <div class="finora-home-payment-list" *ngIf="upcomingPlanningPayments().length; else finoraNoUpcoming">
+            <div class="finora-home-payment" *ngFor="let payment of upcomingPlanningPayments()">
+              <span class="finora-home-payment-mark"><app-icon name="calendar" [size]="17" /></span>
+              <span class="finora-home-payment-label"><strong>{{ payment.name }}</strong><small [class.urgent]="daysUntilPayment(payment.dueDate) <= 2">{{ paymentDueLabel(payment.dueDate) }}</small></span>
+              <b>{{ money(payment.amount, 'PEN') }}</b>
+            </div>
+          </div>
+          <ng-template #finoraNoUpcoming><div class="finora-home-empty finora-home-empty-compact"><app-icon name="calendar" [size]="26" /><h3>Sin pagos próximos registrados</h3><p>Agrega tus compromisos para anticiparlos desde aquí.</p></div></ng-template>
+          <button type="button" class="finora-home-inline-action" (click)="go('planning')">Gestionar pagos <app-icon name="arrow" [size]="15" /></button>
+        </article>
+
+        <div class="finora-home-side">
+          <article class="finora-home-card finora-home-week">
+            <div class="finora-home-side-label"><app-icon name="wallet" [size]="20" /><h2>Orientación para los próximos 7 días</h2></div>
+            <ng-container *ngIf="planningSummary?.projection as projection; else finoraNoWeek"><strong>{{ money(weeklyGuidance(), 'PEN') }}</strong><p>Basada en el límite diario y los días restantes de tu plan. No es tu saldo bancario.</p></ng-container>
+            <ng-template #finoraNoWeek><strong>—</strong><p>Configura tu plan para saber cuánto podrías gastar sin comprometer tus pagos.</p><button type="button" class="finora-home-inline-action" (click)="go('planning')">Crear mi plan <app-icon name="arrow" [size]="15" /></button></ng-template>
+          </article>
+          <article class="finora-home-card finora-home-summary">
+            <div class="finora-home-side-label"><app-icon name="trend" [size]="20" /><h2>Tu mes de un vistazo</h2></div>
+            <div class="finora-home-summary-line"><span>Ingresos registrados</span><b>{{ dashboard ? money(dashboard.income) : '—' }}</b></div>
+            <div class="finora-home-summary-line"><span>Gastos registrados</span><b>{{ dashboard ? money(dashboard.expenses) : '—' }}</b></div>
+            <div class="finora-home-summary-line finora-home-summary-balance"><span>Diferencia registrada</span><b>{{ dashboard ? money(dashboard.balance) : '—' }}</b></div>
+            <small>Ingresos menos gastos. No representa tu saldo bancario.</small>
+          </article>
+        </div>
       </div>
-      <div class="metrics" *ngIf="dashboard as data; else metricsLoading"><article class="metric"><span>Gastos del mes <app-icon name="upRight" [size]="16" /></span><strong>{{ money(data.expenses) }}</strong><small>Total registrado</small></article><article class="metric"><span>Ingresos del mes <app-icon name="downLeft" [size]="16" /></span><strong>{{ money(data.income) }}</strong><small>Entradas registradas</small></article><article class="metric"><span>Transacciones <app-icon name="rows" [size]="16" /></span><strong>{{ transactionCount() }}</strong><small>Gastos registrados</small></article><article class="metric"><span>Ticket promedio <app-icon name="wallet" [size]="16" /></span><strong>{{ money(averageTicket()) }}</strong><small>Por movimiento</small></article></div>
-      <ng-template #metricsLoading><div class="metrics" role="status" aria-label="Cargando resumen"><div class="metric" *ngFor="let item of [1,2,3,4]"><span class="skeleton"></span><span class="skeleton"></span></div></div></ng-template>
-      <div class="activity-grid"><article class="panel spending-panel"><div class="panel-heading"><div><p class="eyebrow">EN PERSPECTIVA</p><h3>El ritmo de tus gastos</h3><p class="section-copy">Movimientos registrados, día a día.</p></div><div class="range-control" role="group" aria-label="Periodo del gráfico"><button type="button" [class.active]="selectedSpendingRange === 7" [attr.aria-pressed]="selectedSpendingRange === 7" (click)="selectSpendingRange(7)">7 días</button><button type="button" [class.active]="selectedSpendingRange === 30" [attr.aria-pressed]="selectedSpendingRange === 30" (click)="selectSpendingRange(30)">30 días</button></div></div>
-        <div *ngIf="hasDailySpending(); else emptyActivity" class="chart-frame"><div class="chart-axis"><span>{{ money(dailyPeak()) }}</span><span>S/ 0</span></div><div class="line-plot"><svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Evolución de tus gastos registrados"><defs><linearGradient id="spendingFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#86c6a3" stop-opacity=".32"/><stop offset="100%" stop-color="#86c6a3" stop-opacity=".01"/></linearGradient></defs><path d="M0 20H100 M0 50H100 M0 80H100" class="chart-grid"/><polygon [attr.points]="'0,100 ' + linePoints() + ' 100,100'" fill="url(#spendingFill)"/><polyline [attr.points]="linePoints()"/></svg><div class="line-labels"><span *ngFor="let point of dailyPoints()"><span>{{ point.label }}</span><b>{{ money(point.value) }}</b></span></div></div></div>
-        <ng-template #emptyActivity><div class="empty"><app-icon name="trend" [size]="30" /><strong>Cada movimiento cuenta</strong><p>Cuando registres gastos, podrás ver aquí cómo evolucionan.</p><button type="button" class="ghost compact" (click)="go('movements')">Registrar movimiento</button></div></ng-template>
-      </article><article class="insight-panel"><div class="insight-icon"><app-icon name="spark" [size]="24" /></div><p class="eyebrow">UNA MIRADA DE SARELA</p><h3>{{ financialInsightTitle() }}</h3><p>{{ financialInsight() }}</p><span class="insight-footnote">A partir de tus movimientos registrados.</span></article></div>
-      <div class="analytics-grid">
-        <article class="panel category-panel"><div class="panel-heading"><div><p class="eyebrow">TU DISTRIBUCIÓN</p><h3>¿En qué estás gastando?</h3></div><app-icon name="grid" [size]="18" /></div><p class="section-copy">Cada categoría tiene su lugar.</p><div class="category-visual" *ngIf="categoryDistribution().length; else noCategories"><div class="native-donut" [ngStyle]="donutStyle(categoryDistribution())" role="img" aria-label="Distribución de gastos por categoría"><span class="donut-total"><small>Este mes</small><b>{{ money(dashboard?.expenses) }}</b></span></div><div class="category-legend"><button type="button" *ngFor="let item of categoryDistribution(); trackBy: trackSpendingPoint" (click)="openCategory(item)"><i [style.background]="item.color" aria-hidden="true"></i><span>{{ item.name }}</span><b>{{ item.percentage | number:'1.0-0' }}%</b><small>{{ money(item.value) }}</small></button></div></div><ng-template #noCategories><div class="empty"><app-icon name="grid" [size]="28" /><p>{{ dashboard ? 'Tus categorías aparecerán al registrar gastos.' : 'Cargando categorías…' }}</p></div></ng-template></article>
-        <article class="panel category-panel"><div class="panel-heading"><div><p class="eyebrow">TUS HÁBITOS</p><h3>Los comercios de tu día a día</h3></div><app-icon name="wallet" [size]="18" /></div><p class="section-copy">Dónde se concentran tus gastos del mes.</p><div class="category-visual" *ngIf="merchantDistribution().length; else noMerchants"><div class="native-donut" [ngStyle]="donutStyle(merchantDistribution())" role="img" aria-label="Distribución de gastos por comercio"><span class="donut-total"><small>Total gastado</small><b>{{ money(dashboard?.expenses) }}</b></span></div><div class="category-legend merchant-legend"><button type="button" *ngFor="let item of merchantDistribution(); trackBy: trackSpendingPoint" (click)="openMerchant(item)" [disabled]="item.merchant === '__OTHER_MERCHANTS__'"><i [style.background]="item.color" aria-hidden="true"></i><span>{{ item.name }}</span><b>{{ item.percentage | number:'1.0-0' }}%</b><small>{{ money(item.value) }}</small></button></div></div><ng-template #noMerchants><div class="empty"><app-icon name="wallet" [size]="28" /><p>{{ dashboard ? 'Tus comercios aparecerán al registrar gastos.' : 'Cargando comercios…' }}</p></div></ng-template></article>
+
+      <div class="finora-home-bottom-grid">
+        <article class="finora-home-card finora-home-recent">
+          <div class="finora-home-card-head"><div><p class="finora-home-kicker">TUS ÚLTIMOS MOVIMIENTOS</p><h2>Movimientos clave</h2></div><button type="button" class="finora-home-inline-action" (click)="go('movements')">Ver todos <app-icon name="arrow" [size]="15" /></button></div>
+          <div class="finora-home-recent-list" *ngIf="dashboard?.transactions?.length; else finoraNoRecent">
+            <div class="finora-home-recent-item" *ngFor="let tx of dashboard?.transactions?.slice(0, 4)">
+              <span class="finora-home-transaction-icon"><app-icon [name]="tx.type === 'INCOME' ? 'downLeft' : 'upRight'" [size]="18" /></span>
+              <span><strong>{{ movementTitle(tx) }}</strong><small>{{ tx.category || tx.macroCategory || 'Sin categoría' }} · {{ movementDate(tx.date) }}</small></span>
+              <b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : tx.type === 'EXPENSE' ? '−' : '' }}{{ money(tx.amount, tx.currency) }}</b>
+            </div>
+          </div>
+          <ng-template #finoraNoRecent><div class="finora-home-empty finora-home-empty-compact"><app-icon name="rows" [size]="26" /><h3>Tu historial comienza aquí</h3><p>Registra tu primer movimiento o conecta Gmail para importar notificaciones.</p><button type="button" class="finora-home-inline-action" (click)="go('movements')">Registrar movimiento <app-icon name="arrow" [size]="15" /></button></div></ng-template>
+        </article>
+        <article class="finora-home-card finora-home-insight">
+          <div class="finora-home-side-label"><span class="finora-home-insight-symbol"><app-icon name="spark" [size]="20" /></span><h2>Una señal de Finora</h2></div>
+          <ng-container *ngIf="dashboard && dashboard.expenses > 0; else finoraInsightStart">
+            <h3>{{ financialInsightTitle() }}</h3><p>{{ financialInsight() }}</p>
+            <small>Orientación basada en los movimientos registrados, no en todo tu historial bancario.</small>
+          </ng-container>
+          <ng-template #finoraInsightStart><h3>La claridad empieza con tu primer movimiento.</h3><p>Registra tus gastos o conecta Gmail para que podamos ayudarte a identificar en qué se va tu dinero.</p><button type="button" class="finora-home-inline-action" (click)="go('import')">Conocer la conexión Gmail <app-icon name="arrow" [size]="15" /></button></ng-template>
+        </article>
       </div>
-      <div class="dashboard-bottom"><article class="panel recent-panel"><div class="panel-heading"><div><p class="eyebrow">LO MÁS RECIENTE</p><h3>Últimos movimientos</h3></div><button class="text-link" type="button" (click)="go('movements')">Ver todos<app-icon name="arrow" [size]="15" /></button></div><div class="empty" *ngIf="!dashboard?.transactions?.length"><app-icon name="rows" [size]="26" /><p>Tu historial empieza con el primer movimiento.</p></div><div class="tx" *ngFor="let tx of dashboard?.transactions"><span class="transaction-mark"><app-icon [name]="tx.type === 'INCOME' ? 'downLeft' : 'upRight'" [size]="17" /></span><span><strong>{{ movementTitle(tx) }}</strong><small>{{ movementDate(tx.date) }} · {{ tx.category || tx.macroCategory || 'Otros' }}</small></span><b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : tx.type === 'EXPENSE' ? '−' : '' }}{{ money(tx.amount,tx.currency) }}</b></div></article>
-      <article class="panel recurring-panel"><div class="panel-heading"><div><p class="eyebrow">COMPROMISOS HABITUALES</p><h3>Suscripciones y recurrentes</h3></div><app-icon name="repeat" [size]="19" /></div><p class="section-copy">Cargos registrados como recurrentes este mes.</p><div class="recurring-total" *ngIf="dashboard?.recurring?.length">{{ money(recurringTotal()) }}<small>total registrado</small></div><div class="tx" *ngFor="let tx of dashboard?.recurring"><span><strong>{{ movementTitle(tx) }}</strong><small>{{ tx.category }}</small></span><b>{{ money(tx.amount,tx.currency) }}</b></div><div class="empty" *ngIf="!dashboard?.recurring?.length"><app-icon name="repeat" [size]="26" /><p>Aquí verás los movimientos que marques como recurrentes.</p></div></article></div>
-      <p class="panel import-notice" role="status" *ngIf="syncResult && (syncResult.status!=='COMPLETED' || syncResult.reviewRequired>0 || syncResult.unsupported>0 || syncResult.failed>0)">{{syncResult.message}} El resumen muestra solo movimientos registrados hasta ahora.<span *ngIf="syncResult.reviewRequired>0 || syncResult.unsupported>0"> Hay {{syncResult.reviewRequired}} correos por revisar y {{syncResult.unsupported}} no interpretados en el periodo consultado. Esto no representa todo tu historial bancario.</span></p>
-      <p class="import-notice" *ngIf="syncResult?.stale">La información puede estar desactualizada. Última consulta: {{importDate(gmail?.lastSyncAt)}}.</p>
-      <article *ngIf="gmail" class="connection-banner"><span class="banner-icon"><app-icon name="mail" /></span><div><b>{{ gmail.connected ? 'Tu conexión está lista.' : 'Dale menos trabajo a tus finanzas.' }}</b><p>{{ gmail.connected ? (gmailUpdateStatus || gmailStatusCopy()) : 'Conecta Gmail e importa tus notificaciones bancarias.' }}</p></div><button class="ghost compact" type="button" *ngIf="gmail.connected" (click)="syncGmail()" [disabled]="syncingGmail || importActive()"><app-icon name="refresh" [size]="15" />{{ syncingGmail ? 'Actualizando…' : 'Actualizar' }}</button><button class="ghost compact" type="button" *ngIf="!gmail.connected" (click)="go('import')">Ver conexión<app-icon name="arrow" [size]="15" /></button></article>
-      <article class="feedback-card"><div><app-icon name="message" /><div><h3>Tu opinión hace la diferencia.</h3><p>Ayúdanos a hacer tus finanzas un poco más claras.</p></div></div><button class="ghost compact" type="button" (click)="openFeedback()">Compartir mi opinión<app-icon name="arrow" [size]="15" /></button></article>
+
+      <p class="finora-home-note" *ngIf="syncResult && (syncResult.status !== 'COMPLETED' || syncResult.stale || syncResult.reviewRequired > 0 || syncResult.unsupported > 0 || syncResult.failed > 0)" role="status">{{ syncResult.message }} Estos datos pueden estar incompletos; revisa tu conexión Gmail. <button type="button" (click)="go('import')">Ver estado</button></p>
+      <div class="finora-home-footer"><span><app-icon name="lock" [size]="14" /> Tus datos, bajo tu control.</span><button type="button" (click)="go('import')">{{ gmail?.connected ? 'Gestionar Gmail' : 'Conectar Gmail (opcional)' }} <app-icon name="arrow" [size]="15" /></button></div>
     </section>
     <section *ngIf="view === 'movements'" class="view two movements-view">
       <form class="panel" (ngSubmit)="saveTransaction()">
