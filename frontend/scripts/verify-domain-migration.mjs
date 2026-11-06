@@ -26,7 +26,7 @@ if (!foundApi) throw new Error('Production API base URL was not included in comp
 for (const page of ['privacidad.html', 'terminos.html', 'eliminar-datos.html']) {
   const html = await readFile(resolve(root, page), 'utf8');
   if (!html.includes('href="' + expectedFrontend + '/' + page + '"')) throw new Error('Incorrect canonical: ' + page);
-  if (!html.includes('finora-publication-status" content="operator-reviewed"')) throw new Error('Unreviewed legal page: ' + page);
+  if (!html.includes('sarela-publication-status" content="operator-reviewed"')) throw new Error('Unreviewed legal page: ' + page);
 }
 const index = await readFile(resolve(root, 'index.html'), 'utf8');
 if (!index.includes('rel="canonical" href="' + expectedFrontend + '/"')) throw new Error('Incorrect landing canonical URL');
