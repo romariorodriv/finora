@@ -107,7 +107,7 @@ public class GmailOAuthService {
             if (Set.of("invalid_client", "unauthorized_client", "deleted_client").contains(
                     e.oauthError == null ? "" : e.oauthError)) {
                 throw new ApiException(503, "GMAIL_OAUTH_CONFIGURATION_ERROR",
-                    "La configuración de conexión con Google no es válida. Contacta al administrador de Sarela.");
+                    "La configuración de conexión con Google no es válida. Contacta al equipo de Finora.");
             }
             if (e.status == 429 || e.status >= 500) {
                 throw new ApiException(503, "GMAIL_TEMPORARILY_UNAVAILABLE",
