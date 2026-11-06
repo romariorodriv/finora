@@ -6,7 +6,7 @@ const build = fileURLToPath(new URL('../dist/frontend/browser/', import.meta.url
 const pages = ['index.html', 'privacidad.html', 'terminos.html', 'eliminar-datos.html'];
 for (const name of pages) {
   const html = await readFile(resolve(build, name), 'utf8');
-  if (/\\bFinora\\b|\\bFINORA\\b|>\\s*finora\\s*</.test(html)) {
+  if (/Finora|FINORA|>finora</.test(html)) {
     throw new Error('Old brand found in visible or metadata HTML: ' + name);
   }
   if (name !== 'index.html') {
