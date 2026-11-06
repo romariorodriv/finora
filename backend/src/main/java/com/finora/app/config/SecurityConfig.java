@@ -24,7 +24,7 @@ public class SecurityConfig {
     return h.cors(c -> c.configurationSource(corsConfigurationSource))
         .csrf(c -> c.disable())
         .exceptionHandling(e -> e.authenticationEntryPoint((request,response,error)->{
-          response.setStatus(401);response.setContentType("application/json");response.getWriter().write("{\"code\":\"SESSION_REQUIRED\",\"message\":\"Inicia sesión con Google\"}");
+          response.setStatus(401);response.setCharacterEncoding(java.nio.charset.StandardCharsets.UTF_8.name());response.setContentType("application/json;charset=UTF-8");response.getWriter().write("{\"code\":\"SESSION_REQUIRED\",\"message\":\"Inicia sesión con Google\"}");
         }))
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(a -> {
