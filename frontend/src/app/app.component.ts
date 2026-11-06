@@ -736,14 +736,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private message(error: any): string {
     if (error?.status === 0) {
-      return 'No pudimos conectarnos con Sarela. Intenta nuevamente.';
+      return 'No pudimos conectarnos con Finora. Intenta nuevamente.';
     }
     return error?.error?.message || 'Algo salio mal. Intenta nuevamente.';
   }
 
   private authMessage(error: any, mode: 'login' | 'register'): string {
     if (error?.status === 0) {
-      return 'No pudimos conectarnos con Sarela. Intenta nuevamente.';
+      return 'No pudimos conectarnos con Finora. Intenta nuevamente.';
     }
     if (mode === 'login' && error?.status === 401) {
       return 'No pudimos iniciar sesion. Revisa tu correo y contrasena.';
