@@ -4,6 +4,7 @@ $testRoot=Join-Path $env:TEMP ('finora-legal-script-test-'+[guid]::NewGuid().ToS
 New-Item -ItemType Directory -Path $testRoot | Out-Null
 $build=Join-Path $testRoot 'build';New-Item -ItemType Directory -Path $build | Out-Null
 foreach($name in @('privacidad.html','terminos.html','eliminar-datos.html','finora-legal.css','finora.svg')){Copy-Item -LiteralPath (Join-Path "$repo\frontend\public" $name) -Destination $build}
+foreach($name in @('privacidad.html','terminos.html','eliminar-datos.html')){$path=Join-Path $build $name;$html=[IO.File]::ReadAllText($path).Replace('content="operator-reviewed"','content="draft"');[IO.File]::WriteAllText($path,$html)}
 Set-Content -LiteralPath (Join-Path $build 'index.html') -Value '<html>new frontend</html>'
 Set-Content -LiteralPath (Join-Path $build 'main-new.js') -Value 'new asset'
 $global:fakeObjects=@{'index.html'=[Text.Encoding]::UTF8.GetBytes('<html>previous frontend</html>');'main-old.js'=[Text.Encoding]::UTF8.GetBytes('old asset')}
@@ -14,9 +15,9 @@ function global:aws {
  $a=@($args);$global:LASTEXITCODE=0;$global:fakeCalls.Add($a)
  if($a[0] -eq 'sts'){return (@{Account=$global:fakeAccount}|ConvertTo-Json)}
  $origin=@{Id='static';DomainName='finora-test-only.s3.us-east-1.amazonaws.com';OriginPath='/site'}
- $config=@{Aliases=@{Items=@('sarela.pgoapp.com')};Origins=@{Items=@($origin)};DefaultCacheBehavior=@{TargetOriginId='static'}}
+ $config=@{Aliases=@{Items=@('sarelaapp.com')};Origins=@{Items=@($origin)};DefaultCacheBehavior=@{TargetOriginId='static'}}
  if($a[0] -eq 'cloudfront' -and $a[1] -eq 'list-distributions'){
-  $item=@{Id='TEST-DISTRIBUTION';Aliases=$config.Aliases;Origins=$config.Origins;DefaultCacheBehavior=$config.DefaultCacheBehavior}
+  $item=@{Id='E2R1MKOPXY5S3Z';Aliases=$config.Aliases;Origins=$config.Origins;DefaultCacheBehavior=$config.DefaultCacheBehavior}
   $items=@($item);if($global:fakeAmbiguous){$items+= $item}
   return (@{DistributionList=@{Items=$items}}|ConvertTo-Json -Depth 8)
  }
@@ -42,8 +43,8 @@ $blocked=$false;try {& $publish -ProfileName TEST_ONLY -BuildDirectory $build -A
 Assert-True $blocked 'Draft publish was not blocked';Assert-True ($global:fakeCalls.Count -eq 0) 'Draft attempted AWS calls'
 & $publish -ProfileName TEST_ONLY -BuildDirectory $build | Out-Null
 Assert-True ((Mutation-Count) -eq 0) 'Preview mutated AWS'
-# APPROVED is used only in disposable mock fixtures; actual sources remain DRAFT.
-foreach($name in @('privacidad.html','terminos.html','eliminar-datos.html')){$path=Join-Path $build $name;$html=[IO.File]::ReadAllText($path).Replace('content="draft"','content="approved"');[IO.File]::WriteAllText($path,$html)}
+# Restore the reviewed marker only in disposable test fixture files.
+foreach($name in @('privacidad.html','terminos.html','eliminar-datos.html')){$path=Join-Path $build $name;$html=[IO.File]::ReadAllText($path).Replace('content="draft"','content="operator-reviewed"');[IO.File]::WriteAllText($path,$html)}
 $backup=Join-Path $testRoot 'backup-full'
 & $publish -ProfileName TEST_ONLY -BuildDirectory $build -BackupDirectory $backup -Apply | Out-Null
 Assert-True (Test-Path -LiteralPath (Join-Path $backup 'release.json')) 'Missing backup manifest'
