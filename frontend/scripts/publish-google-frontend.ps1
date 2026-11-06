@@ -11,14 +11,14 @@ param(
 $ErrorActionPreference='Stop'
 if(-not $BuildDirectory){$BuildDirectory=Join-Path $PSScriptRoot '../dist/frontend/browser'}
 $BuildDirectory=(Resolve-Path -LiteralPath $BuildDirectory).Path
-$sarelaLegalFiles=@('privacidad.html','terminos.html','eliminar-datos.html','finora-legal.css','finora.svg','robots.txt','sitemap.xml')
+$sarelaLegalFiles=@('privacidad.html','terminos.html','eliminar-datos.html','sarela-legal.css','sarela-icon.svg','robots.txt','sitemap.xml')
 foreach($sarelaPage in (@('index.html')+$sarelaLegalFiles)){
   if(-not (Test-Path -LiteralPath (Join-Path $BuildDirectory $sarelaPage))){throw "Missing build artifact: $sarelaPage"}
 }
 # Only operator-reviewed legal documents may be published.
 foreach($sarelaPage in @('privacidad.html','terminos.html','eliminar-datos.html')){
   $sarelaHtml=Get-Content -LiteralPath (Join-Path $BuildDirectory $sarelaPage) -Raw
-  if($sarelaHtml -notmatch 'name="finora-publication-status" content="operator-reviewed"'){
+  if($sarelaHtml -notmatch 'name="sarela-publication-status" content="operator-reviewed"'){
     if($Apply){throw "Legal page is not approved for publication: $sarelaPage. No AWS writes performed."}
     Write-Warning "LEGAL DOCUMENT NOT REVIEWED / PUBLICATION BLOCKED: $sarelaPage"
   }
@@ -75,9 +75,9 @@ Get-ChildItem -LiteralPath $sarelaBackupContent -Recurse -File | ForEach-Object 
 @{FormatVersion=1;Account=$sarelaIdentity.Account;Domain=$DomainName;Distribution=$sarelaDistribution.Id;Target=$sarelaTarget;LegalOnly=[bool]$LegalOnly;CreatedAt=(Get-Date).ToUniversalTime().ToString('o');Hashes=$sarelaHashes} | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $BackupDirectory 'release.json') -Encoding UTF8
 # Keep old chunks; open tabs may still need them. No --delete.
 if(-not $LegalOnly){
-  Invoke-SarelaAws @('s3','sync',$BuildDirectory,$sarelaTarget,'--exclude','*.html','--exclude','finora-legal.css','--exclude','finora.svg','--exclude','robots.txt','--exclude','sitemap.xml','--cache-control','public,max-age=31536000,immutable','--no-follow-symlinks') | Out-Null
+  Invoke-SarelaAws @('s3','sync',$BuildDirectory,$sarelaTarget,'--exclude','*.html','--exclude','sarela-legal.css','--exclude','sarela-icon.svg','--exclude','robots.txt','--exclude','sitemap.xml','--cache-control','public,max-age=31536000,immutable','--no-follow-symlinks') | Out-Null
 }
-foreach($sarelaAsset in @('finora-legal.css','finora.svg')){
+foreach($sarelaAsset in @('sarela-legal.css','sarela-icon.svg')){
   $sarelaType=if($sarelaAsset.EndsWith('.css')){'text/css; charset=utf-8'}else{'image/svg+xml'}
   Invoke-SarelaAws @('s3','cp',(Join-Path $BuildDirectory $sarelaAsset),($sarelaTarget+$sarelaAsset),'--content-type',$sarelaType,'--cache-control','no-cache,no-store,must-revalidate') | Out-Null
 }
@@ -90,7 +90,7 @@ if(-not $LegalOnly){$sarelaHtmlFiles+= 'index.html'}
 foreach($sarelaPage in $sarelaHtmlFiles){
   Invoke-SarelaAws @('s3','cp',(Join-Path $BuildDirectory $sarelaPage),($sarelaTarget+$sarelaPage),'--content-type','text/html; charset=utf-8','--cache-control','no-cache,no-store,must-revalidate') | Out-Null
 }
-$sarelaPaths=@('/privacidad.html','/terminos.html','/eliminar-datos.html','/finora-legal.css','/finora.svg','/robots.txt','/sitemap.xml')
+$sarelaPaths=@('/privacidad.html','/terminos.html','/eliminar-datos.html','/sarela-legal.css','/sarela-icon.svg','/robots.txt','/sitemap.xml')
 if(-not $LegalOnly){$sarelaPaths+=@('/','/index.html')}
 Invoke-SarelaAws (@('cloudfront','create-invalidation','--distribution-id',$sarelaDistribution.Id,'--paths')+$sarelaPaths) | Out-Null
 Write-Output "Frontend files published. Backup: $BackupDirectory"
