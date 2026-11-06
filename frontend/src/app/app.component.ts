@@ -121,7 +121,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (gmailResult) {
       this.view = 'import';
       this.showToast(gmailResult === 'connected' ? 'Gmail conectado. La importación está en cola.'
-        : gmailResult === 'cancelled' ? 'Puedes usar Sarela sin autorizar Gmail y conectarlo más adelante.'
+        : gmailResult === 'cancelled' ? 'Puedes usar Finora sin autorizar Gmail y conectarlo más adelante.'
         : 'No se completó la conexión con Gmail. Revisa su estado e intenta nuevamente.');
     }
     params.delete('auth'); params.delete('gmail');
@@ -323,7 +323,7 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
     if (!this.feedbackForm.understoodSpending) {
-      this.feedbackError = 'Cuentanos si Sarela te ayudo a entender tus gastos.';
+      this.feedbackError = 'Cuéntanos si Finora te ayudó a entender tus gastos.';
       return;
     }
     this.feedbackSubmitting = true;
