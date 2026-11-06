@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "qa:domain": "node scripts/verify-domain-migration.mjs",
+    "qa:legal": "node scripts/verify-legal-pages.mjs"
   },
   "private": true,
   "dependencies": {
