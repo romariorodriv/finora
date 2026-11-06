@@ -57,6 +57,16 @@ describe('Google sign-in and cookie session HTTP contract', () => {
   auth.logout().subscribe();http.expectOne(environment.apiBaseUrl+'/auth/google/logout').flush(null);
   expect(auth.user).toBeNull();
  });
+ it('requires explicit typed deletion proof and first-party session cookies',()=>{
+  const api=TestBed.inject(ApiService);
+  api.requestDataDeletion().subscribe();
+  const request=http.expectOne(environment.apiBaseUrl+'/account/deletion-request');
+  expect(request.request.method).toBe('POST');
+  expect(request.request.withCredentials).toBeTrue();
+  expect(request.request.body).toEqual({confirmed:true,confirmationText:'ELIMINAR'});
+  expect(request.request.headers.has('Authorization')).toBeFalse();
+  request.flush({status:'DELETED',message:'Cuenta eliminada'});
+ });
  it('queues manual import and reads progress independently without accepting a user ID',()=>{
   const api=TestBed.inject(ApiService);api.gmailSync().subscribe();
   const enqueue=http.expectOne(environment.apiBaseUrl+'/integrations/gmail/sync');
