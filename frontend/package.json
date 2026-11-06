@@ -8,7 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "qa:domain": "node scripts/verify-domain-migration.mjs",
-    "qa:legal": "node scripts/verify-legal-pages.mjs"
+    "qa:legal": "node scripts/verify-legal-pages.mjs",
+    "qa:brand": "node scripts/verify-sarela-brand.mjs"
   },
   "private": true,
   "dependencies": {
