@@ -30,6 +30,11 @@ public class GmailMessageProcessor {
   String text=(message.subject()==null?"":message.subject())+" "+(message.plainText()==null?"":message.plainText());
   String outcome;
   if(text.length()>200000){row.processingStatus=ImportedMessage.Status.REVIEW_REQUIRED;row.errorCode="MESSAGE_TOO_LARGE";outcome="REVIEW";}
+  else if(!isRecognizedNotificationSender(message.sender()) && parser.supports(message.sender(),text)){
+   // Unknown sender with financial-looking content: do not create a movement.
+   // From matching alone is not verified authenticity; see QA follow-up for auth signals.
+   row.processingStatus=ImportedMessage.Status.REVIEW_REQUIRED;row.errorCode="SENDER_NOT_TRUSTED";outcome="REVIEW";
+  }
   else if(!parser.supports(message.sender(),text)){row.processingStatus=ImportedMessage.Status.IGNORED;outcome="UNSUPPORTED";}
   else {
    var parsed=parser.tryParse(message.sender(),text);
@@ -65,6 +70,12 @@ public class GmailMessageProcessor {
   row.userId=claim.userId;row.gmailConnectionId=claim.connectionId;row.externalMessageId=messageId;row.processingAttempts++;row.processingStatus=row.processingAttempts>=3?ImportedMessage.Status.REVIEW_REQUIRED:ImportedMessage.Status.FAILED;
   row.errorCode=row.processingAttempts>=3?"PROCESSING_REVIEW_REQUIRED":"PROCESSING_ERROR";row.updatedAt=Instant.now();imported.saveAndFlush(row);
   record(claim,messageId,row.processingAttempts>=3?"REVIEW":"FAILED",row.errorCode);
+ }
+ private boolean isRecognizedNotificationSender(String sender){
+  if(sender==null)return false;
+  // A substring match can be spoofed by appending another domain.
+  return sender.trim().matches("(?i)^(?:[^<>\\r\
+]*<\\s*)?notificaciones@notificacionesbcp\\.com\\.pe\\s*>?$");
  }
  private void record(GmailSyncJob j,String messageId,String outcome,String error){var item=new GmailJobItem();item.runId=j.runId;item.userId=j.userId;item.messageId=messageId;item.outcome=outcome;item.errorCode=error;items.saveAndFlush(item);}
  private String truncate(String value,int max){return value==null?"":value.substring(0,Math.min(max,value.length()));}
