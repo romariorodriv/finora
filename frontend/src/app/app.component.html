@@ -19,8 +19,8 @@
     </ng-container>
     <form *ngIf="linkRequired" (ngSubmit)="linkGoogleAccount()">
       <h2>Conserva tu cuenta anterior.</h2>
-      <p>Google verificó tu identidad. Confirma tu contraseña anterior de Sarela para vincular la cuenta existente, incluidos sus movimientos y permisos.</p>
-      <label>Contraseña anterior de Sarela<input name="linkPassword" type="password" autocomplete="current-password" [(ngModel)]="linkPassword" maxlength="256" required></label>
+      <p>Google verificó tu identidad. Confirma la contraseña anterior de tu cuenta para vincularla, incluidos sus movimientos y permisos.</p>
+      <label>Contraseña de tu cuenta anterior<input name="linkPassword" type="password" autocomplete="current-password" [(ngModel)]="linkPassword" maxlength="256" required></label>
       <button class="primary full" [disabled]="authSubmitting || !linkPassword">Vincular cuenta</button>
       <button class="ghost full" type="button" (click)="linkRequired=false;continueWithGoogle()">Usar otra cuenta de Google</button>
       <small>Si no recuerdas la contraseña, solicita recuperación al operador. No vinculamos cuentas solo porque coincida el correo.</small>
@@ -250,7 +250,7 @@
       </article>
       <section class="panel gmail-consent" *ngIf="gmailConsentOpen" aria-label="Permiso de Gmail">
         <h3>Antes de conectar Gmail</h3>
-        <p>Google concederá permiso de lectura de tu Gmail completo, no solo de correos bancarios. Finora buscará notificaciones candidatas de compras, pagos, ingresos y transferencias de los últimos {{gmail?.initialSyncDays || 90}} días. Solo convierte formatos compatibles; no obtiene todo tu historial bancario.</p>
+        <p>Google concederá permiso de solo lectura de tu Gmail completo, no solo de correos bancarios. Finora buscará notificaciones candidatas de compras, pagos, ingresos y transferencias de los últimos {{gmail?.initialSyncDays || 90}} días. Solo convierte formatos compatibles; no obtiene todo tu historial bancario.</p>
         <p>Las fechas importadas corresponden a la recepción del correo, no a una fecha bancaria inferida. No enviamos, modificamos ni eliminamos correos. Los tokens permanecen cifrados en el servidor. Conservamos movimientos y metadatos necesarios para evitar duplicados; no guardamos el cuerpo completo del correo.</p>
         <p>Puedes rechazar el permiso y seguir usando Finora. Al desconectar Gmail se detiene la importación; los movimientos ya importados se conservan.</p>
         <a href="/privacidad.html" target="_blank" rel="noopener">Leer privacidad y límites</a>
