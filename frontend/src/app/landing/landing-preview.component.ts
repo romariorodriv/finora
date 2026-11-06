@@ -4,10 +4,10 @@ import { IconComponent } from '../shared/icon.component';
  selector: 'app-landing-preview', imports: [IconComponent],
  template: `
  <div class="preview-shell" [class.detail]="detail">
-  <aside class="preview-sidebar" aria-hidden="true"><span class="preview-brand"><i></i>finora</span><span class="selected"><app-icon name="home" [size]="14" />Inicio</span><span><app-icon name="wallet" [size]="14" />Gastos</span><span><app-icon name="grid" [size]="14" />Categorías</span><span><app-icon name="shield" [size]="14" />Ajustes</span></aside>
+  <aside class="preview-sidebar" aria-hidden="true"><span class="preview-brand"><i></i>sarela</span><span class="selected"><app-icon name="home" [size]="14" />Inicio</span><span><app-icon name="wallet" [size]="14" />Gastos</span><span><app-icon name="grid" [size]="14" />Categorías</span><span><app-icon name="shield" [size]="14" />Ajustes</span></aside>
   <div class="preview-main">
    <div class="phone-status" aria-hidden="true"><b>9:41</b><span>▮▮▮ ▰</span></div>
-   <div class="mobile-brand" aria-hidden="true"><span class="preview-brand"><i></i>finora</span><app-icon name="rows" [size]="17" /></div>
+   <div class="mobile-brand" aria-hidden="true"><span class="preview-brand"><i></i>sarela</span><app-icon name="rows" [size]="17" /></div>
    @if (!detail) {
     <div class="preview-greeting"><h3>Hola, Alex <span>👋</span></h3><span class="example-label">Datos de ejemplo</span></div><p class="preview-subtitle">Tus gastos, en orden.</p>
     <div class="preview-total"><div><span>Gastos del mes</span><strong>S/ 1,480</strong></div><div class="mini-chart" aria-hidden="true"><i></i><i></i><i></i></div></div>
