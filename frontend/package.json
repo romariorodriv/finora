@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "verify:domain": "node scripts/verify-production-domain.mjs",
+    "verify:legal": "node scripts/verify-legal-pages.mjs"
   },
   "private": true,
   "dependencies": {
