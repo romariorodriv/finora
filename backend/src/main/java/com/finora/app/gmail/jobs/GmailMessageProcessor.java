@@ -13,10 +13,14 @@ import java.time.*;
 public class GmailMessageProcessor {
  private final GmailJobStore jobs;private final GmailJobItemRepository items;private final ImportedMessageRepository imported;
  private final TransactionRepository transactions;private final BankEmailParser parser;private final ClassificationEngine classification;
- public GmailMessageProcessor(GmailJobStore jobs,GmailJobItemRepository items,ImportedMessageRepository imported,TransactionRepository transactions,BankEmailParser parser,ClassificationEngine classification){
-  this.jobs=jobs;this.items=items;this.imported=imported;this.transactions=transactions;this.parser=parser;this.classification=classification;
+ private final com.finora.app.auth.UserRepository users;
+ public GmailMessageProcessor(GmailJobStore jobs,GmailJobItemRepository items,ImportedMessageRepository imported,TransactionRepository transactions,BankEmailParser parser,ClassificationEngine classification,com.finora.app.auth.UserRepository users){
+  this.jobs=jobs;this.items=items;this.imported=imported;this.transactions=transactions;this.parser=parser;this.classification=classification;this.users=users;
  }
  @Transactional public void process(GmailSyncJob claim,GmailClient.Message message){
+  // Same lock order as account deletion: user before Gmail job.
+  // This prevents an in-flight import from recreating rows after removal.
+  users.locked(claim.userId).orElseThrow(() -> new com.finora.app.shared.error.ApiException(409,"ACCOUNT_DELETED","La cuenta fue eliminada."));
   var job=jobs.owned(claim.userId,claim.runId,claim.leaseToken);
   job.updatedAt=Instant.now();job.leaseUntil=job.updatedAt.plusSeconds(120);
   if(items.existsByRunIdAndMessageId(claim.runId,message.id()))return;
@@ -64,6 +68,7 @@ public class GmailMessageProcessor {
   imported.saveAndFlush(row);record(claim,message.id(),outcome,row.errorCode);
  }
  @Transactional public void failed(GmailSyncJob claim,String messageId){
+  users.locked(claim.userId).orElseThrow(() -> new com.finora.app.shared.error.ApiException(409,"ACCOUNT_DELETED","La cuenta fue eliminada."));
   jobs.owned(claim.userId,claim.runId,claim.leaseToken);
   if(items.existsByRunIdAndMessageId(claim.runId,messageId))return;
   var row=imported.findByUserIdAndGmailConnectionIdAndExternalMessageId(claim.userId,claim.connectionId,messageId).orElseGet(ImportedMessage::new);
