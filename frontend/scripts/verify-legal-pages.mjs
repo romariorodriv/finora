@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 const publicCheck = process.argv.includes('--public');
 const build = fileURLToPath(new URL('../dist/frontend/browser/', import.meta.url));
-const domain = 'https://sarela.pgoapp.com';
+const domain = 'https://sarelaapp.com';
 const pages = [
  ['privacidad.html', 'Privacidad de Finora'],
  ['terminos.html', 'Términos de uso de Finora'],
@@ -23,6 +23,7 @@ for (const [name, heading] of pages) {
  if (!html.includes(`href="${domain}/${name}"`)) throw new Error(`Wrong canonical URL: ${name}`);
  const reviewed = html.includes('name="finora-publication-status" content="operator-reviewed"');
  const draftCopy = /Borrador para revisión|No publicar todavía|Este es un borrador|Borrador revisado/i.test(html);
+ if (html.includes('sarela.pgoapp.com') || html.includes('api-sarela.pgoapp.com')) throw new Error(`Legacy public URL in legal page: ${name}`);
  if (!reviewed || draftCopy) throw new Error(`Legal page is still marked as draft or lacks operator review: ${name}`);
  console.log(`${name}: standalone document reviewed by operator; publication markers OK`);
  if (publicCheck) {
