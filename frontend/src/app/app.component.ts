@@ -110,6 +110,8 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.syncPublicView();
     const params = new URLSearchParams(location.search);
+    if (params.get('accountDeleted') === '1') this.showToast('Cuenta eliminada. Puedes volver a registrarte con Google cuando quieras.');
+    params.delete('accountDeleted');
     const authResult = params.get('auth');
     const gmailResult = params.get('gmail');
     this.linkRequired = authResult === 'link_required';
