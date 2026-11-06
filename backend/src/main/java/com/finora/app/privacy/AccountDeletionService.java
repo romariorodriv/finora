@@ -4,6 +4,8 @@ import com.finora.app.auth.UserRepository;
 import com.finora.app.gmail.service.GmailOAuthService;
 import com.finora.app.shared.error.ApiException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,7 @@ public class AccountDeletionService {
     private final UserRepository users;
     private final GmailOAuthService gmail;
     private final JdbcTemplate sql;
+    @PersistenceContext private EntityManager entityManager;
 
     public AccountDeletionService(UserRepository users, GmailOAuthService gmail, JdbcTemplate sql) {
         this.users = users;
@@ -42,12 +45,18 @@ public class AccountDeletionService {
 
         // Cancel active imports and revoke Google permissions when possible.
         gmail.disconnect(userId);
+        // Gmail disconnect/cancel modifies JPA-managed entities. Flush those changes
+        // before JDBC deletes: otherwise Hibernate may later update deleted rows
+        // and fail with ObjectOptimisticLockingFailureException.
+        entityManager.flush();
+        entityManager.clear();
 
         // Remove historic audit snapshots associated with transactions or personal rules.
         // Shared category/rule catalogs owned by the platform must survive.
         sql.update("""
             DELETE FROM admin_audit
             WHERE actor_id = ?
+               OR batch_id IN (SELECT id FROM classification_batches WHERE actor_id = ?)
                OR batch_id IN (
                   SELECT DISTINCT batch_id FROM classification_changes
                   WHERE transaction_id IN (SELECT id FROM transactions WHERE user_id = ?)
@@ -58,11 +67,16 @@ public class AccountDeletionService {
                OR (entity_type = 'RULE' AND entity_id IN (
                   SELECT CAST(id AS VARCHAR) FROM classification_rules WHERE user_id = ?
                ))
-            """, userId, userId, userId, userId);
+            """, userId, userId, userId, userId, userId);
         sql.update("""
             DELETE FROM classification_changes
             WHERE transaction_id IN (SELECT id FROM transactions WHERE user_id = ?)
             """, userId);
+
+        // Remove this account's own review batches and their snapshots.
+        // Never delete another person's batches.
+        sql.update("DELETE FROM classification_changes WHERE batch_id IN (SELECT id FROM classification_batches WHERE actor_id = ?)", userId);
+        sql.update("DELETE FROM classification_batches WHERE actor_id = ?", userId);
 
         // Detach any shared review batches from private user rules before deletion.
         sql.update("""
