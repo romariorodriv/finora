@@ -87,8 +87,8 @@ public class AccountDeletionService {
         sql.update("DELETE FROM account_sessions WHERE user_id = ?", userId);
         sql.update("""
             DELETE FROM google_auth_flows WHERE link_user_id = ?
-               OR google_subject = ?
-            """, userId, user.googleSubject);
+               OR google_subject = ? OR lower(google_email) = lower(?)
+            """, userId, user.googleSubject, user.email);
         sql.update("DELETE FROM data_deletion_requests WHERE user_id = ?", userId);
 
         // Delete credentials and stable identity last; foreign keys then guard
