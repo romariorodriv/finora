@@ -76,6 +76,22 @@ class GmailQueueIntegrationTest {
   store.enqueue(owner.id);runner.runPage(owner.id);
   var result=store.status(owner.id);assertEquals(1,result.unsupported());assertEquals(1,result.reviewRequired());assertEquals(0,result.transactionsCreated());assertTrue(ownerTransactions().isEmpty());
  }
+ @Test void financialLookingMailFromUnknownSenderGoesToReviewWithoutCreatingExpense() {
+  validToken();
+  when(google.search(anyString(),anyString(),isNull())).thenReturn(
+    new GmailClient.Page(List.of(new GmailClient.MessageRef("forged-financial-message","t")),null));
+  when(google.getMessage(anyString(),eq("forged-financial-message"))).thenReturn(
+    new GmailClient.Message("forged-financial-message","t","alerts@attacker.test",
+      "BCP consumo", "Realizaste un consumo de S/ 32.90 con tu Tarjeta de Débito BCP en DLC*Spotify.",Instant.now()));
+  store.enqueue(owner.id);runner.runPage(owner.id);
+  assertEquals(0,store.status(owner.id).transactionsCreated());
+  assertEquals(1,store.status(owner.id).reviewRequired());
+  assertTrue(ownerTransactions().isEmpty());
+  var message=imported.findByUserIdAndGmailConnectionIdAndExternalMessageId(
+    owner.id,connection.id,"forged-financial-message").orElseThrow();
+  assertEquals(ImportedMessage.Status.REVIEW_REQUIRED,message.processingStatus);
+  assertEquals("SENDER_NOT_TRUSTED",message.errorCode);
+ }
  @Test void missingGoogleDateIsReviewableAndNeverDefaultsToToday() {
   validToken();when(google.search(anyString(),anyString(),isNull())).thenReturn(new GmailClient.Page(List.of(new GmailClient.MessageRef("date-missing","t")),null));
   var real=purchase("date-missing");when(google.getMessage(anyString(),anyString())).thenReturn(new GmailClient.Message(real.id(),real.threadId(),real.sender(),real.subject(),real.plainText(),null));
