@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 const publicCheck = process.argv.includes('--public');
 const build = fileURLToPath(new URL('../dist/frontend/browser/', import.meta.url));
-const domain = 'https://sarela.pgoapp.com';
+const domain = 'https://sarelaapp.com';
 const pages = [
  ['privacidad.html', 'Privacidad de Finora'],
  ['terminos.html', 'Términos de uso de Finora'],
