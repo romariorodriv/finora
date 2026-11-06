@@ -42,11 +42,11 @@
       <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>Tu opinión</span></button></nav>
     <button class="ghost admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()"><app-icon name="shield" [size]="17" />Administración</button>
     <div class="sidebar-note"><app-icon name="spark" [size]="22" /><b>Un plan. Más calma.</b><p>Haz espacio para lo que de verdad importa.</p><button type="button" (click)="go('planning')">Revisar mi plan <app-icon name="arrow" [size]="16" /></button></div>
-    <div class="sidebar-footer"><div class="profile"><div class="avatar">{{ auth.user.name[0] }}</div><div><b>{{ auth.user.name }}</b><small>Mi cuenta · Sarela 2.2</small></div></div><button class="logout" type="button" (click)="logout()"><app-icon name="logout" [size]="17" />Cerrar sesión</button></div>
+    <div class="sidebar-footer"><div class="profile"><div class="avatar">{{ auth.user.name[0] }}</div><div><b>{{ auth.user.name }}</b><small>Mi cuenta · Finora</small></div></div><button class="logout" type="button" (click)="logout()"><app-icon name="logout" [size]="17" />Cerrar sesión</button></div>
   </aside>
   <main id="main-content" tabindex="-1">
     <header class="topbar">
-      <button class="mobile-brand logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al resumen"><span class="brand">S</span><span>Sarela.</span></button>
+      <button class="mobile-brand logo" type="button" (click)="go('dashboard')" aria-label="Finora, ir al resumen"><span class="brand">F</span><span>Finora.</span></button>
       <div class="breadcrumb">Mi espacio <span>/</span><b>{{ view === 'dashboard' ? 'Resumen' : view === 'planning' ? 'Mi dinero disponible' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conexión Gmail' : view === 'admin' ? 'Administración' : 'Tu opinión' }}</b></div>
       <div class="topbar-actions"><button class="ghost compact admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()" aria-label="Abrir administración"><app-icon name="shield" [size]="17" /><span>Administrar</span></button><button class="connection-pill" type="button" (click)="go('import')"><span class="status-dot" [class.connected]="gmail?.connected"></span><span>{{ !gmail ? 'Consultando Gmail' : gmail.connected ? 'Gmail conectado' : 'Gmail sin conectar' }}</span><app-icon name="down" [size]="14" /></button><div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div><button class="mobile-logout" type="button" aria-label="Cerrar sesión" (click)="logout()"><app-icon name="logout" [size]="18" /></button></div>
     </header>
@@ -237,7 +237,7 @@
           <p class="eyebrow dark">MOVIMIENTOS AUTOMÁTICOS</p>
           <h2>Tus movimientos, conectados.</h2><span class="status-badge" [class.neutral]="!gmail?.connected">{{ gmailConnectionLabel() }}</span>
           <p *ngIf="gmail?.connected">{{ gmailStatusCopy() }}</p>
-          <p *ngIf="!gmail?.connected">Sarela encuentra tus compras y pagos en las notificaciones que recibes por correo.</p>
+          <p *ngIf="!gmail?.connected">Finora busca movimientos en las notificaciones financieras de formatos compatibles, principalmente BCP en soles. No todos los bancos ni operaciones están soportados.</p>
           <small *ngIf="gmail?.connected">{{ gmailUpdateStatus || 'Listo para actualizar cuando tú lo pidas.' }}</small>
           <small *ngIf="!gmail?.connected">{{ gmailStatusCopy() }}</small>
         </div>
@@ -250,9 +250,9 @@
       </article>
       <section class="panel gmail-consent" *ngIf="gmailConsentOpen" aria-label="Permiso de Gmail">
         <h3>Antes de conectar Gmail</h3>
-        <p>Google concederá permiso de solo lectura de Gmail. Sarela buscará notificaciones candidatas de compras, pagos, ingresos y transferencias de los últimos {{gmail?.initialSyncDays || 90}} días. Solo convierte formatos compatibles; no obtiene todo tu historial bancario.</p>
+        <p>Google concederá permiso de lectura de tu Gmail completo, no solo de correos bancarios. Finora buscará notificaciones candidatas de compras, pagos, ingresos y transferencias de los últimos {{gmail?.initialSyncDays || 90}} días. Solo convierte formatos compatibles; no obtiene todo tu historial bancario.</p>
         <p>Las fechas importadas corresponden a la recepción del correo, no a una fecha bancaria inferida. No enviamos, modificamos ni eliminamos correos. Los tokens permanecen cifrados en el servidor. Conservamos movimientos y metadatos necesarios para evitar duplicados; no guardamos el cuerpo completo del correo.</p>
-        <p>Puedes rechazar el permiso y seguir usando Sarela. Al desconectar Gmail se detiene la importación; los movimientos ya importados se conservan.</p>
+        <p>Puedes rechazar el permiso y seguir usando Finora. Al desconectar Gmail se detiene la importación; los movimientos ya importados se conservan.</p>
         <a href="/privacidad.html" target="_blank" rel="noopener">Leer privacidad y límites</a>
         <div class="actions"><button class="primary" (click)="authorizeGmail()">Entendido, autorizar lectura</button><button class="ghost" (click)="gmailConsentOpen=false;go('dashboard')">Ahora no, ir al resumen</button></div>
       </section>
@@ -285,14 +285,14 @@
     <section *ngIf="view === 'feedback'" class="view feedback-view">
       <form class="panel feedback-form" (ngSubmit)="submitFeedback()" *ngIf="!feedbackSubmitted; else thanks">
         <div class="feedback-symbol"><app-icon name="message" [size]="26" /></div><p class="eyebrow">TE ESCUCHAMOS</p>
-        <h2>Una Sarela mejor, contigo.</h2><p class="section-copy">Cuéntanos cómo te está ayudando y qué podemos mejorar.</p>
-        <label>¿Qué tan útil te resultó Sarela?
+        <h2>Una Finora mejor, contigo.</h2><p class="section-copy">Cuéntanos cómo te está ayudando y qué podemos mejorar.</p>
+        <label>¿Qué tan útil te resultó Finora?
           <select name="rating" [(ngModel)]="feedbackForm.rating" required>
             <option [ngValue]="0">Selecciona una opción</option>
             <option *ngFor="let value of [1,2,3,4,5]" [ngValue]="value">{{ value }}</option>
           </select>
         </label>
-        <label>¿Sarela te ayudó a entender mejor en qué estás gastando?
+        <label>¿Finora te ayudó a entender mejor en qué estás gastando?
           <select name="understoodSpending" [(ngModel)]="feedbackForm.understoodSpending" required>
             <option value="">Selecciona una opción</option>
             <option value="YES">Sí</option>
@@ -306,7 +306,7 @@
         <label>¿Qué mejorarías?
           <textarea name="improvement" rows="3" maxlength="1000" [(ngModel)]="feedbackForm.improvement"></textarea>
         </label>
-        <label>¿Qué te gustaría que Sarela hiciera por ti?
+        <label>¿Qué te gustaría que Finora hiciera por ti?
           <textarea name="wantedFeature" rows="3" maxlength="1000" [(ngModel)]="feedbackForm.wantedFeature"></textarea>
         </label>
         <p class="form-error" role="alert" *ngIf="feedbackError">{{ feedbackError }}</p>
@@ -314,7 +314,7 @@
       </form>
       <ng-template #thanks>
         <article class="panel feedback-thanks">
-          <app-icon name="check" [size]="36" /><h2>Gracias por compartir.</h2><p class="section-copy">Tu opinión nos ayuda a construir una Sarela más útil para ti.</p>
+          <app-icon name="check" [size]="36" /><h2>Gracias por compartir.</h2><p class="section-copy">Tu opinión nos ayuda a construir una Finora más útil para ti.</p>
           <button class="ghost" type="button" (click)="feedbackSubmitted = false">Enviar otro comentario</button>
         </article>
       </ng-template>
