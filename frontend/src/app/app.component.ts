@@ -61,6 +61,7 @@ export class AppComponent implements OnInit, OnDestroy {
   gmailJobError = '';
   gmailReview?: import('./core/models/api.models').GmailReviewPage;
   deletionMessage = '';
+  deletingAccount = false;
   private gmailPoll?: Subscription;
   private onboardingRequested = false;
   private autoOpenSummary = false;
