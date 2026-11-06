@@ -121,7 +121,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (gmailResult) {
       this.view = 'import';
       this.showToast(gmailResult === 'connected' ? 'Gmail conectado. La importación está en cola.'
-        : gmailResult === 'cancelled' ? 'Puedes usar Finora sin autorizar Gmail y conectarlo más adelante.'
+        : gmailResult === 'cancelled' ? 'Puedes usar Sarela sin autorizar Gmail y conectarlo más adelante.'
         : 'No se completó la conexión con Gmail. Revisa su estado e intenta nuevamente.');
     }
     params.delete('auth'); params.delete('gmail');
@@ -323,7 +323,7 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
     if (!this.feedbackForm.understoodSpending) {
-      this.feedbackError = 'Cuéntanos si Finora te ayudó a entender tus gastos.';
+      this.feedbackError = 'Cuéntanos si Sarela te ayudó a entender tus gastos.';
       return;
     }
     this.feedbackSubmitting = true;
@@ -736,14 +736,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private message(error: any): string {
     if (error?.status === 0) {
-      return 'No pudimos conectarnos con Finora. Intenta nuevamente.';
+      return 'No pudimos conectarnos con Sarela. Intenta nuevamente.';
     }
     return error?.error?.message || 'Algo salio mal. Intenta nuevamente.';
   }
 
   private authMessage(error: any, mode: 'login' | 'register'): string {
     if (error?.status === 0) {
-      return 'No pudimos conectarnos con Finora. Intenta nuevamente.';
+      return 'No pudimos conectarnos con Sarela. Intenta nuevamente.';
     }
     if (mode === 'login' && error?.status === 401) {
       return 'No pudimos iniciar sesion. Revisa tu correo y contrasena.';
