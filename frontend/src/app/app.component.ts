@@ -673,8 +673,14 @@ export class AppComponent implements OnInit, OnDestroy {
   importDate(value?: string): string { return value ? new Intl.DateTimeFormat('es-PE',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)) : '—'; }
   loadGmailReview(page=0): void { this.api.gmailReview(page).subscribe({next: result => this.gmailReview = result,error: error => this.showToast(this.message(error))}); }
   requestDataDeletion(): void {
-    if (!window.confirm('¿Solicitar la eliminación de tu cuenta y sus datos? Se desconectará Gmail y se detendrán las importaciones. El operador tramitará la eliminación; no es inmediata.')) return;
-    this.api.requestDataDeletion().subscribe({next: result => { this.deletionMessage = result.message; this.loadGmail(); this.loadGmailJob(); },error: error => this.showToast(this.message(error))});
+    if (this.deletingAccount) return;
+    const answer = window.prompt('Eliminar tu cuenta borrará tus movimientos y datos guardados de manera irreversible. Si regresas, crearás una cuenta nueva sin recuperar el historial. Escribe ELIMINAR para confirmar:');
+    if (answer !== 'ELIMINAR') return;
+    this.deletingAccount = true;
+    this.api.requestDataDeletion().pipe(finalize(() => this.deletingAccount = false)).subscribe({
+      next: () => window.location.replace('/?accountDeleted=1'),
+      error: error => this.showToast(this.message(error))
+    });
   }
 
   private emptyTransaction(): TransactionRequest {
