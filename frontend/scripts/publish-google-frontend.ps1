@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
   [Parameter(Mandatory=$true)][string]$ProfileName,
-  [string]$DomainName='sarela.pgoapp.com',
+  [string]$DomainName='sarelaapp.com',
+  [string]$ExpectedDistributionId='E2R1MKOPXY5S3Z',
+  [string]$ExpectedBucket='sarela.pgoapp.com',
   [string]$BuildDirectory,
   [string]$BackupDirectory,
   [switch]$LegalOnly,
@@ -14,10 +16,10 @@ $sarelaLegalFiles=@('privacidad.html','terminos.html','eliminar-datos.html','fin
 foreach($sarelaPage in (@('index.html')+$sarelaLegalFiles)){
   if(-not (Test-Path -LiteralPath (Join-Path $BuildDirectory $sarelaPage))){throw "Missing build artifact: $sarelaPage"}
 }
-# A draft may be built and previewed, but must never be uploaded by this script.
+# An operator-reviewed legal page is required for publishing; no AWS writes before validation.
 foreach($sarelaPage in @('privacidad.html','terminos.html','eliminar-datos.html')){
   $sarelaHtml=Get-Content -LiteralPath (Join-Path $BuildDirectory $sarelaPage) -Raw
-  if($sarelaHtml -notmatch 'name="finora-publication-status" content="approved"'){
+  if($sarelaHtml -notmatch 'name="finora-publication-status" content="operator-reviewed"' -or $sarelaHtml -match 'Borrador para revisión|No publicar todavía|sarela\.pgoapp\.com'){
     if($Apply){throw "Legal page is not approved for publication: $sarelaPage. No AWS writes performed."}
     Write-Warning "DRAFT / PUBLICATION BLOCKED: $sarelaPage"
   }
@@ -32,12 +34,14 @@ $sarelaIdentity=Invoke-SarelaAws @('sts','get-caller-identity','--output','json'
 $sarelaInventory=Invoke-SarelaAws @('cloudfront','list-distributions','--output','json') | ConvertFrom-Json
 $sarelaMatches=@($sarelaInventory.DistributionList.Items | Where-Object {$_.Aliases.Items -contains $DomainName})
 if($sarelaMatches.Count -ne 1){throw 'Expected one distribution matching the exact Sarela domain. No changes made.'}
+if($sarelaMatches[0].Id -ne $ExpectedDistributionId){throw 'CloudFront ID differs from expected distribution. No changes made.'}
 $sarelaDistribution=$sarelaMatches[0]
 $sarelaOrigin=@($sarelaDistribution.Origins.Items | Where-Object {$_.Id -eq $sarelaDistribution.DefaultCacheBehavior.TargetOriginId})
 if($sarelaOrigin.Count -ne 1){throw 'Cannot identify default frontend origin. No changes made.'}
 $sarelaHost=$sarelaOrigin[0].DomainName
 if($sarelaHost -notmatch '^(?<bucket>.+)\.s3(?:[.-][a-z0-9-]+)?\.amazonaws\.com$'){throw 'Default origin is not a recognized S3 hostname. Review manually; no guessed bucket.'}
 $sarelaBucket=$Matches['bucket']
+if($sarelaBucket -ne $ExpectedBucket){throw 'S3 bucket differs from the expected frontend origin. No changes made.'}
 $sarelaPrefix=$sarelaOrigin[0].OriginPath.Trim('/')
 $sarelaTarget="s3://$sarelaBucket/"
 if($sarelaPrefix){$sarelaTarget+="$sarelaPrefix/"}
@@ -53,7 +57,7 @@ Invoke-SarelaAws @('s3api','head-bucket','--bucket',$sarelaBucket) | Out-Null
   Mode= $(if($Apply){'PUBLISH'}else{'READ-ONLY PREVIEW'})
 } | Format-List
 if(-not $Apply){
-  Write-Output 'Preview only. No AWS writes. Resolve legal drafts before -Apply; this script never modifies backend or database.'
+  Write-Output 'Preview only. No AWS writes. Check CloudFront distribution, S3 origin and OAuth compatibility before -Apply.'
   return
 }
 if(-not $BackupDirectory){$BackupDirectory=Join-Path $env:TEMP ('sarela-frontend-backup-'+(Get-Date -Format 'yyyyMMdd-HHmmss'))}
