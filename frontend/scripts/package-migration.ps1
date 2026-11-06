@@ -3,13 +3,13 @@ param([string]$OutputPath)
 $ErrorActionPreference = 'Stop'
 $frontend = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $repo = (Resolve-Path (Join-Path $frontend '..')).Path
-if (-not $OutputPath) { $OutputPath = Join-Path $repo 'sarelaapp-frontend-migrado.zip' }
+if (-not $OutputPath) { $OutputPath = Join-Path $repo 'sarelaapp-frontend-marca-sarela.zip' }
 if (Test-Path -LiteralPath $OutputPath) { throw "The ZIP already exists: $OutputPath. Move it or choose another output path." }
 
 Push-Location $repo
 try {
   $branch = (& git branch --show-current).Trim()
-  if ($LASTEXITCODE -ne 0 -or $branch -ne 'fix/sarelaapp-domain-migration') { throw 'Checkout fix/sarelaapp-domain-migration first.' }
+  if ($LASTEXITCODE -ne 0 -or $branch -ne 'fix/sarela-rebrand-frontend') { throw 'Checkout fix/sarelaapp-domain-migration first.' }
   $changes = & git status --porcelain -- frontend
   if ($LASTEXITCODE -ne 0 -or $changes) { throw 'Frontend has uncommitted changes; commit or revert them before packaging.' }
 } finally { Pop-Location }
