@@ -17,6 +17,15 @@ describe('Premium UI functional flows', () => {
     TestBed.configureTestingModule({imports: [AppComponent],providers: [provideRouter([]),{provide: ApiService,useValue: services.api},{provide: AuthService,useValue: services.auth}]});
     fixture=TestBed.createComponent(AppComponent);fixture.detectChanges();
   });
+  it('does not delete a user unless they type the irreversible confirmation phrase', () => {
+    const prompt=spyOn(window,'prompt').and.returnValue(null);
+    fixture.componentInstance.requestDataDeletion();
+    expect(prompt).toHaveBeenCalled();
+    expect(services.api.requestDataDeletion).not.toHaveBeenCalled();
+    prompt.and.returnValue('eliminar');
+    fixture.componentInstance.requestDataDeletion();
+    expect(services.api.requestDataDeletion).not.toHaveBeenCalled();
+  });
   it('renders recorded monthly metrics, expenses and confirmed planning availability from API data', () => {
     expect(root().querySelector('.finora-home-summary-balance')?.textContent).toContain('1,380.00');
     expect(root().querySelector('.finora-home-summary')?.textContent).toContain('1,500.00');
