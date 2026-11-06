@@ -69,7 +69,6 @@ public class AccountDeletionService {
             UPDATE classification_batches SET rule_id = NULL
             WHERE rule_id IN (SELECT id FROM classification_rules WHERE user_id = ?)
             """, userId);
-        sql.update("DELETE FROM classification_rules WHERE user_id = ?", userId);
 
         // Gmail processing records and tokens (child records before mailbox rows).
         sql.update("DELETE FROM gmail_job_items WHERE user_id = ?", userId);
@@ -82,6 +81,8 @@ public class AccountDeletionService {
         sql.update("DELETE FROM planning_payments WHERE user_id = ?", userId);
         sql.update("DELETE FROM planning_profiles WHERE user_id = ?", userId);
         sql.update("DELETE FROM transactions WHERE user_id = ?", userId);
+        // Transaction references to personal rules have now been removed.
+        sql.update("DELETE FROM classification_rules WHERE user_id = ?", userId);
         sql.update("DELETE FROM user_feedback WHERE user_id = ?", userId);
         sql.update("DELETE FROM account_sessions WHERE user_id = ?", userId);
         sql.update("""
