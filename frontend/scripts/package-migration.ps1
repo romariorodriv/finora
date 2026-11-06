@@ -26,6 +26,8 @@ try {
   if ($LASTEXITCODE -ne 0) { throw 'Domain QA failed' }
   & npm run qa:legal
   if ($LASTEXITCODE -ne 0) { throw 'Legal page QA failed' }
+  & npm run qa:brand
+  if ($LASTEXITCODE -ne 0) { throw 'Sarela brand QA failed' }
 } finally { Pop-Location }
 
 $staging = Join-Path $env:TEMP ('sarelaapp-zip-' + [guid]::NewGuid().ToString('N'))
