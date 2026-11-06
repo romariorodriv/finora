@@ -118,7 +118,7 @@ export class ApiService {
     return this.http.get<import('../models/api.models').GmailReviewPage>(this.baseUrl + '/integrations/gmail/review', {params: {page}});
   }
   requestDataDeletion() {
-    return this.http.post<{status:string;message:string}>(this.baseUrl + '/account/deletion-request', {confirmed:true});
+    return this.http.post<{status:string;message:string}>(this.baseUrl + '/account/deletion-request', {confirmed:true, confirmationText:'ELIMINAR'});
   }
   gmailDisconnect(): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/integrations/gmail`);
