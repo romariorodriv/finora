@@ -6,7 +6,7 @@ import { ApiService } from '../core/services/api.service';
 import { AuthService } from '../core/services/auth.service';
 import { premiumTestServices } from '../premium.test-fixtures';
 
-describe('Public Finora landing and access flow', () => {
+describe('Public Sarela landing and access flow', () => {
   let fixture: ComponentFixture<AppComponent>;
   let services: ReturnType<typeof premiumTestServices>;
   let signedInUser: AuthService['user'];
@@ -27,6 +27,15 @@ describe('Public Finora landing and access flow', () => {
     expect(root().querySelector('h1')?.textContent).toContain('¿En qué se fue');
     expect(services.api.dashboard).not.toHaveBeenCalled();expect(services.api.getPlanningState).not.toHaveBeenCalled();
     expect(root().querySelector('app-landing')?.textContent).not.toContain('S/ 3,240');
+  });
+  it('shows Sarela branding in landing and sign-in without changing the layout',()=>{
+    const landing=root().querySelector('app-landing') as HTMLElement;
+    expect(landing.querySelector('.wordmark')?.textContent?.trim()).toBe('sarela');
+    expect(landing.textContent).not.toMatch(/finora/i);
+    click('.hero-actions .primary');
+    expect(root().querySelector('.auth-wordmark')?.textContent?.trim()).toBe('sarela');
+    expect(root().querySelector('.login-card h2')?.textContent).toContain('Sarela');
+    expect(root().textContent).not.toMatch(/Finora/);
   });
   it('keeps the root landing visible when session restoration fails',()=>{
     fixture.destroy();
