@@ -3,7 +3,7 @@ $repo=(Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 $testRoot=Join-Path $env:TEMP ('finora-legal-script-test-'+[guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $testRoot | Out-Null
 $build=Join-Path $testRoot 'build';New-Item -ItemType Directory -Path $build | Out-Null
-foreach($name in @('privacidad.html','terminos.html','eliminar-datos.html','finora-legal.css','finora.svg','robots.txt','sitemap.xml')){Copy-Item -LiteralPath (Join-Path "$repo\frontend\public" $name) -Destination $build}
+foreach($name in @('privacidad.html','terminos.html','eliminar-datos.html','sarela-legal.css','sarela-icon.svg','robots.txt','sitemap.xml')){Copy-Item -LiteralPath (Join-Path "$repo\frontend\public" $name) -Destination $build}
 foreach($name in @('privacidad.html','terminos.html','eliminar-datos.html')){$path=Join-Path $build $name;$html=[IO.File]::ReadAllText($path).Replace('content="operator-reviewed"','content="draft"');[IO.File]::WriteAllText($path,$html)}
 Set-Content -LiteralPath (Join-Path $build 'index.html') -Value '<html>new frontend</html>'
 Set-Content -LiteralPath (Join-Path $build 'main-new.js') -Value 'new asset'
