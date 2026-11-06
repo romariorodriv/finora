@@ -73,9 +73,12 @@ public class GmailMessageProcessor {
  }
  private boolean isRecognizedNotificationSender(String sender){
   if(sender==null)return false;
-  // A substring match can be spoofed by appending another domain.
-  return sender.trim().matches("(?i)^(?:[^<>\\r\
-]*<\\s*)?notificaciones@notificacionesbcp\\.com\\.pe\\s*>?$");
+  // A From header is not authenticated proof; this is a conservative preliminary filter.
+  String value=sender.trim();
+  int opening=value.lastIndexOf('<');
+  int closing=value.lastIndexOf('>');
+  if(opening>=0 && closing>opening)value=value.substring(opening+1,closing).trim();
+  return value.equalsIgnoreCase("notificaciones@notificacionesbcp.com.pe");
  }
  private void record(GmailSyncJob j,String messageId,String outcome,String error){var item=new GmailJobItem();item.runId=j.runId;item.userId=j.userId;item.messageId=messageId;item.outcome=outcome;item.errorCode=error;items.saveAndFlush(item);}
  private String truncate(String value,int max){return value==null?"":value.substring(0,Math.min(max,value.length()));}
