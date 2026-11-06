@@ -21,10 +21,11 @@ for (const [name, heading] of pages) {
   await readFile(resolve(build,target));
  }
  if (!html.includes(`href="${domain}/${name}"`)) throw new Error(`Wrong canonical URL: ${name}`);
- const draft = html.includes('name="finora-publication-status" content="draft"');
- console.log(`${name}: standalone build verified; ${draft ? 'DRAFT / DO NOT PUBLISH' : 'review publication status'}`);
+ const reviewed = html.includes('name="finora-publication-status" content="operator-reviewed"');
+ const draftCopy = /Borrador para revisión|No publicar todavía|Este es un borrador|Borrador revisado/i.test(html);
+ if (!reviewed || draftCopy) throw new Error(`Legal page is still marked as draft or lacks operator review: ${name}`);
+ console.log(`${name}: standalone document reviewed by operator; publication markers OK`);
  if (publicCheck) {
-  if (draft) throw new Error('Public verification requires approved local documents. Current drafts must not be published.');
   // No cookie jar, Authorization header or authenticated session.
   const response = await fetch(`${domain}/${name}`, { redirect: 'manual', signal: AbortSignal.timeout(25000) });
   if (response.status !== 200 || !response.headers.get('content-type')?.includes('text/html')) throw new Error(`Public page ${name}: HTTP ${response.status} or wrong MIME`);
