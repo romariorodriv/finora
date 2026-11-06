@@ -35,6 +35,12 @@ class GoogleSignInIntegrationTest {
  }
  MvcResult callback(Flow flow)throws Exception{return mvc.perform(get("/api/v1/auth/google/callback").param("code","one-time-code").param("state",flow.state()).cookie(flow.cookie())).andExpect(status().is3xxRedirection()).andReturn();}
  void identity(String sub,String email){when(google.identity(anyString(),anyString(),anyString())).thenReturn(new GoogleIdTokenVerifier.Identity(sub,email,"Google QA"));}
+ @Test void unauthenticatedJsonResponseUsesUtf8AndPreservesSpanishAccents()throws Exception {
+  var response=mvc.perform(get("/api/v1/account")).andExpect(status().isUnauthorized()).andReturn().getResponse();
+  assertEquals("UTF-8",response.getCharacterEncoding());
+  assertTrue(response.getContentType().contains("application/json"));
+  assertTrue(response.getContentAsString().contains("Inicia sesión con Google"));
+ }
  @Test void newUserGetsUserRoleAndOpaqueServerSessionWithoutBrowserTokens()throws Exception{
   identity("new-"+nonce,"new-"+nonce+"@example.test");var flow=start();var response=callback(flow).getResponse();
   assertEquals("http://localhost:4200/?auth=connected",response.getRedirectedUrl());
