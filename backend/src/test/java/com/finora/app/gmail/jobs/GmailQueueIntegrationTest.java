@@ -197,15 +197,24 @@ class GmailQueueIntegrationTest {
   assertTrue(jobs.findById(owner.id).isEmpty());verify(google,never()).exchangeCode(anyString(),anyString());
   mvc.perform(get("/api/v1/account").header("Authorization",token)).andExpect(status().isOk());
  }
- @Test void deletionRequestStopsImportAndCannotTargetAnotherAccount() throws Exception {
+ @Test void deletionCannotBeRequestedUsingLegacyBearerOnlyOrWithoutTypedProof() throws Exception {
   store.enqueue(owner.id);
-  mvc.perform(post("/api/v1/account/deletion-request").header("Authorization",token).contentType("application/json").content("{\"confirmed\":false}")).andExpect(status().isBadRequest());
+  mvc.perform(post("/api/v1/account/deletion-request").header("Authorization",token)
+    .contentType("application/json").content("{\"confirmed\":false}"))
+    .andExpect(status().isBadRequest());
+  mvc.perform(post("/api/v1/account/deletion-request").header("Authorization",token)
+    .contentType("application/json").content("{\"confirmed\":true}"))
+    .andExpect(status().isBadRequest());
+  mvc.perform(post("/api/v1/account/deletion-request").header("Authorization",token)
+    .contentType("application/json").content("{\"confirmed\":true,\"confirmationText\":\"ELIMINAR\"}"))
+    .andExpect(status().isForbidden());
+  // These rejected requests must not affect an ongoing import or any account.
   assertEquals("PENDING",store.status(owner.id).status());
-  mvc.perform(post("/api/v1/account/deletion-request").header("Authorization",token).contentType("application/json").content("{\"confirmed\":true}")).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("PENDING"));
-  assertEquals("CANCELLED",store.status(owner.id).status());
-  assertEquals(GmailConnection.Status.DISCONNECTED,connections.findById(connection.id).orElseThrow().status);
-  var error=assertThrows(ApiException.class,()->store.enqueue(owner.id));assertEquals("DELETION_PENDING",error.code);
-  mvc.perform(get("/api/v1/account").header("Authorization",otherToken)).andExpect(status().isOk()).andExpect(jsonPath("$.userId").value(other.id));
+  assertEquals(GmailConnection.Status.CONNECTED,connections.findById(connection.id).orElseThrow().status);
+  mvc.perform(get("/api/v1/account").header("Authorization",token))
+    .andExpect(status().isOk()).andExpect(jsonPath("$.userId").value(owner.id));
+  mvc.perform(get("/api/v1/account").header("Authorization",otherToken))
+    .andExpect(status().isOk()).andExpect(jsonPath("$.userId").value(other.id));
  }
 
  @Test void receivedRecordFromInterruptedLegacyImportIsProcessedRatherThanSkipped() {
