@@ -2,7 +2,6 @@ import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
 import { IconComponent } from './shared/icon.component';
 import { FocusTrapDirective } from './shared/focus-trap.directive';
-import { PlanningComponent } from './planning/planning.component';
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -18,7 +17,6 @@ import {
   generateFinancialInsight
 } from './core/dashboard.utils';
 import {
-  PlanningState,
   CategoryDetailResponse,
   DashboardResponse,
   FeedbackRequest,
@@ -31,15 +29,12 @@ import {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, PlanningComponent, IconComponent, FocusTrapDirective, LandingComponent, RouterOutlet],
+  imports: [CommonModule, FormsModule, IconComponent, FocusTrapDirective, LandingComponent, RouterOutlet],
   templateUrl: './app.component.html',
   styleUrls: ['./dashboard/dashboard.styles.css', './app.component.css']
 })
 export class AppComponent implements OnInit, OnDestroy {
-  view: 'dashboard' | 'movements' | 'import' | 'feedback' | 'planning' | 'admin' = 'dashboard';
-  planningSummary?: PlanningState;
-  planningSummaryLoading = false;
-  planningSummaryError = '';
+  view: 'dashboard' | 'movements' | 'import' | 'feedback' | 'admin' = 'dashboard';
   dashboardLoading = false;
   dashboardError = '';
   transactionsLoading = false;
@@ -48,7 +43,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private movementsRequest?: Subscription;
   selectedCurrency = '';
   private routeSubscription?: Subscription;
-  private planningSummaryRequest?: Subscription;
   publicView: 'landing' | 'access' = 'landing';
   authSubmitting = false;
   savingTransaction = false;
@@ -137,7 +131,7 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void { this.movementsRequest?.unsubscribe(); this.gmailPoll?.unsubscribe(); this.planningSummaryRequest?.unsubscribe(); this.routeSubscription?.unsubscribe(); }
+  ngOnDestroy(): void { this.movementsRequest?.unsubscribe(); this.gmailPoll?.unsubscribe(); this.routeSubscription?.unsubscribe(); }
 
   continueWithGoogle(): void {
     if (this.authSubmitting) return;
@@ -187,7 +181,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.auth.logout().subscribe({
       next: () => {
         this.gmailPoll?.unsubscribe(); this.planningSummaryRequest?.unsubscribe();
-        this.planningSummary = undefined; this.planningSummaryError = '';
         this.movementsRequest?.unsubscribe(); this.movementTotal = 0; this.movementError = ''; this.resetMovementFilters(false);
         this.selectedCurrency = ''; this.dashboard = undefined; this.transactions = [];
         this.selectedCategory = undefined; this.selectedMerchant = undefined;
@@ -204,7 +197,6 @@ export class AppComponent implements OnInit, OnDestroy {
   go(view: typeof this.view): void {
     if (this.router.url.startsWith('/admin')) void this.router.navigateByUrl('/');
     this.view = view;
-    if (view === 'dashboard') this.loadPlanningSummary();
     if (view === 'movements') {
       this.loadTransactions();
     }
@@ -517,63 +509,10 @@ export class AppComponent implements OnInit, OnDestroy {
     }).format(new Date(this.gmail.lastSyncAt));
   }
 
-  loadPlanningSummary(): void {
-    this.planningSummaryRequest?.unsubscribe();
-    this.planningSummaryLoading = true;
-    this.planningSummaryError = '';
-    this.planningSummaryRequest = this.api.getPlanningState().pipe(
-      finalize(() => this.planningSummaryLoading = false)
-    ).subscribe({
-      next: state => this.planningSummary = state,
-      error: () => this.planningSummaryError = 'No pudimos cargar tu plan. Puedes volver a intentarlo.'
-    });
-  }
-
   monthLabel(): string {
     const month = this.dashboard?.month;
     if (!month || !/^\d{4}-\d{2}$/.test(month)) return 'Este mes';
     return new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' }).format(new Date(`${month}-15T12:00:00`));
-  }
-
-  upcomingPlanningPayments(): PlanningState['payments'] {
-    const today = new Date();
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-    const end = start + 30 * 86400000;
-    return (this.planningSummary?.payments ?? [])
-      .filter(payment => {
-        const due = this.planningPaymentTime(payment.dueDate);
-        return !payment.paidAt && Number.isFinite(due) && due <= end;
-      })
-      .sort((a, b) => this.planningPaymentTime(a.dueDate) - this.planningPaymentTime(b.dueDate))
-      .slice(0, 3);
-  }
-
-  private planningPaymentTime(date: string): number {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date ?? '')) return Number.NaN;
-    const [year, month, day] = date.split('-').map(Number);
-    const parsed = new Date(year, month - 1, day);
-    return parsed.getFullYear() === year && parsed.getMonth() === month - 1 && parsed.getDate() === day
-      ? parsed.getTime() : Number.NaN;
-  }
-
-  daysUntilPayment(date: string): number {
-    const today = new Date();
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-    return Math.round((this.planningPaymentTime(date) - start) / 86400000);
-  }
-
-  paymentDueLabel(date: string): string {
-    const days = this.daysUntilPayment(date);
-    if (!Number.isFinite(days)) return 'Fecha sin confirmar';
-    if (days === 0) return 'Vence hoy';
-    if (days === 1) return 'Vence mañana';
-    return `Vence en ${days} días`;
-  }
-
-  weeklyGuidance(): number {
-    const projection = this.planningSummary?.projection;
-    if (!projection) return 0;
-    return Math.max(0, Number(projection.dailyLimit) || 0) * Math.min(7, Math.max(0, Number(projection.days) || 0));
   }
 
   recurringTotal(): number {
@@ -586,7 +525,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.auth.refreshCurrent().subscribe({next:()=>{if(new URLSearchParams(location.search).get('returnUrl')==='/admin'&&this.auth.isAdmin)void this.router.navigateByUrl('/admin');},error:()=>{}});
     history.replaceState({}, '', location.pathname + location.search);
     this.loadDashboard();
-    this.loadPlanningSummary();
     this.loadCategories();
     this.loadGmail();
   }
