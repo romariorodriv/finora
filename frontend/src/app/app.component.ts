@@ -180,7 +180,7 @@ export class AppComponent implements OnInit, OnDestroy {
   logout(): void {
     this.auth.logout().subscribe({
       next: () => {
-        this.gmailPoll?.unsubscribe(); this.planningSummaryRequest?.unsubscribe();
+        this.gmailPoll?.unsubscribe();
         this.movementsRequest?.unsubscribe(); this.movementTotal = 0; this.movementError = ''; this.resetMovementFilters(false);
         this.selectedCurrency = ''; this.dashboard = undefined; this.transactions = [];
         this.selectedCategory = undefined; this.selectedMerchant = undefined;
