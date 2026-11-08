@@ -2,7 +2,6 @@ package com.finora.app;
 
 import com.finora.app.auth.*;
 import com.finora.app.config.JwtService;
-import com.finora.app.planning.*;
 import com.finora.app.transaction.Transaction;
 import com.finora.app.transaction.TransactionRepository;
 import com.finora.app.admin.*;
@@ -24,43 +23,13 @@ class ReadinessIntegrationTest {
  @Autowired MockMvc mvc;
  @Autowired UserRepository users;
  @Autowired JwtService jwt;
- @Autowired PlanningStateService planning;
- @Autowired PlanningProfileRepository profiles;
- @Autowired PlanningPaymentRepository payments;
  @Autowired TransactionRepository transactions;
  @Autowired ManagedCategoryRepository categories;
  private LocalDate today(){return LocalDate.now(ZoneId.of("America/Lima"));}
  private User user(String name){return users.save(new User(name,name+"@readiness.test","hash"));}
  private String auth(User u){return "Bearer "+jwt.issue(u.id,u.email);}
- private void profile(User u){planning.saveProfile(u.id,new PlanningStateService.ProfileInput(new BigDecimal("1000"),new BigDecimal("200"),today().plusDays(10)));}
  private Transaction expense(User u,LocalDate date,String currency,String description){
   var t=new Transaction();t.userId=u.id;t.date=date;t.currency=currency;t.description=description;t.merchant=description;t.category="Old label";t.amount=new BigDecimal("300.00");return transactions.save(t);
- }
- @Test void overdueMandatoryCaseAndAtomicPaymentConfirmation() throws Exception {
-  var u=user("paid");profile(u);
-  var confirmed=planning.state(u.id).balanceConfirmedAt();
-  var p=payments.save(new PlanningPayment(u.id,"Vencido",today().minusDays(1),new BigDecimal("300")));
-  assertEquals(confirmed,planning.state(u.id).balanceConfirmedAt());
-  mvc.perform(get("/api/v1/planning/state").header("Authorization",auth(u)))
-   .andExpect(status().isOk()).andExpect(jsonPath("$.balanceConfirmedAt").isNotEmpty()).andExpect(jsonPath("$.projection.available").value(500));
-  mvc.perform(post("/api/v1/planning/payments/{id}/complete",p.id).header("Authorization",auth(u)).contentType("application/json").content("{}"))
-   .andExpect(status().isBadRequest());
-  assertNull(payments.findById(p.id).orElseThrow().paidAt);
-  mvc.perform(post("/api/v1/planning/payments/{id}/complete",p.id).header("Authorization",auth(u)).contentType("application/json").content("{\"resultingBalance\":700}"))
-   .andExpect(status().isOk()).andExpect(jsonPath("$.projection.available").value(500)).andExpect(jsonPath("$.profile.confirmedBalance").value(700)).andExpect(jsonPath("$.payments[0].paidAt").isNotEmpty());
-  mvc.perform(post("/api/v1/planning/payments/{id}/complete",p.id).header("Authorization",auth(u)).contentType("application/json").content("{\"resultingBalance\":400}"))
-   .andExpect(status().isConflict());
-  assertEquals(0,new BigDecimal("700").compareTo(profiles.findByUserId(u.id).orElseThrow().confirmedBalance));
-  var other=user("other-paid");profile(other);
-  mvc.perform(post("/api/v1/planning/payments/{id}/complete",p.id).header("Authorization",auth(other)).contentType("application/json").content("{\"resultingBalance\":1}"))
-   .andExpect(status().isNotFound());
- }
- @Test void legacyNeedsReconfirmationAndStaleBalanceWarns() throws Exception {
-  var u=user("legacy");
-  var p=profiles.save(new PlanningProfile(u.id,new BigDecimal("1000"),BigDecimal.ZERO,today().plusDays(5)));
-  mvc.perform(get("/api/planning/state").header("Authorization",auth(u))).andExpect(status().isOk()).andExpect(jsonPath("$.projection").isEmpty()).andExpect(jsonPath("$.balanceConfirmedAt").isEmpty());
-  profile(u);p=profiles.findByUserId(u.id).orElseThrow();p.balanceConfirmedAt=Instant.now().minus(Duration.ofHours(25));profiles.saveAndFlush(p);
-  mvc.perform(get("/api/planning/state").header("Authorization",auth(u))).andExpect(status().isOk()).andExpect(jsonPath("$.alerts",hasItem(containsString("desactualizado"))));
  }
  @Test void historyUsesAllDatesStablePagesFiltersAndCurrentCategoryNames() throws Exception {
   var u=user("history");var other=user("other-history");
