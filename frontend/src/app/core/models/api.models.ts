@@ -135,8 +135,3 @@ export interface AssistantAnswer {
   mode: string;
 }
 
-export interface PlanningProfile { confirmedBalance: number; reserve: number; nextIncomeDate: string; }
-export interface PlanningPaymentInput { name: string; dueDate: string; amount: number; }
-export interface PlanningPayment extends PlanningPaymentInput { id: number; paidAt?: string | null; }
-export interface PlanningProjection { confirmedBalance: number; committedPayments: number; reserve: number; available: number; dailyLimit: number; days: number; deficit: boolean; note: string; }
-export interface PlanningState { balanceConfirmedAt?: string | null; profile: PlanningProfile | null; payments: PlanningPayment[]; projection: PlanningProjection | null; alerts: string[]; }
