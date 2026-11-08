@@ -36,22 +36,19 @@
     <button class="logo finora-app-logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al inicio"><span class="finora-app-ring" aria-hidden="true"></span><span>sarela</span></button>
     <p class="sidebar-caption">TU ESPACIO</p>
     <nav aria-label="Navegación principal"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Inicio</span></button>
-      <button type="button" [class.active]="view === 'planning'" [attr.aria-current]="view === 'planning' ? 'page' : null" (click)="go('planning')"><app-icon name="wallet" /><span>Mi dinero disponible</span></button>
       <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>Movimientos</span></button>
       <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>Conexión Gmail</span></button>
       <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>Tu opinión</span></button></nav>
     <button class="ghost admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()"><app-icon name="shield" [size]="17" />Administración</button>
-    <div class="sidebar-note"><app-icon name="spark" [size]="22" /><b>Un plan. Más calma.</b><p>Haz espacio para lo que de verdad importa.</p><button type="button" (click)="go('planning')">Revisar mi plan <app-icon name="arrow" [size]="16" /></button></div>
     <div class="sidebar-footer"><div class="profile"><div class="avatar">{{ auth.user.name[0] }}</div><div><b>{{ auth.user.name }}</b><small>Mi cuenta · Sarela</small></div></div><button class="logout" type="button" (click)="logout()"><app-icon name="logout" [size]="17" />Cerrar sesión</button></div>
   </aside>
   <main id="main-content" tabindex="-1">
     <header class="topbar">
       <button class="mobile-brand logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al resumen"><span class="brand">S</span><span>Sarela.</span></button>
-      <div class="breadcrumb">Mi espacio <span>/</span><b>{{ view === 'dashboard' ? 'Resumen' : view === 'planning' ? 'Mi dinero disponible' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conexión Gmail' : view === 'admin' ? 'Administración' : 'Tu opinión' }}</b></div>
+      <div class="breadcrumb">Mi espacio <span>/</span><b>{{ view === 'dashboard' ? 'Resumen' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conexión Gmail' : view === 'admin' ? 'Administración' : 'Tu opinión' }}</b></div>
       <div class="topbar-actions"><button class="ghost compact admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()" aria-label="Abrir administración"><app-icon name="shield" [size]="17" /><span>Administrar</span></button><button class="connection-pill" type="button" (click)="go('import')"><span class="status-dot" [class.connected]="gmail?.connected"></span><span>{{ !gmail ? 'Consultando Gmail' : gmail.connected ? 'Gmail conectado' : 'Gmail sin conectar' }}</span><app-icon name="down" [size]="14" /></button><div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div><button class="mobile-logout" type="button" aria-label="Cerrar sesión" (click)="logout()"><app-icon name="logout" [size]="18" /></button></div>
     </header>
     <router-outlet></router-outlet>
-    <app-planning *ngIf="view === 'planning'"></app-planning>
     <section class="panel import-wait" *ngIf="view==='dashboard' && waitingForImport()" role="status">
       <p class="eyebrow">TU PRIMERA IMPORTACIÓN</p><h2>{{importStatusLabel()}}</h2>
       <p>{{gmailJobError || syncResult?.message || 'Estamos comprobando el estado de la importación.'}}</p>
@@ -70,30 +67,6 @@
         El resumen muestra solo movimientos registrados; no representa todo tu historial bancario.
         {{ syncResult.reviewRequired }} correos por revisar y {{ syncResult.unsupported }} no interpretados.
       </p>
-      <section class="finora-home-hero" aria-label="Tu dinero disponible">
-        <span class="finora-home-hero-icon"><app-icon name="wallet" [size]="26" /></span>
-        <div class="finora-home-hero-content">
-          <p class="finora-home-hero-eyebrow">TU TRANQUILIDAD FINANCIERA</p>
-          <ng-container *ngIf="!planningSummaryLoading; else finoraHeroLoading">
-            <ng-container *ngIf="planningSummary?.projection as projection; else finoraHeroSetup">
-              <h2 [class.finora-home-deficit]="projection.deficit">{{ projection.deficit ? 'Atención: tus pagos superan tu disponible' : 'Esto te queda para tus próximos días' }}</h2>
-              <strong class="finora-home-headline">{{ money(projection.available, 'PEN') }}</strong>
-              <p>Estimación hasta tu próximo ingreso, después de considerar tu reserva y los pagos que registraste.</p>
-              <div class="finora-home-hero-meta"><span>Orientación diaria: <b>{{ money(projection.dailyLimit, 'PEN') }}</b></span><span>{{ projection.days }} días del plan</span></div>
-            </ng-container>
-            <ng-template #finoraHeroSetup>
-              <h2>¿Cuánto dinero puedes usar con tranquilidad?</h2>
-              <p>Confirma tu saldo y tus próximos pagos para calcular tu dinero disponible. No necesitamos conectarnos a tu banco.</p>
-            </ng-template>
-          </ng-container>
-          <ng-template #finoraHeroLoading><h2>Preparando tu panorama...</h2><p>Estamos consultando tu plan de dinero disponible.</p></ng-template>
-          <p *ngIf="planningSummary?.balanceConfirmedAt">Saldo confirmado el {{ planningSummary?.balanceConfirmedAt | date:'dd/MM/yyyy HH:mm':'-0500' }} (Lima)</p>
-          <p *ngFor="let alert of planningSummary?.alerts" role="status">{{ alert }}</p>
-          <p class="finora-home-hero-error" *ngIf="planningSummaryError">{{ planningSummaryError }} <button type="button" (click)="loadPlanningSummary()">Reintentar</button></p>
-          <button type="button" class="finora-home-hero-action" (click)="go('planning')">{{ planningSummary?.projection ? 'Ver mi plan' : 'Calcular mi disponible' }}<app-icon name="arrow" [size]="16" /></button>
-        </div>
-      </section>
-
       <div class="finora-home-main-grid">
         <article class="finora-home-card finora-home-spending">
           <div class="finora-home-card-head"><div><p class="finora-home-kicker">TUS GASTOS</p><h2>¿En qué se fue tu dinero?</h2><p>Así se distribuyen tus movimientos de {{ monthLabel() }}.</p></div><span class="finora-home-card-icon"><app-icon name="grid" [size]="20" /></span></div>
@@ -113,25 +86,7 @@
           <ng-template #finoraEmptySpending><div class="finora-home-empty"><app-icon name="wallet" [size]="28" /><h3>{{ dashboardLoading ? 'Cargando tus gastos...' : 'Todavía no hay gastos registrados' }}</h3><p>Cuando registres o importes movimientos verás aquí exactamente en qué gastaste.</p><button type="button" class="finora-home-inline-action" (click)="go('movements')">Ver movimientos <app-icon name="arrow" [size]="15" /></button></div></ng-template>
         </article>
 
-        <article class="finora-home-card finora-home-upcoming">
-          <div class="finora-home-card-head"><div><p class="finora-home-kicker">PARA QUE NADA TE SORPRENDA</p><h2>Pagos próximos</h2><p>Compromisos que registraste en tu plan.</p></div><span class="finora-home-card-icon"><app-icon name="calendar" [size]="20" /></span></div>
-          <div class="finora-home-payment-list" *ngIf="upcomingPlanningPayments().length; else finoraNoUpcoming">
-            <div class="finora-home-payment" *ngFor="let payment of upcomingPlanningPayments()">
-              <span class="finora-home-payment-mark"><app-icon name="calendar" [size]="17" /></span>
-              <span class="finora-home-payment-label"><strong>{{ payment.name }}</strong><small [class.urgent]="daysUntilPayment(payment.dueDate) <= 2">{{ paymentDueLabel(payment.dueDate) }}</small></span>
-              <b>{{ money(payment.amount, 'PEN') }}</b>
-            </div>
-          </div>
-          <ng-template #finoraNoUpcoming><div class="finora-home-empty finora-home-empty-compact"><app-icon name="calendar" [size]="26" /><h3>Sin pagos próximos registrados</h3><p>Agrega tus compromisos para anticiparlos desde aquí.</p></div></ng-template>
-          <button type="button" class="finora-home-inline-action" (click)="go('planning')">Gestionar pagos <app-icon name="arrow" [size]="15" /></button>
-        </article>
-
         <div class="finora-home-side">
-          <article class="finora-home-card finora-home-week">
-            <div class="finora-home-side-label"><app-icon name="wallet" [size]="20" /><h2>Orientación para los próximos 7 días</h2></div>
-            <ng-container *ngIf="planningSummary?.projection as projection; else finoraNoWeek"><strong>{{ money(weeklyGuidance(), 'PEN') }}</strong><p>Basada en el límite diario y los días restantes de tu plan. No es tu saldo bancario.</p></ng-container>
-            <ng-template #finoraNoWeek><strong>—</strong><p>Configura tu plan para saber cuánto podrías gastar sin comprometer tus pagos.</p><button type="button" class="finora-home-inline-action" (click)="go('planning')">Crear mi plan <app-icon name="arrow" [size]="15" /></button></ng-template>
-          </article>
           <article class="finora-home-card finora-home-summary">
             <div class="finora-home-side-label"><app-icon name="trend" [size]="20" /><h2>Tu mes de un vistazo</h2></div>
             <div class="finora-home-summary-line"><span>Ingresos registrados</span><b>{{ dashboard ? money(dashboard.income) : '—' }}</b></div>
@@ -321,7 +276,6 @@
     </section>
   </main>
   <nav class="mobile-nav" aria-label="Navegación móvil"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Resumen</span></button>
-      <button type="button" [class.active]="view === 'planning'" [attr.aria-current]="view === 'planning' ? 'page' : null" (click)="go('planning')"><app-icon name="wallet" /><span>Planificar</span></button>
       <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>Movimientos</span></button>
       <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>Gmail</span></button>
       <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>Opinión</span></button></nav>
