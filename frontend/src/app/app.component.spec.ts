@@ -4,8 +4,8 @@ import { of, Subject, throwError } from 'rxjs';
 import { AppComponent } from './app.component';
 import { ApiService } from './core/services/api.service';
 import { AuthService } from './core/services/auth.service';
-import { PlanningState, DashboardResponse } from './core/models/api.models';
-import { premiumTestServices, testDashboard, testPlan, testTransaction } from './premium.test-fixtures';
+import { DashboardResponse } from './core/models/api.models';
+import { premiumTestServices, testDashboard, testTransaction } from './premium.test-fixtures';
 
 describe('Premium UI functional flows', () => {
   let fixture: ComponentFixture<AppComponent>;
@@ -26,27 +26,20 @@ describe('Premium UI functional flows', () => {
     fixture.componentInstance.requestDataDeletion();
     expect(services.api.requestDataDeletion).not.toHaveBeenCalled();
   });
-  it('renders recorded monthly metrics, expenses and confirmed planning availability from API data', () => {
+  it('renders recorded monthly metrics and expenses from API data', () => {
     expect(root().querySelector('.finora-home-summary-balance')?.textContent).toContain('1,380.00');
     expect(root().querySelector('.finora-home-summary')?.textContent).toContain('1,500.00');
     expect(root().querySelector('.finora-home-donut')?.textContent).toContain('120.00');
     expect(root().querySelector('.finora-home-recent')?.textContent).toContain('Comercio QA');
-    expect(root().querySelector('.finora-home-headline')?.textContent).toContain('650.00');
+    expect(root().querySelector('.finora-home-hero')).toBeNull();
   });
-  it('keeps all five mobile destinations wired to working views and current-page states', () => {
-    for (const [index,view] of ['dashboard','planning','movements','import','feedback'].entries()) {
+  it('keeps all four mobile destinations wired to working views and current-page states', () => {
+    for (const [index,view] of ['dashboard','movements','import','feedback'].entries()) {
       click(`.mobile-nav button:nth-child(${index+1})`);
       expect(fixture.componentInstance.view).toBe(view as typeof fixture.componentInstance.view);
       expect(root().querySelectorAll('.mobile-nav [aria-current="page"]').length).toBe(1);
     }
     expect(services.api.transactionHistory).toHaveBeenCalled();expect(services.api.gmailStatus).toHaveBeenCalled();
-  });
-  it('reloads persisted planning state when returning from the planner', () => {
-    click('.sidebar nav button:nth-child(2)');
-    expect(root().querySelector('app-planning .available-amount')?.textContent).toContain('650.00');
-    services.api.getPlanningState.and.returnValue(of({...testPlan,projection: {...testPlan.projection!,available: 725}}));
-    click('.sidebar nav button:nth-child(1)');
-    expect(root().querySelector('.finora-home-headline')?.textContent).toContain('725.00');
   });
   it('preserves category and merchant drilldowns, closes with Escape and restores focus', () => {
     const category=root().querySelector('.finora-home-category-list button') as HTMLButtonElement;category.focus();category.click();fixture.detectChanges();
@@ -82,19 +75,13 @@ describe('Premium UI functional flows', () => {
   });
   it('uses honest empty states without rendering a fabricated balance or chart', () => {
     services.api.dashboard.and.returnValue(of({...testDashboard,expenses:0,income:0,balance:0,daily:{},transactions:[],recurring:[],macroCategories:[],merchants:[]}));
-    services.api.getPlanningState.and.returnValue(of({profile:null,payments:[],projection:null,alerts:[]}));
-    fixture.componentInstance.loadDashboard();fixture.componentInstance.loadPlanningSummary();fixture.detectChanges();
-    expect(root().querySelector('.finora-home-donut')).toBeNull();expect(root().querySelector('.finora-home-headline')).toBeNull();expect(root().textContent).toContain('Crear mi plan');
+    fixture.componentInstance.loadDashboard();fixture.detectChanges();
+    expect(root().querySelector('.finora-home-donut')).toBeNull();expect(root().querySelector('.finora-home-hero')).toBeNull();expect(root().textContent).toContain('Todavía no hay gastos registrados');
   });
   it('shows loading and retry states for actual read failures', () => {
     const dashboard=new Subject<DashboardResponse>();services.api.dashboard.and.returnValue(dashboard);
     fixture.componentInstance.loadDashboard();expect(fixture.componentInstance.dashboardLoading).toBeTrue();
     dashboard.error({error:{message:'No disponible'}});fixture.detectChanges();expect(root().querySelector('[role="alert"]')?.textContent).toContain('No disponible');
-    services.api.getPlanningState.and.returnValue(throwError(()=>new Error('offline')));fixture.componentInstance.loadPlanningSummary();fixture.detectChanges();expect(root().querySelector('.finora-home-hero-error')?.textContent).toContain('Reintentar');
-  });
-  it('cancels a pending summary and clears planning data when logging out', () => {
-    const request=new Subject<PlanningState>();services.api.getPlanningState.and.returnValue(request);fixture.componentInstance.loadPlanningSummary();
-    fixture.componentInstance.logout();request.next(testPlan);expect(services.auth.logout).toHaveBeenCalled();expect(fixture.componentInstance.planningSummary).toBeUndefined();
   });
   it('shows a safe Google sign-in error and never exposes a password login', () => {
     (services.auth.googleStart as jasmine.Spy).and.returnValue(throwError(()=>({error:{message:'Google no está configurado'}})));
