@@ -52,6 +52,7 @@ export class AppComponent implements OnInit, OnDestroy {
   linkRequired = false;
   linkPassword = '';
   gmailConsentOpen = false;
+  gmailConsentLoading = false;
   gmailJobError = '';
   gmailReview?: import('./core/models/api.models').GmailReviewPage;
   deletionMessage = '';
@@ -268,9 +269,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
   connectGmail(): void { this.gmailConsentOpen = true; }
 
+  dismissGmailConsent(): void {
+    this.gmailConsentOpen = false;
+    if (this.auth.user?.userId) localStorage.setItem(`sarela:gmail-onboarding-dismissed:${this.auth.user.userId}`, '1');
+  }
+
   authorizeGmail(): void {
-    this.api.gmailAuthorizationUrl().subscribe({
-      next: r => location.href = r.authorizationUrl,
+    if (this.gmailConsentLoading) return;
+    this.gmailConsentLoading = true;
+    this.api.gmailAuthorizationUrl().pipe(finalize(() => this.gmailConsentLoading = false)).subscribe({
+      next: r => location.assign(r.authorizationUrl),
       error: e => this.showToast(this.message(e))
     });
   }
@@ -577,7 +585,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.api.gmailStatus().subscribe({
       next: status => {
         this.gmail = status;
-        if (this.onboardingRequested) { this.view = status.connected ? 'dashboard' : 'import'; this.onboardingRequested = false; }
+        if (this.onboardingRequested) {
+          this.onboardingRequested = false;
+          const id = this.auth.user?.userId;
+          const dismissed = id ? localStorage.getItem(`sarela:gmail-onboarding-dismissed:${id}`) === '1' : false;
+          if (!status.connected && status.configured && !dismissed) this.gmailConsentOpen = true;
+          this.view = 'dashboard';
+        }
         if (status.connected) this.loadGmailJob();
       },
       error: error => this.showToast(this.message(error))
@@ -602,6 +616,15 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   importActive(): boolean { return this.syncResult?.status === 'PENDING' || this.syncResult?.status === 'IMPORTING'; }
+  importProcessingLabel(): string {
+    if (!this.syncResult) return 'Preparando la importación';
+    if (this.syncResult.status === 'PENDING') return 'Esperando inicio del análisis';
+    if (this.syncResult.status === 'IMPORTING') return 'Buscando e interpretando notificaciones';
+    if (this.syncResult.status === 'COMPLETED') return 'Análisis finalizado';
+    if (this.syncResult.status === 'PARTIAL') return 'Análisis parcial: revisa los pendientes';
+    if (this.syncResult.status === 'ERROR') return 'No pudimos completar el análisis';
+    return this.importStatusLabel();
+  }
   waitingForImport(): boolean {
     return !!this.gmail?.connected && this.syncResult?.status !== 'COMPLETED' && !(this.dashboard?.transactions?.length);
   }
