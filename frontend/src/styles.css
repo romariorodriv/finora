@@ -556,3 +556,119 @@ body .app .sarela-ledger-editor-actions {display:flex;gap:12px;justify-content:f
  body .app .sarela-ledger-donut-row {flex-direction:column;}
  body .app .sarela-ledger-extra {grid-template-columns:1fr;}
 }
+
+
+/* Sarela Home 4 — matching approved 2026 premium dashboard reference. */
+body .app.sarela-home-shell {grid-template-columns:252px minmax(0,1fr);background:#fcfbf7;}
+body .app.sarela-home-shell .sidebar {background:linear-gradient(162deg,#064936,#053b2c 62%,#062e25);border-right:0;color:#eef8ef;padding:28px 15px 24px;}
+body .app.sarela-home-shell .sidebar .logo {color:#fff;font-size:30px;margin:0 15px 34px;}
+body .app.sarela-home-shell .sidebar .finora-app-ring {background:conic-gradient(from 30deg,#d4ecd0,#6fc59a,#e1f3db,#397b55,#d4ecd0);}
+body .app.sarela-home-shell .sidebar .finora-app-ring::after {background:#07503b;}
+body .app.sarela-home-shell .sidebar-caption {color:#a8c9b4;font-size:10px;margin-bottom:13px;}
+body .app.sarela-home-shell .sidebar nav {gap:7px;}
+body .app.sarela-home-shell .sidebar nav button {color:#e4f0e8;min-height:49px;padding:12px 15px;font-size:14px;font-weight:550;}
+body .app.sarela-home-shell .sidebar nav button:hover {background:#276c51;color:#fff;}
+body .app.sarela-home-shell .sidebar nav button.active {background:#2a7255;color:#fff;border-color:transparent;font-weight:700;}
+body .app.sarela-home-shell .sidebar .admin-entry {border:0;background:transparent;color:#effaf1;justify-content:flex-start;text-align:left;font-size:14px;min-height:49px;padding:12px 15px;}
+body .app.sarela-home-shell .sidebar .admin-entry:hover {background:#276c51;}
+body .app.sarela-home-shell .sidebar-footer {border-color:#47826a;}
+body .app.sarela-home-shell .sidebar-footer .profile b {color:#fff;}
+body .app.sarela-home-shell .sidebar-footer .profile small,body .app.sarela-home-shell .sidebar-footer .logout {color:#c4dfcf;}
+body .app.sarela-home-shell .sidebar-footer .avatar {background:#ccedd6;color:#135e3f;}
+body .app.sarela-home-shell main {max-width:none;padding:0 clamp(19px,2vw,37px) 38px;}
+@media(min-width:901px) {
+ body .app.sarela-home-shell .topbar {min-height:0;height:0;margin:0;border:0;overflow:hidden;visibility:hidden;}
+}
+body .sarela-home-v4 {max-width:none;margin:0 auto;padding:0;}
+body .sarela-home-v4 .finora-home-header {margin:22px 0 27px;}
+body .sarela-home-v4 .finora-home-header h1 {font-size:clamp(32px,2.8vw,46px);font-weight:850;color:#101b15;}
+body .sarela-home-v4 .finora-home-kicker {font-size:12px;color:#18744a;letter-spacing:.12em;}
+body .sarela-home-v4 .finora-home-header p:last-child {font-size:15px;color:#647267;}
+body .sarela-home-heading-actions {display:flex;align-items:center;gap:18px;}
+body .sarela-home-heading-actions .avatar {width:42px;height:42px;background:#e2f0e1;color:#126240;font-size:17px;font-weight:750;}
+body .sarela-home-v4 .finora-home-period {padding:12px 18px;border-radius:999px;background:#fffefa;box-shadow:0 5px 17px #193f2b06;font-size:13px;}
+body .sarela-home-feature-row {display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,1fr);gap:20px;margin-bottom:20px;}
+body .sarela-home-feature {position:relative;display:flex;align-items:center;min-height:195px;padding:30px 34px;border-radius:23px;overflow:hidden;background:linear-gradient(118deg,#0b583c,#034a35 68%,#045d3b);color:#fff;}
+body .sarela-home-feature::before {content:'';position:absolute;right:-14%;top:-100%;width:68%;height:250%;background:radial-gradient(circle,#4cbd8152,transparent 66%);pointer-events:none;}
+body .sarela-home-feature-text {position:relative;z-index:2;display:grid;gap:10px;min-width:0;}
+body .sarela-home-hero-label {display:flex;gap:11px;align-items:center;font-size:17px;font-weight:650;color:#e4f4e7;}
+body .sarela-home-feature-text>strong {font-size:clamp(37px,4vw,65px);font-weight:850;line-height:1.03;letter-spacing:-.06em;font-variant-numeric:tabular-nums;white-space:nowrap;}
+body .sarela-home-feature-text>span {font-size:14px;color:#d4e9dc;}
+body .sarela-home-sparkline {position:absolute;right:2%;bottom:4px;width:46%;height:68%;opacity:.95;overflow:visible;}
+body .sarela-home-feature-empty {position:absolute;right:13%;bottom:27%;color:#acdcb7;opacity:.4;}
+body .sarela-home-recommendation {padding:27px 29px;border:1px solid #e1ecd9;border-radius:23px;background:radial-gradient(circle at 100% 95%,#d8f0d0,transparent 47%),linear-gradient(132deg,#f4f8ec,#eff5e8);overflow:hidden;}
+body .sarela-home-recommend-title {display:flex;align-items:center;gap:13px;margin-bottom:16px;color:#107848;}
+body .sarela-home-recommend-title h2 {font-size:17px;margin:0;color:#111e15;font-weight:800;}
+body .sarela-home-recommendation h3 {font-size:clamp(20px,1.8vw,27px);line-height:1.23;letter-spacing:-.044em;color:#132217;margin:0 0 10px;font-weight:830;}
+body .sarela-home-recommendation p {font-size:13px;line-height:1.55;color:#4c5f4e;margin:0 0 11px;}
+body .sarela-home-recommendation small {font-size:10px;line-height:1.4;color:#60765d;}
+body .sarela-home-metrics {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:19px;margin-bottom:20px;}
+body .sarela-home-metric {min-width:0;display:flex;align-items:center;gap:18px;min-height:96px;padding:19px 23px;border:1px solid #e6ebe3;border-radius:23px;background:#fff;box-shadow:0 9px 22px #142f2509;}
+body .sarela-home-metric-icon {display:grid;place-items:center;width:53px;height:53px;flex:0 0 auto;background:#ebf5e8;border-radius:18px;color:#098151;}
+body .sarela-home-metric>div {display:grid;gap:5px;min-width:0;}
+body .sarela-home-metric>div>span {font-size:12px;color:#607061;}
+body .sarela-home-metric strong {font-size:clamp(21px,2vw,30px);line-height:1.16;color:#111b16;font-weight:830;letter-spacing:-.04em;overflow-wrap:anywhere;}
+body .sarela-home-content-row {display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,1fr);align-items:stretch;gap:20px;margin-bottom:20px;}
+body .sarela-home-content-row>.finora-home-card {border:1px solid #e6ebe3;border-radius:25px;background:#fff;box-shadow:0 10px 27px #17392b09;padding:26px 27px;}
+body .sarela-home-content-row .finora-home-card-head {margin-bottom:23px;}
+body .sarela-home-content-row .finora-home-card-head h2 {font-size:clamp(21px,1.8vw,27px);font-weight:850;letter-spacing:-.05em;color:#101810;}
+body .sarela-home-content-row .finora-home-card-head p {font-size:12px;color:#647063;}
+body .sarela-home-content-row .finora-home-category-layout {grid-template-columns:minmax(140px,45%) minmax(0,1fr);gap:22px;align-items:center;}
+body .sarela-home-content-row .finora-home-donut {width:min(228px,100%);}
+body .sarela-home-content-row .finora-home-donut small {font-size:10px;}
+body .sarela-home-content-row .finora-home-donut strong {font-size:clamp(17px,1.6vw,23px);}
+body .sarela-home-content-row .finora-home-category-list button {min-height:46px;}
+body .sarela-home-content-row .finora-home-category-name {font-size:12px;}
+body .sarela-home-recent .finora-home-recent-list {display:grid;gap:0;}
+body .sarela-home-recent .finora-home-recent-item {min-height:63px;padding:11px 0;border-bottom:1px solid #eef1eb;gap:12px;}
+body .sarela-home-recent .finora-home-recent-item:last-child {border-bottom:0;}
+body .sarela-home-recent .finora-home-transaction-icon {background:#eaf5e4;color:#13804e;width:43px;height:43px;border-radius:50%;}
+body .sarela-home-recent .finora-home-recent-item strong {font-size:12px;}
+body .sarela-home-recent .finora-home-recent-item b {font-size:12px;}
+body .sarela-home-gmail-strip {display:flex;align-items:center;gap:14px;min-height:76px;padding:15px 22px;background:linear-gradient(110deg,#e9f5e8,#f3f8ec);border:1px solid #e0ecdd;border-radius:20px;}
+body .sarela-home-gmail-icon {width:43px;height:43px;display:grid;place-items:center;flex:0 0 auto;border-radius:13px;background:#fff;color:#14754d;}
+body .sarela-home-gmail-strip>strong {color:#1a2c1f;font-size:15px;white-space:nowrap;}
+body .sarela-home-gmail-check {width:23px;height:23px;display:grid;place-items:center;flex:0 0 auto;background:#19a264;color:white;border-radius:50%;}
+body .sarela-home-gmail-divider {height:30px;width:1px;background:#a7cdb8;margin:0 6px;}
+body .sarela-home-gmail-strip p {margin:0;flex:1;color:#355c44;font-size:13px;line-height:1.4;}
+body .sarela-home-gmail-strip button {min-height:39px;border:1px solid #2e9460;color:#116640;background:transparent;border-radius:999px;white-space:nowrap;font-size:12px;}
+body .sarela-home-gmail-strip button:hover {background:#d8f0d9;}
+@media(max-width:1250px) {
+ body .sarela-home-feature-row {grid-template-columns:minmax(0,1.25fr) minmax(265px,1fr);}
+ body .sarela-home-feature-text>strong {font-size:44px;}
+ body .sarela-home-content-row .finora-home-category-layout {grid-template-columns:1fr;}
+ body .sarela-home-content-row .finora-home-donut {width:190px;}
+}
+@media(max-width:1000px){
+ body .sarela-home-feature-row,body .sarela-home-content-row {grid-template-columns:1fr;}
+ body .sarela-home-sparkline {max-width:40%;}
+ body .sarela-home-content-row .finora-home-category-layout {grid-template-columns:minmax(140px,220px) minmax(0,1fr);}
+ body .sarela-home-metrics {gap:10px;}
+ body .sarela-home-metric {padding:15px;gap:10px;}
+ body .sarela-home-metric-icon {width:42px;height:42px;}
+ body .sarela-home-gmail-strip {flex-wrap:wrap;}
+}
+@media(max-width:900px) {
+ body .app.sarela-home-shell {display:block;}
+ body .app.sarela-home-shell main {padding:0 20px 110px;}
+ body .sarela-home-v4 .finora-home-header {margin-top:4px;}
+}
+@media(max-width:600px){
+ body .sarela-home-v4 .finora-home-header {flex-direction:column;align-items:flex-start;gap:14px;}
+ body .sarela-home-v4 .finora-home-header h1 {font-size:32px;}
+ body .sarela-home-heading-actions .avatar {display:none;}
+ body .sarela-home-feature {min-height:180px;padding:26px 21px;}
+ body .sarela-home-feature-text>strong {font-size:40px;}
+ body .sarela-home-hero-label {font-size:14px;}
+ body .sarela-home-sparkline {opacity:.4;width:40%;}
+ body .sarela-home-recommendation {padding:24px;}
+ body .sarela-home-metrics {grid-template-columns:1fr;}
+ body .sarela-home-metric {min-height:78px;}
+ body .sarela-home-content-row>.finora-home-card {padding:21px 18px;}
+ body .sarela-home-content-row .finora-home-category-layout {grid-template-columns:1fr;}
+ body .sarela-home-content-row .finora-home-donut {width:190px;}
+ body .sarela-home-gmail-strip {padding:17px;gap:10px;}
+ body .sarela-home-gmail-divider {display:none;}
+ body .sarela-home-gmail-strip p {flex-basis:100%;}
+ body .sarela-home-gmail-strip button {width:100%;}
+}
