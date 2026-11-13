@@ -60,11 +60,13 @@ describe('Premium UI functional flows', () => {
     expect(services.api.requestDataDeletion).not.toHaveBeenCalled();
   });
   it('renders recorded monthly metrics and expenses from API data', () => {
-    expect(root().querySelector('.finora-home-summary-balance')?.textContent).toContain('1,380.00');
+    expect(root().querySelector('.sarela-home-feature')?.textContent).toContain('120.00');
     expect(root().querySelector('.finora-home-summary')?.textContent).toContain('1,500.00');
     expect(root().querySelector('.finora-home-donut')?.textContent).toContain('120.00');
     expect(root().querySelector('.finora-home-recent')?.textContent).toContain('Comercio QA');
-    expect(root().querySelector('.finora-home-hero')).toBeNull();
+    expect(root().querySelector('.sarela-home-recommendation')).not.toBeNull();
+    expect(root().querySelector('.sarela-home-gmail-strip')).not.toBeNull();
+    expect(root().querySelectorAll('.sarela-home-metric').length).toBe(3);
   });
   it('keeps all four mobile destinations wired to working views and current-page states', () => {
     for (const [index,view] of ['dashboard','movements','import','feedback'].entries()) {
@@ -132,7 +134,7 @@ describe('Premium UI functional flows', () => {
   it('uses honest empty states without rendering a fabricated balance or chart', () => {
     services.api.dashboard.and.returnValue(of({...testDashboard,expenses:0,income:0,balance:0,daily:{},transactions:[],recurring:[],macroCategories:[],merchants:[]}));
     fixture.componentInstance.loadDashboard();fixture.detectChanges();
-    expect(root().querySelector('.finora-home-donut')).toBeNull();expect(root().querySelector('.finora-home-hero')).toBeNull();expect(root().textContent).toContain('Todavía no hay gastos registrados');
+    expect(root().querySelector('.finora-home-donut')).toBeNull();expect(root().querySelector('.sarela-home-feature')).not.toBeNull();expect(root().textContent).toContain('Todavía no hay gastos registrados');
   });
   it('shows loading and retry states for actual read failures', () => {
     const dashboard=new Subject<DashboardResponse>();services.api.dashboard.and.returnValue(dashboard);
