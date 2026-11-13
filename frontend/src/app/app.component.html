@@ -122,74 +122,96 @@
       <p class="finora-home-note" *ngIf="syncResult && (syncResult.status !== 'COMPLETED' || syncResult.stale || syncResult.reviewRequired > 0 || syncResult.unsupported > 0 || syncResult.failed > 0)" role="status">{{ syncResult.message }} Estos datos pueden estar incompletos; revisa tu conexión Gmail. <button type="button" (click)="go('import')">Ver estado</button></p>
       <div class="finora-home-footer"><span><app-icon name="lock" [size]="14" /> Tus datos, bajo tu control.</span><button type="button" (click)="go('import')">{{ gmail?.connected ? 'Gestionar Gmail' : 'Conectar Gmail (opcional)' }} <app-icon name="arrow" [size]="15" /></button></div>
     </section>
-    <section *ngIf="view === 'movements'" class="view movements-view">
-      <header class="sarela-section-header"><div><p class="eyebrow">TUS FINANZAS, CON CLARIDAD</p><h1>Tus movimientos</h1><p>Consulta, busca y organiza tus movimientos registrados.</p></div><app-icon name="rows" [size]="34" /></header>
-      <div class="sarela-movement-metrics" aria-label="Indicadores del mes registrado">
-        <article class="panel"><span>Gastos registrados del mes</span><strong>{{ dashboard ? money(dashboard.expenses) : '—' }}</strong><small>Según los movimientos de Sarela</small></article>
-        <article class="panel"><span>Ingresos registrados</span><strong>{{ dashboard ? money(dashboard.income) : '—' }}</strong><small>No equivale a tu saldo bancario</small></article>
-        <article class="panel"><span>Operaciones de gasto</span><strong>{{ dashboard?.expenseCount ?? '—' }}</strong><small>Del mes del resumen</small></article>
+    <section *ngIf="view === 'movements'" class="view movements-view sarela-ledger">
+      <header class="sarela-ledger-heading">
+        <div>
+          <p class="eyebrow">TUS FINANZAS, EN ORDEN</p>
+          <h1>Tus movimientos <span aria-hidden="true" class="sarela-heading-spark">✧</span></h1>
+          <p>Consulta y analiza tus gastos, compras, pagos y otros movimientos registrados.</p>
+        </div>
+        <div class="sarela-ledger-heading-actions">
+          <span class="sarela-sync-chip" *ngIf="gmail?.connected"><app-icon name="check" [size]="16" /> Gmail conectado · {{lastSyncLabel()}}</span>
+          <button type="button" class="primary sarela-new-movement" (click)="openMovementEditor()"><app-icon name="plus" [size]="17" /> Agregar movimiento</button>
+        </div>
+      </header>
+
+      <div class="sarela-ledger-toolbar" role="search" aria-label="Filtrar movimientos">
+        <label class="sarela-ledger-search"><span class="sr-only">Buscar movimiento</span><app-icon name="search" [size]="19" /><input name="movementSearch" [(ngModel)]="movementFilters.search" (ngModelChange)="updateMovementFilters()" placeholder="Buscar comercio, categoría o descripción…"></label>
+        <div class="sarela-ledger-chips" role="group" aria-label="Tipo de movimiento">
+          <button type="button" [class.selected]="!movementFilters.type" [attr.aria-pressed]="!movementFilters.type" (click)="selectMovementType('')">Todos</button>
+          <button type="button" [class.selected]="movementFilters.type==='EXPENSE'" [attr.aria-pressed]="movementFilters.type==='EXPENSE'" (click)="selectMovementType('EXPENSE')">Gastos</button>
+          <button type="button" [class.selected]="movementFilters.type==='INCOME'" [attr.aria-pressed]="movementFilters.type==='INCOME'" (click)="selectMovementType('INCOME')">Ingresos</button>
+          <button type="button" [class.selected]="movementFilters.type==='TRANSFER'" [attr.aria-pressed]="movementFilters.type==='TRANSFER'" (click)="selectMovementType('TRANSFER')">Transferencias</button>
+        </div>
+        <label class="sarela-ledger-category"><span class="sr-only">Filtrar por categoría</span><select name="movementCategory" [(ngModel)]="movementFilters.category" (ngModelChange)="updateMovementFilters()"><option value="">Todas las categorías</option><option *ngFor="let c of categories" [value]="c">{{c}}</option><option value="Sin categoría">Sin categoría</option></select></label>
+        <button type="button" class="ghost sarela-ledger-more" (click)="movementMoreFiltersOpen=!movementMoreFiltersOpen" [attr.aria-expanded]="movementMoreFiltersOpen"><app-icon name="calendar" [size]="17" /> Fechas y más filtros</button>
       </div>
-      <div class="sarela-movements-layout">
-      <form class="panel" (ngSubmit)="saveTransaction()">
-        <p class="eyebrow">TUS MOVIMIENTOS</p>
-        <h3>{{ editingId ? 'Editar movimiento' : 'Agregar movimiento' }}</h3>
-        <div class="type-toggle">
-          <button type="button" [class.active]="txForm.type === 'EXPENSE'" (click)="txForm.type = 'EXPENSE'">Gasto</button>
-          <button type="button" [class.active]="txForm.type === 'INCOME'" (click)="txForm.type = 'INCOME'">Ingreso</button>
-        </div>
-        <label>Descripción <input name="description" [(ngModel)]="txForm.description" required></label>
-        <label>Monto <input name="amount" type="number" step="0.01" [(ngModel)]="txForm.amount" required></label>
-        <label>Fecha <input name="date" type="date" [(ngModel)]="txForm.date" required></label>
-        <label>Categoría <select name="category" [(ngModel)]="txForm.category"><option *ngFor="let c of categories">{{ c }}</option></select></label>
-        <label class="check"><input name="recurring" type="checkbox" [(ngModel)]="txForm.recurring"> Es recurrente</label>
-        <button class="primary" type="submit" [disabled]="savingTransaction">{{ savingTransaction ? 'Guardando…' : editingId ? 'Actualizar' : 'Guardar' }}</button>
-        <button class="ghost" type="button" *ngIf="editingId" (click)="cancelEdit()" [disabled]="savingTransaction">Cancelar</button>
-      </form>
-      <article class="panel">
-        <div class="panel-heading"><div><p class="eyebrow">HISTORIAL</p><h3>Todos tus movimientos</h3></div><app-icon name="rows" /></div>
-        <p class="section-copy">Estos filtros no cambian las métricas del dashboard.</p>
-        <div class="movement-filters" role="search" aria-label="Filtros de movimientos">
-          <label>Buscar <input name="movementSearch" [(ngModel)]="movementFilters.search" (ngModelChange)="updateMovementFilters()" placeholder="Comercio o descripcion"></label>
-          <label>Desde <input name="movementFrom" type="date" [(ngModel)]="movementFilters.from" (ngModelChange)="updateMovementFilters()"></label>
-          <label>Hasta <input name="movementTo" type="date" [(ngModel)]="movementFilters.to" (ngModelChange)="updateMovementFilters()"></label>
-          <label>Categoría
-            <select name="movementCategory" [(ngModel)]="movementFilters.category" (ngModelChange)="updateMovementFilters()">
-              <option value="">Todas</option>
-              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
-              <option value="Sin categoría">Sin categoría</option>
-            </select>
-          </label>
-          <label>Tipo
-            <select name="movementType" [(ngModel)]="movementFilters.type" (ngModelChange)="updateMovementFilters()">
-              <option value="">Todos</option>
-              <option value="EXPENSE">Gasto</option>
-              <option value="INCOME">Ingreso</option>
-              <option value="SAVINGS_WITHDRAWAL">Ahorro: retiro</option>
-              <option value="SAVINGS_DEPOSIT">Ahorro: aporte</option>
-              <option value="TRANSFER">Transferencia</option>
-              <option value="CASH_WITHDRAWAL">Retiro en efectivo</option>
-              <option value="REFUND">Devolución</option>
-            </select>
-          </label>
-          <label>Moneda <input name="movementCurrency" maxlength="3" placeholder="PEN, USD..." [(ngModel)]="movementFilters.currency" (ngModelChange)="updateMovementFilters()"></label>
-          <button class="ghost compact" type="button" (click)="resetMovementFilters()" [disabled]="!hasMovementFilters()">Restablecer</button>
-        </div>
-        <div class="form-error" role="alert" *ngIf="movementError">{{ movementError }} <button type="button" class="ghost compact" (click)="loadTransactions()">Reintentar</button></div>
-        <div class="result-count" *ngIf="!transactionsLoading && !movementError">{{ movementTotal }} movimientos encontrados</div>
-        <div class="empty" *ngIf="transactionsLoading" role="status">Cargando tus movimientos…</div>
-        <div class="empty" *ngIf="!transactionsLoading && !movementError && movementTotal === 0">{{ hasMovementFilters() ? 'No hay resultados para estos filtros.' : 'Registra tu primer movimiento o conecta Gmail.' }}</div>
-        <div class="tx tx-actions" *ngFor="let tx of pagedTransactions()">
-          <span>{{ movementTitle(tx) }} <small><span class="category-tag">{{ tx.category || tx.macroCategory || 'Otros' }}</span> {{ movementDate(tx.date) }} · {{ movementTypeLabel(tx.type) }} <span class="recurring-tag" *ngIf="tx.recurring">Recurrente</span></small></span>
-          <b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : tx.type === 'EXPENSE' ? '−' : '' }}{{ money(tx.amount,tx.currency) }}</b>
-          <button class="ghost compact" (click)="editTransaction(tx)">Editar</button>
-          <button class="danger compact" (click)="deleteTransaction(tx.id)" [disabled]="deletingTransactionIds.has(tx.id)">{{ deletingTransactionIds.has(tx.id) ? 'Eliminando…' : 'Eliminar' }}</button>
-        </div>
-        <div class="pager" *ngIf="movementTotal > movementPageSize">
-          <button class="ghost compact" type="button" (click)="previousMovementPage()" [disabled]="transactionsLoading || movementPage === 1">Anterior</button>
-          <span>Página {{ movementPage }} de {{ movementTotalPages() }}</span>
-          <button class="ghost compact" type="button" (click)="nextMovementPage()" [disabled]="transactionsLoading || movementPage === movementTotalPages()">Siguiente</button>
-        </div>
-      </article>
+      <div class="sarela-ledger-extra" *ngIf="movementMoreFiltersOpen">
+        <label>Desde<input name="movementFrom" type="date" [(ngModel)]="movementFilters.from" (ngModelChange)="updateMovementFilters()"></label>
+        <label>Hasta<input name="movementTo" type="date" [(ngModel)]="movementFilters.to" (ngModelChange)="updateMovementFilters()"></label>
+        <label>Moneda<input name="movementCurrency" maxlength="3" placeholder="PEN, USD…" [(ngModel)]="movementFilters.currency" (ngModelChange)="updateMovementFilters()"></label>
+        <label>Otros tipos<select name="movementType" [(ngModel)]="movementFilters.type" (ngModelChange)="updateMovementFilters()"><option value="">Todos</option><option value="EXPENSE">Gasto</option><option value="INCOME">Ingreso</option><option value="TRANSFER">Transferencia</option><option value="SAVINGS_WITHDRAWAL">Retiro de ahorro</option><option value="SAVINGS_DEPOSIT">Aporte al ahorro</option><option value="CASH_WITHDRAWAL">Retiro en efectivo</option><option value="REFUND">Devolución</option></select></label>
+        <button type="button" class="ghost compact" (click)="resetMovementFilters()" [disabled]="!hasMovementFilters()">Restablecer filtros</button>
+      </div>
+
+      <div class="sarela-ledger-metrics" aria-label="Resumen financiero del mes">
+        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="wallet" [size]="23" /><span>Gastos del mes</span></div><strong>{{dashboard ? money(dashboard.expenses) : '—'}}</strong><small>Movimientos registrados</small></article>
+        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="rows" [size]="23" /><span>Operaciones de gasto</span></div><strong>{{dashboard?.expenseCount ?? '—'}}</strong><small>Durante el mes actual del resumen</small></article>
+        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="grid" [size]="23" /><span>Comercios en el resumen</span></div><strong>{{dashboard?.merchants?.length ?? '—'}}</strong><small>Listado resumido disponible</small></article>
+        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="repeat" [size]="23" /><span>Movimientos recurrentes</span></div><strong>{{dashboard?.recurring?.length ?? '—'}}</strong><small>Registros identificados, no uso de servicios</small></article>
+      </div>
+
+      <div class="sarela-ledger-content">
+        <article class="panel sarela-ledger-history">
+          <div class="sarela-ledger-card-heading"><div><h2>Movimientos <span *ngIf="!transactionsLoading">({{movementTotal}})</span></h2><p>Ordenados por fecha, desde el historial registrado.</p></div><button type="button" class="ghost compact" (click)="loadTransactions()" [disabled]="transactionsLoading"><app-icon name="refresh" [size]="15"/> Actualizar</button></div>
+          <div class="form-error" role="alert" *ngIf="movementError">{{movementError}} <button type="button" class="ghost compact" (click)="loadTransactions()">Reintentar</button></div>
+          <div class="empty" *ngIf="transactionsLoading" role="status">Cargando tus movimientos…</div>
+          <div class="empty" *ngIf="!transactionsLoading && !movementError && movementTotal === 0">{{hasMovementFilters() ? 'No encontramos movimientos con estos filtros.' : 'Aún no hay movimientos. Puedes agregar uno o conectar Gmail.'}}</div>
+          <div class="sarela-ledger-table-scroll" *ngIf="!transactionsLoading && !movementError && movementTotal>0">
+            <table class="sarela-ledger-table">
+              <thead><tr><th scope="col">Fecha</th><th scope="col">Comercio</th><th scope="col">Categoría</th><th scope="col">Descripción</th><th scope="col" class="numeric">Monto</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead>
+              <tbody>
+                <tr class="tx-actions" *ngFor="let tx of pagedTransactions()">
+                  <td class="date">{{movementDate(tx.date)}}</td>
+                  <td><div class="sarela-ledger-merchant"><span class="sarela-ledger-merchant-icon">{{movementMerchantInitial(tx)}}</span><strong>{{movementTitle(tx)}}</strong></div></td>
+                  <td><span class="sarela-ledger-tag">{{tx.category || tx.macroCategory || 'Sin categoría'}}</span></td>
+                  <td class="description">{{tx.description}} <small *ngIf="tx.recurring">· Recurrente</small></td>
+                  <td class="numeric" [class.income]="tx.type==='INCOME'"><strong>{{tx.type==='INCOME'?'+':tx.type==='EXPENSE'?'−':''}}{{money(tx.amount,tx.currency)}}</strong></td>
+                  <td><div class="sarela-ledger-row-actions"><button type="button" class="ghost compact" (click)="editTransaction(tx)" [attr.aria-label]="'Editar movimiento '+movementTitle(tx)">Editar</button><button type="button" class="danger compact" (click)="deleteTransaction(tx.id)" [disabled]="deletingTransactionIds.has(tx.id)" [attr.aria-label]="'Eliminar movimiento '+movementTitle(tx)">{{deletingTransactionIds.has(tx.id)?'Eliminando…':'Eliminar'}}</button></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pager" *ngIf="movementTotal>movementPageSize"><button class="ghost compact" type="button" (click)="previousMovementPage()" [disabled]="transactionsLoading || movementPage===1">Anterior</button><span>Página {{movementPage}} de {{movementTotalPages()}}</span><button class="ghost compact" type="button" (click)="nextMovementPage()" [disabled]="transactionsLoading || movementPage===movementTotalPages()">Siguiente</button></div>
+        </article>
+
+        <aside class="panel sarela-ledger-insights">
+          <div class="sarela-ledger-card-heading"><div><h2><app-icon name="trend" [size]="21" /> Tus patrones de gasto</h2><p>Según los movimientos registrados este mes.</p></div></div>
+          <div *ngIf="dashboard && dashboard.expenses>0 && categoryDistribution().length; else sarelaNoCategories">
+            <p class="sarela-ledger-insight-intro">{{financialInsight()}}</p>
+            <div class="sarela-ledger-donut-row">
+              <div class="sarela-ledger-donut" [ngStyle]="donutStyle(categoryDistribution())"><div><small>Gasto registrado</small><strong>{{money(dashboard.expenses)}}</strong></div></div>
+              <div class="sarela-ledger-legend"><div *ngFor="let item of categoryDistribution()"><i [style.background]="item.color"></i><span>{{item.name}}</span><strong>{{item.percentage | number:'1.0-0'}}%</strong></div></div>
+            </div>
+            <div class="sarela-ledger-insight-note"><app-icon name="spark" [size]="18" /><div><strong>Lo más relevante</strong><p>{{financialInsightTitle()}}</p><small>El resumen no representa todo tu historial bancario.</small></div></div>
+          </div>
+          <ng-template #sarelaNoCategories><div class="sarela-ledger-empty"><app-icon name="chart" [size]="32" /><h3>Aquí descubrirás tus patrones</h3><p>Cuando tengas gastos registrados, podrás ver cómo se distribuyen por categoría.</p></div></ng-template>
+        </aside>
+      </div>
+
+      <div class="sarela-ledger-editor-backdrop" *ngIf="movementEditorOpen">
+        <section class="panel sarela-ledger-editor" role="dialog" aria-modal="true" aria-labelledby="sarela-movement-editor-title" appFocusTrap>
+          <div class="sarela-ledger-editor-heading"><div><p class="eyebrow">MOVIMIENTO MANUAL</p><h2 id="sarela-movement-editor-title">{{editingId ? 'Editar movimiento' : 'Agregar movimiento'}}</h2></div><button type="button" class="ghost compact" (click)="closeMovementEditor()" aria-label="Cerrar formulario">Cerrar</button></div>
+          <form (ngSubmit)="saveTransaction()">
+            <div class="type-toggle"><button type="button" [class.active]="txForm.type==='EXPENSE'" (click)="txForm.type='EXPENSE'">Gasto</button><button type="button" [class.active]="txForm.type==='INCOME'" (click)="txForm.type='INCOME'">Ingreso</button></div>
+            <label>Descripción<input name="description" [(ngModel)]="txForm.description" required></label>
+            <label>Monto<input name="amount" type="number" min="0.01" step="0.01" [(ngModel)]="txForm.amount" required></label>
+            <label>Fecha<input name="date" type="date" [(ngModel)]="txForm.date" required></label>
+            <label>Categoría<select name="category" [(ngModel)]="txForm.category"><option *ngFor="let c of categories">{{c}}</option></select></label>
+            <label class="check"><input name="recurring" type="checkbox" [(ngModel)]="txForm.recurring"> Es recurrente</label>
+            <div class="sarela-ledger-editor-actions"><button class="ghost" type="button" (click)="closeMovementEditor()">Cancelar</button><button class="primary" type="submit" [disabled]="savingTransaction">{{savingTransaction ? 'Guardando…' : editingId ? 'Actualizar' : 'Guardar movimiento'}}</button></div>
+          </form>
+        </section>
       </div>
     </section>
 
