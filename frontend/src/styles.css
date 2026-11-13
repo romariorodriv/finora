@@ -415,3 +415,35 @@ body .app .topbar { border-color:#edf0e9; }
 .sarela-feedback-info-icon {display:grid;place-items:center;width:56px;height:56px;margin-bottom:23px;color:#16774b;background:#e7f4e7;border-radius:19px;}
 @media(max-width:1050px){.sarela-feedback-grid{grid-template-columns:1fr;}.sarela-gmail-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:600px){.sarela-movement-metrics{grid-template-columns:1fr;gap:10px}.sarela-gmail-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.sarela-movement-metrics .panel,.sarela-gmail-metrics .panel{padding:16px}.sarela-movement-metrics strong{font-size:24px}.sarela-gmail-metrics strong{font-size:17px}}
+
+
+/* QA visual desktop 2026-11: use available viewport, not legacy fixed-width views. */
+@media (min-width: 901px) {
+  body .app .connection-view,
+  body .app .feedback-view { width:100%;max-width:none;margin-inline:0; }
+  body .app .sarela-feedback-grid { width:100%;grid-template-columns:minmax(0,1.7fr) minmax(280px,.8fr);align-items:start; }
+  body .app .sarela-feedback-grid .feedback-form {max-width:none;width:100%;margin:0;padding:32px clamp(24px,3vw,44px); }
+  body .app .sarela-feedback-info {width:100%; }
+  body .app .connection-view .gmail-card {width:100%; }
+  body .app .connection-view .gmail-job,
+  body .app .connection-view .gmail-review,
+  body .app .connection-view .privacy-actions {width:100%; }
+}
+body .app .sarela-feedback-grid .sarela-rating-options {gap:12px;}
+body .app .sarela-feedback-grid .sarela-rating-options button {min-width:0;min-height:114px;}
+body .app .sarela-feedback-grid .sarela-rating-options button small {font-size:11px;}
+body .app .sarela-movements-layout .tx-actions {grid-template-columns:minmax(0,1fr) auto auto auto;gap:14px;}
+body .app .sarela-movements-layout .movement-filters label,
+body .app .sarela-movements-layout .movement-filters input,
+body .app .sarela-movements-layout .movement-filters select {font-size:12px;}
+body .app .sarela-section-header h1 {font-size:clamp(31px,3vw,44px);}
+body .app .sarela-gmail-metrics .panel {min-width:0;}
+@media (max-width:1050px) {
+  body .app .sarela-feedback-grid {grid-template-columns:1fr;}
+}
+@media (max-width:600px) {
+  body .app .sarela-feedback-grid .feedback-form {padding:22px 18px;}
+  body .app .sarela-feedback-grid .sarela-rating-options {gap:5px;}
+  body .app .sarela-feedback-grid .sarela-rating-options button {min-height:88px;}
+  body .app .sarela-movements-layout .tx-actions {grid-template-columns:minmax(0,1fr) auto;}
+}
