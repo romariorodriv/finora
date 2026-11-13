@@ -7,7 +7,7 @@ import { premiumTestServices } from './premium.test-fixtures';
 
 describe('Premium UI responsive layout in real browser viewports', () => {
   for (const width of [1440,1024,768,390]) {
-    it(`keeps landing, dashboard, planning, movements, Gmail, feedback and authentication within ${width}px`, async () => {
+    it(`keeps landing, dashboard, movements, Gmail, feedback and authentication within ${width}px`, async () => {
       const services=premiumTestServices();
       TestBed.configureTestingModule({imports: [AppComponent],providers: [provideRouter([]),{provide: ApiService,useValue:services.api},{provide: AuthService,useValue:services.auth}]});
       const fixture=TestBed.createComponent(AppComponent);fixture.detectChanges();await fixture.whenStable();
@@ -26,7 +26,7 @@ describe('Premium UI responsive layout in real browser viewports', () => {
             doc.head.appendChild(style);
           }
         };
-        for (const view of ['dashboard','planning','movements','import','feedback'] as const) {
+        for (const view of ['dashboard','movements','import','feedback'] as const) {
           fixture.componentInstance.go(view);fixture.detectChanges();await fixture.whenStable();copyStyles();
           await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
           expect(doc.documentElement.scrollWidth).withContext(`${view} at ${width}px`).toBeLessThanOrEqual(width+1);
@@ -37,7 +37,7 @@ describe('Premium UI responsive layout in real browser viewports', () => {
           expect(mobile.display).toBe(width<=900 ? 'grid' : 'none');
           if (width<=900) {
             const nav=doc.querySelector('.mobile-nav')!;
-            expect(nav.querySelectorAll('button').length).toBe(5);
+            expect(nav.querySelectorAll('button').length).toBe(4);
             for (const button of Array.from(nav.querySelectorAll('button'))) expect(button.getBoundingClientRect().width).toBeGreaterThanOrEqual(44);
           }
           if(view==='dashboard') {
