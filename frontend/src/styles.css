@@ -577,7 +577,7 @@ body .app.sarela-home-shell .sidebar-footer .profile small,body .app.sarela-home
 body .app.sarela-home-shell .sidebar-footer .avatar {background:#ccedd6;color:#135e3f;}
 body .app.sarela-home-shell main {max-width:none;padding:0 clamp(19px,2vw,37px) 38px;}
 @media(min-width:901px) {
- body .app.sarela-home-shell .topbar {min-height:0;height:0;margin:0;border:0;overflow:hidden;visibility:hidden;}
+ body .app.sarela-home-shell.sarela-home-active .topbar {min-height:0;height:0;margin:0;border:0;overflow:hidden;visibility:hidden;}
 }
 body .sarela-home-v4 {max-width:none;margin:0 auto;padding:0;}
 body .sarela-home-v4 .finora-home-header {margin:22px 0 27px;}
