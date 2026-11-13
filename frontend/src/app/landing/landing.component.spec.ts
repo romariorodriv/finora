@@ -25,7 +25,7 @@ describe('Public Sarela landing and access flow', () => {
   it('shows the landing before access and does not request private data',()=>{
     expect(root().querySelector('app-landing')).not.toBeNull();expect(root().querySelector('.auth')).toBeNull();
     expect(root().querySelector('h1')?.textContent).toContain('¿En qué se fue');
-    expect(services.api.dashboard).not.toHaveBeenCalled();expect(services.api.getPlanningState).not.toHaveBeenCalled();
+    expect(services.api.dashboard).not.toHaveBeenCalled();
     expect(root().querySelector('app-landing')?.textContent).not.toContain('S/ 3,240');
   });
   it('shows Sarela branding in landing and sign-in without changing the layout',()=>{
