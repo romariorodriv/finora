@@ -68,6 +68,18 @@ describe('Premium UI functional flows', () => {
     expect(root().querySelector('.sarela-home-gmail-strip')).not.toBeNull();
     expect(root().querySelectorAll('.sarela-home-metric').length).toBe(3);
   });
+  it('uses one dark sidebar for all authenticated views while keeping inner-page navigation', () => {
+    const shell = () => root().querySelector('.app');
+    expect(shell()?.classList.contains('sarela-home-shell')).toBeTrue();
+    expect(shell()?.classList.contains('sarela-home-active')).toBeTrue();
+    for (const view of ['movements','import','feedback'] as const) {
+      fixture.componentInstance.go(view);
+      fixture.detectChanges();
+      expect(shell()?.classList.contains('sarela-home-shell')).toBeTrue();
+      expect(shell()?.classList.contains('sarela-home-active')).toBeFalse();
+      expect(root().querySelector('.topbar')).not.toBeNull();
+    }
+  });
   it('keeps all four mobile destinations wired to working views and current-page states', () => {
     for (const [index,view] of ['dashboard','movements','import','feedback'].entries()) {
       click(`.mobile-nav button:nth-child(${index+1})`);
