@@ -122,7 +122,9 @@
       <p class="finora-home-note" *ngIf="syncResult && (syncResult.status !== 'COMPLETED' || syncResult.stale || syncResult.reviewRequired > 0 || syncResult.unsupported > 0 || syncResult.failed > 0)" role="status">{{ syncResult.message }} Estos datos pueden estar incompletos; revisa tu conexión Gmail. <button type="button" (click)="go('import')">Ver estado</button></p>
       <div class="finora-home-footer"><span><app-icon name="lock" [size]="14" /> Tus datos, bajo tu control.</span><button type="button" (click)="go('import')">{{ gmail?.connected ? 'Gestionar Gmail' : 'Conectar Gmail (opcional)' }} <app-icon name="arrow" [size]="15" /></button></div>
     </section>
-    <section *ngIf="view === 'movements'" class="view two movements-view">
+    <section *ngIf="view === 'movements'" class="view movements-view">
+      <header class="sarela-section-header"><div><p class="eyebrow">TUS FINANZAS, CON CLARIDAD</p><h1>Tus movimientos</h1><p>Consulta, busca y organiza tus movimientos registrados.</p></div><app-icon name="rows" [size]="34" /></header>
+      <div class="sarela-movements-layout">
       <form class="panel" (ngSubmit)="saveTransaction()">
         <p class="eyebrow">TUS MOVIMIENTOS</p>
         <h3>{{ editingId ? 'Editar movimiento' : 'Agregar movimiento' }}</h3>
@@ -183,9 +185,11 @@
           <button class="ghost compact" type="button" (click)="nextMovementPage()" [disabled]="transactionsLoading || movementPage === movementTotalPages()">Siguiente</button>
         </div>
       </article>
+      </div>
     </section>
 
     <section *ngIf="view === 'import'" class="view connection-view">
+      <header class="sarela-section-header sarela-gmail-heading"><div><p class="eyebrow">CONEXIÓN OPCIONAL Y SEGURA</p><h1>Conecta tu Gmail</h1><p>Encuentra notificaciones financieras compatibles y organiza tus movimientos automáticamente.</p></div><span class="sarela-gmail-illustration" aria-hidden="true"><app-icon name="mail" [size]="44" /></span></header>
       <article class="gmail-card panel" [class.connected]="gmail?.connected">
         <div class="connection-status"><app-icon [name]="gmail?.connected ? 'check' : 'mail'" [size]="28" /></div>
         <div>
@@ -203,16 +207,10 @@
         </div>
         <p class="setup-note" *ngIf="gmail && !gmail.connected && !gmail.configured">La conexión estará disponible cuando se complete la configuración.</p>
       </article>
-      <section class="panel gmail-consent" *ngIf="gmailConsentOpen" aria-label="Permiso de Gmail">
-        <h3>Antes de conectar Gmail</h3>
-        <p>Google concederá permiso de solo lectura de tu Gmail completo, no solo de correos bancarios. Sarela buscará notificaciones candidatas de compras, pagos, ingresos y transferencias de los últimos {{gmail?.initialSyncDays || 90}} días. Solo convierte formatos compatibles; no obtiene todo tu historial bancario.</p>
-        <p>Las fechas importadas corresponden a la recepción del correo, no a una fecha bancaria inferida. No enviamos, modificamos ni eliminamos correos. Los tokens permanecen cifrados en el servidor. Conservamos movimientos y metadatos necesarios para evitar duplicados; no guardamos el cuerpo completo del correo.</p>
-        <p>Puedes rechazar el permiso y seguir usando Sarela. Al desconectar Gmail se detiene la importación; los movimientos ya importados se conservan.</p>
-        <a href="/privacidad.html" target="_blank" rel="noopener">Leer privacidad y límites</a>
-        <div class="actions"><button class="primary" (click)="authorizeGmail()">Entendido, autorizar lectura</button><button class="ghost" (click)="gmailConsentOpen=false;go('dashboard')">Ahora no, ir al resumen</button></div>
-      </section>
       <section class="panel gmail-job" *ngIf="syncResult as job" aria-live="polite">
-        <p class="eyebrow">IMPORTACIÓN DE NOTIFICACIONES</p><h3>{{importStatusLabel()}}</h3>
+        <p class="eyebrow">IMPORTACIÓN DE NOTIFICACIONES</p><h3>{{importProcessingLabel()}}</h3>
+        <div class="sarela-import-progress" *ngIf="importActive()" role="status" aria-label="Importación en curso"><span></span></div>
+        <p *ngIf="importActive()" class="sarela-import-hint">El análisis continúa en el servidor. Mostramos actividad, no un porcentaje inventado.</p>
         <p>{{job.message}}</p><p>Periodo consultado: {{importDate(job.periodFrom)}} a {{importDate(job.periodUntil)}}</p>
         <p>Última actividad: {{importDate(job.updatedAt)}}<span *ngIf="job.stale"> · Información pendiente de actualizar</span></p>
         <dl class="import-counts"><div><dt>Correos revisados</dt><dd>{{job.messagesFound}}</dd></div><div><dt>Movimientos nuevos</dt><dd>{{job.transactionsCreated}}</dd></div><div><dt>Duplicados evitados</dt><dd>{{job.duplicatesSkipped}}</dd></div><div><dt>Por revisar</dt><dd>{{job.reviewRequired}}</dd></div><div><dt>No interpretados</dt><dd>{{job.unsupported}}</dd></div><div><dt>Fallidos</dt><dd>{{job.failed}}</dd></div></dl>
@@ -238,15 +236,11 @@
     </section>
 
     <section *ngIf="view === 'feedback'" class="view feedback-view">
+      <header class="sarela-section-header"><div><p class="eyebrow">CRECEMOS CONTIGO</p><h1>Tu opinión nos ayuda a mejorar</h1><p>Cuéntanos qué funciona y qué te gustaría mejorar.</p></div><app-icon name="message" [size]="38" /></header>
       <form class="panel feedback-form" (ngSubmit)="submitFeedback()" *ngIf="!feedbackSubmitted; else thanks">
         <div class="feedback-symbol"><app-icon name="message" [size]="26" /></div><p class="eyebrow">TE ESCUCHAMOS</p>
         <h2>Una Sarela mejor, contigo.</h2><p class="section-copy">Cuéntanos cómo te está ayudando y qué podemos mejorar.</p>
-        <label>¿Qué tan útil te resultó Sarela?
-          <select name="rating" [(ngModel)]="feedbackForm.rating" required>
-            <option [ngValue]="0">Selecciona una opción</option>
-            <option *ngFor="let value of [1,2,3,4,5]" [ngValue]="value">{{ value }}</option>
-          </select>
-        </label>
+        <div class="sarela-rating"><p id="sarela-rating-label">¿Qué tan útil te resultó Sarela?</p><div class="sarela-rating-options" role="group" aria-labelledby="sarela-rating-label"><button *ngFor="let value of [1,2,3,4,5]" type="button" [class.selected]="feedbackForm.rating===value" [attr.aria-pressed]="feedbackForm.rating===value" (click)="feedbackForm.rating=value"><span>{{ value===1?'😞':value===2?'🙁':value===3?'😐':value===4?'🙂':'😍' }}</span><small>{{ value===1?'Nada útil':value===2?'Poco útil':value===3?'Regular':value===4?'Útil':'Muy útil' }}</small></button></div></div>
         <label>¿Sarela te ayudó a entender mejor en qué estás gastando?
           <select name="understoodSpending" [(ngModel)]="feedbackForm.understoodSpending" required>
             <option value="">Selecciona una opción</option>
@@ -279,6 +273,17 @@
       <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>Movimientos</span></button>
       <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>Gmail</span></button>
       <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>Opinión</span></button></nav>
+</div>
+<div class="sarela-consent-overlay" *ngIf="gmailConsentOpen && auth.user" role="presentation">
+  <section class="sarela-consent-dialog" role="dialog" aria-modal="true" aria-labelledby="sarela-consent-title" appFocusTrap>
+    <button type="button" class="sarela-consent-close" (click)="dismissGmailConsent()" aria-label="Cerrar invitación"><app-icon name="close" [size]="18" /></button>
+    <div class="sarela-consent-icon" aria-hidden="true"><app-icon name="mail" [size]="35" /></div>
+    <p class="eyebrow">TU INFORMACIÓN, TÚ DECIDES</p><h2 id="sarela-consent-title">Conecta Gmail para descubrir tus gastos</h2>
+    <p>Con tu autorización, Sarela podrá leer los correos de tu buzón Gmail para buscar notificaciones financieras de compras, pagos, ingresos y transferencias de los últimos {{gmail?.initialSyncDays || 90}} días.</p>
+    <div class="sarela-consent-disclosure"><app-icon name="shield" [size]="22" /><p><strong>¿Qué autorizarás?</strong> Google concede acceso de <b>solo lectura a todo tu Gmail</b>, no solo a correos bancarios. Sarela busca mensajes candidatos y procesa formatos compatibles; no envía, modifica ni borra correos.</p></div>
+    <p class="sarela-consent-small">La conexión es opcional. Se guardan movimientos y metadatos de procesamiento; puedes desconectar Gmail después, pero los movimientos ya importados se conservan. <a href="/privacidad.html" target="_blank" rel="noopener">Ver política de privacidad</a>.</p>
+    <div class="sarela-consent-actions"><button type="button" class="primary" (click)="authorizeGmail()" [disabled]="gmailConsentLoading">{{gmailConsentLoading?'Redirigiendo a Google…':'Conectar Gmail'}}</button><button type="button" class="ghost" (click)="dismissGmailConsent()">Ahora no</button></div>
+  </section>
 </div>
 <div class="drawer-backdrop" *ngIf="selectedCategory || selectedMerchant" (click)="closeDrawer()"></div>
 <aside class="category-drawer" *ngIf="selectedCategory" appFocusTrap role="dialog" aria-modal="true" aria-label="Detalle de categoria">
