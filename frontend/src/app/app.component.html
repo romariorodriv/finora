@@ -214,9 +214,9 @@
       </article>
       <div class="sarela-gmail-metrics" *ngIf="gmail?.connected && syncResult" aria-label="Resumen de la importación">
         <article class="panel"><small>Última sincronización</small><strong>{{lastSyncLabel()}}</strong></article>
-        <article class="panel"><small>Mensajes procesados</small><strong>{{syncResult?.messagesProcessed ?? 0}}</strong></article>
-        <article class="panel"><small>Movimientos creados</small><strong>{{syncResult?.transactionsCreated ?? 0}}</strong></article>
-        <article class="panel"><small>Duplicados omitidos</small><strong>{{syncResult?.duplicatesSkipped ?? 0}}</strong></article>
+        <article class="panel"><small>Mensajes procesados</small><strong>{{syncResult.messagesProcessed}}</strong></article>
+        <article class="panel"><small>Movimientos creados</small><strong>{{syncResult.transactionsCreated}}</strong></article>
+        <article class="panel"><small>Duplicados omitidos</small><strong>{{syncResult.duplicatesSkipped}}</strong></article>
       </div>
       <section class="panel gmail-job" *ngIf="syncResult as job" aria-live="polite">
         <p class="eyebrow">IMPORTACIÓN DE NOTIFICACIONES</p><h3>{{importProcessingLabel()}}</h3>
