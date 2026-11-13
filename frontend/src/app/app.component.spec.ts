@@ -17,6 +17,39 @@ describe('Premium UI functional flows', () => {
     TestBed.configureTestingModule({imports: [AppComponent],providers: [provideRouter([]),{provide: ApiService,useValue: services.api},{provide: AuthService,useValue: services.auth}]});
     fixture=TestBed.createComponent(AppComponent);fixture.detectChanges();
   });
+  it('offers a separate, optional Gmail permission after Google login', () => {
+    const key = 'sarela:gmail-onboarding-dismissed:1';
+    localStorage.removeItem(key);
+    services.api.gmailStatus.and.returnValue(of({connected:false,configured:true,status:'DISCONNECTED',initialSyncDays:90}));
+    (fixture.componentInstance as any).onboardingRequested = true;
+    (fixture.componentInstance as any).loadGmail();
+    fixture.detectChanges();
+    expect(root().querySelector('[role="dialog"][aria-labelledby="sarela-consent-title"]')).not.toBeNull();
+    expect(root().textContent).toContain('solo lectura a todo tu Gmail');
+    click('.sarela-consent-actions .ghost');
+    expect(root().querySelector('.sarela-consent-dialog')).toBeNull();
+    expect(fixture.componentInstance.view).toBe('dashboard');
+    expect(services.api.gmailAuthorizationUrl).not.toHaveBeenCalled();
+    localStorage.removeItem(key);
+  });
+  it('does not show the Gmail invitation when already connected', () => {
+    services.api.gmailStatus.and.returnValue(of({connected:true,configured:true,status:'CONNECTED'}));
+    (fixture.componentInstance as any).onboardingRequested = true;
+    (fixture.componentInstance as any).loadGmail();
+    fixture.detectChanges();
+    expect(root().querySelector('.sarela-consent-dialog')).toBeNull();
+  });
+  it('displays real import state instead of fabricated percentages', () => {
+    fixture.componentInstance.go('import');
+    fixture.componentInstance.syncResult = {
+      status:'IMPORTING',message:'Buscando mensajes',messagesFound:8,messagesProcessed:3,transactionsCreated:2,
+      duplicatesSkipped:0,reviewRequired:0,unsupported:0,rejected:0,failed:0,retryCount:0,stale:false,hasMorePages:true
+    };
+    fixture.detectChanges();
+    expect(root().querySelector('.sarela-import-progress')).not.toBeNull();
+    expect(root().querySelector('.sarela-import-hint')?.textContent).toContain('no un porcentaje inventado');
+    expect(root().querySelector('.gmail-job')?.textContent).toContain('Buscando e interpretando');
+  });
   it('does not delete a user unless they type the irreversible confirmation phrase', () => {
     const prompt=spyOn(window,'prompt').and.returnValue(null);
     fixture.componentInstance.requestDataDeletion();
