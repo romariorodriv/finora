@@ -86,6 +86,29 @@ describe('Premium UI functional flows', () => {
     fixture.componentInstance.openMerchant(fixture.componentInstance.merchantDistribution()[0]);fixture.detectChanges();expect(services.api.merchantDetail).toHaveBeenCalledWith('Comercio QA');
     click('.drawer-close');expect(root().querySelector('[role="dialog"]')).toBeNull();
   });
+  it('renders the approved movements layout with a full table and optional editor', () => {
+    fixture.componentInstance.go('movements');
+    fixture.detectChanges();
+    expect(root().querySelector('.sarela-ledger-toolbar')).not.toBeNull();
+    expect(root().querySelectorAll('.sarela-ledger-metrics > article').length).toBe(4);
+    expect(root().querySelector('.sarela-ledger-history')).not.toBeNull();
+    expect(root().querySelector('.sarela-ledger-insights')).not.toBeNull();
+    expect(root().querySelector('.sarela-ledger-table')).not.toBeNull();
+    expect(root().querySelector('.sarela-ledger-editor')).toBeNull();
+    click('.sarela-new-movement');
+    expect(root().querySelector('.sarela-ledger-editor [role="dialog"]')).toBeNull();
+    expect(root().querySelector('.sarela-ledger-editor[role="dialog"]')).not.toBeNull();
+    click('.sarela-ledger-editor-actions .ghost');
+    expect(root().querySelector('.sarela-ledger-editor')).toBeNull();
+  });
+  it('filters movement types using top-level chips instead of a permanent form', () => {
+    fixture.componentInstance.go('movements'); fixture.detectChanges();
+    click('.sarela-ledger-chips button:nth-child(2)');
+    expect(fixture.componentInstance.movementFilters.type).toBe('EXPENSE');
+    expect(services.api.transactionHistory).toHaveBeenCalled();
+    click('.sarela-ledger-chips button:first-child');
+    expect(fixture.componentInstance.movementFilters.type).toBe('');
+  });
   it('preserves movement filtering, editing, recurring state and deletion', () => {
     fixture.componentInstance.go('movements');fixture.detectChanges();
     services.api.transactionHistory.and.returnValue(of({items:[],total:0,page:0,totalPages:0}));
