@@ -39,6 +39,8 @@ export class AppComponent implements OnInit, OnDestroy {
   dashboardError = '';
   transactionsLoading = false;
   movementTotal = 0;
+  movementEditorOpen = false;
+  movementMoreFiltersOpen = false;
   movementError = '';
   private movementsRequest?: Subscription;
   selectedCurrency = '';
@@ -476,6 +478,21 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   hasMovementFilters(): boolean { return Object.values(this.movementFilters).some(Boolean); }
+  selectMovementType(type: string): void {
+    this.movementFilters.type = type;
+    this.updateMovementFilters();
+  }
+  openMovementEditor(): void {
+    this.cancelEdit();
+    this.movementEditorOpen = true;
+  }
+  closeMovementEditor(): void {
+    this.cancelEdit();
+    this.movementEditorOpen = false;
+  }
+  movementMerchantInitial(tx: TransactionResponse): string {
+    return (this.movementTitle(tx).trim().charAt(0) || 'S').toLocaleUpperCase('es-PE');
+  }
 
   previousMovementPage(): void {
     this.movementPage = Math.max(1, this.movementPage - 1);
