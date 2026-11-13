@@ -159,3 +159,21 @@ main:focus { outline: 0; }
 @media(max-width:600px){.sarela-section-header{margin:5px 0 20px;gap:10px}.sarela-section-header>app-icon{display:none}.sarela-section-header h1{font-size:29px}.sarela-section-header p:not(.eyebrow){font-size:12px}.sarela-gmail-illustration{flex-basis:60px;width:60px;height:60px;border-radius:19px}.sarela-rating-options{gap:5px}.sarela-rating-options button{min-height:86px;padding:10px 2px}.sarela-rating-options button span{font-size:22px}.sarela-rating-options button small{font-size:9px}.sarela-consent-dialog{padding:28px 20px}.sarela-consent-actions{grid-template-columns:1fr;}.mobile-nav{grid-template-columns:repeat(4,minmax(0,1fr));}}
 
 @media(max-width:900px){.mobile-nav{grid-template-columns:repeat(4,minmax(0,1fr));}}
+
+
+.sarela-movement-metrics,.sarela-gmail-metrics {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:22px;}
+.sarela-gmail-metrics {grid-template-columns:repeat(4,minmax(0,1fr));margin-top:24px;}
+.sarela-movement-metrics .panel,.sarela-gmail-metrics .panel {padding:23px;border-radius:21px;background:#fffefa;box-shadow:0 12px 28px #17392b08;display:grid;align-content:center;gap:8px;}
+.sarela-movement-metrics span,.sarela-gmail-metrics small {color:#5a7062;font-size:12px;}
+.sarela-movement-metrics strong,.sarela-gmail-metrics strong {font-size:clamp(20px,2.3vw,30px);font-weight:780;color:#113f2f;letter-spacing:-.035em;overflow-wrap:anywhere;line-height:1.2;}
+.sarela-movement-metrics small {font-size:10px;color:#7e9084;}
+.sarela-gmail-metrics strong {font-size:clamp(15px,1.7vw,23px);}
+.sarela-feedback-grid {display:grid;grid-template-columns:minmax(0,1.55fr) minmax(240px,.85fr);gap:22px;align-items:start;}
+.sarela-feedback-grid .feedback-form {margin:0;max-width:none;}
+.sarela-feedback-info {padding:32px;background:linear-gradient(155deg,#fffefa 55%,#e9f2e6);}
+.sarela-feedback-info h2 {font-size:23px;line-height:1.25;}
+.sarela-feedback-info p {color:#5e7166;font-size:13px;line-height:1.75;}
+.sarela-feedback-info a {display:inline-block;margin-top:12px;font-weight:650;color:#076b47;}
+.sarela-feedback-info-icon {display:grid;place-items:center;width:56px;height:56px;margin-bottom:23px;color:#16774b;background:#e7f4e7;border-radius:19px;}
+@media(max-width:1050px){.sarela-feedback-grid{grid-template-columns:1fr;}.sarela-gmail-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:600px){.sarela-movement-metrics{grid-template-columns:1fr;gap:10px}.sarela-gmail-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.sarela-movement-metrics .panel,.sarela-gmail-metrics .panel{padding:16px}.sarela-movement-metrics strong{font-size:24px}.sarela-gmail-metrics strong{font-size:17px}}
