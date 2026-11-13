@@ -31,7 +31,7 @@
 </section>
 
 <a class="skip-link" href="#main-content" *ngIf="auth.user">Ir al contenido</a>
-<div *ngIf="auth.user" class="app" [class.sarela-home-shell]="view === 'dashboard'">
+<div *ngIf="auth.user" class="app sarela-home-shell" [class.sarela-home-active]="view === 'dashboard'">
   <aside class="sidebar">
     <button class="logo finora-app-logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al inicio"><span class="finora-app-ring" aria-hidden="true"></span><span>sarela</span></button>
     <p class="sidebar-caption">TU ESPACIO</p>
