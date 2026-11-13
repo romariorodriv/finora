@@ -124,6 +124,11 @@
     </section>
     <section *ngIf="view === 'movements'" class="view movements-view">
       <header class="sarela-section-header"><div><p class="eyebrow">TUS FINANZAS, CON CLARIDAD</p><h1>Tus movimientos</h1><p>Consulta, busca y organiza tus movimientos registrados.</p></div><app-icon name="rows" [size]="34" /></header>
+      <div class="sarela-movement-metrics" aria-label="Indicadores del mes registrado">
+        <article class="panel"><span>Gastos registrados del mes</span><strong>{{ dashboard ? money(dashboard.expenses) : '—' }}</strong><small>Según los movimientos de Sarela</small></article>
+        <article class="panel"><span>Ingresos registrados</span><strong>{{ dashboard ? money(dashboard.income) : '—' }}</strong><small>No equivale a tu saldo bancario</small></article>
+        <article class="panel"><span>Operaciones de gasto</span><strong>{{ dashboard?.expenseCount ?? '—' }}</strong><small>Del mes del resumen</small></article>
+      </div>
       <div class="sarela-movements-layout">
       <form class="panel" (ngSubmit)="saveTransaction()">
         <p class="eyebrow">TUS MOVIMIENTOS</p>
@@ -207,6 +212,12 @@
         </div>
         <p class="setup-note" *ngIf="gmail && !gmail.connected && !gmail.configured">La conexión estará disponible cuando se complete la configuración.</p>
       </article>
+      <div class="sarela-gmail-metrics" *ngIf="gmail?.connected && syncResult" aria-label="Resumen de la importación">
+        <article class="panel"><small>Última sincronización</small><strong>{{lastSyncLabel()}}</strong></article>
+        <article class="panel"><small>Mensajes procesados</small><strong>{{syncResult?.messagesProcessed ?? 0}}</strong></article>
+        <article class="panel"><small>Movimientos creados</small><strong>{{syncResult?.transactionsCreated ?? 0}}</strong></article>
+        <article class="panel"><small>Duplicados omitidos</small><strong>{{syncResult?.duplicatesSkipped ?? 0}}</strong></article>
+      </div>
       <section class="panel gmail-job" *ngIf="syncResult as job" aria-live="polite">
         <p class="eyebrow">IMPORTACIÓN DE NOTIFICACIONES</p><h3>{{importProcessingLabel()}}</h3>
         <div class="sarela-import-progress" *ngIf="importActive()" role="status" aria-label="Importación en curso"><span></span></div>
@@ -237,6 +248,7 @@
 
     <section *ngIf="view === 'feedback'" class="view feedback-view">
       <header class="sarela-section-header"><div><p class="eyebrow">CRECEMOS CONTIGO</p><h1>Tu opinión nos ayuda a mejorar</h1><p>Cuéntanos qué funciona y qué te gustaría mejorar.</p></div><app-icon name="message" [size]="38" /></header>
+      <div class="sarela-feedback-grid">
       <form class="panel feedback-form" (ngSubmit)="submitFeedback()" *ngIf="!feedbackSubmitted; else thanks">
         <div class="feedback-symbol"><app-icon name="message" [size]="26" /></div><p class="eyebrow">TE ESCUCHAMOS</p>
         <h2>Una Sarela mejor, contigo.</h2><p class="section-copy">Cuéntanos cómo te está ayudando y qué podemos mejorar.</p>
@@ -267,6 +279,8 @@
           <button class="ghost" type="button" (click)="feedbackSubmitted = false">Enviar otro comentario</button>
         </article>
       </ng-template>
+      <aside class="panel sarela-feedback-info"><div class="sarela-feedback-info-icon"><app-icon name="spark" [size]="29" /></div><h2>Tu opinión hace crecer Sarela</h2><p>Revisamos tus comentarios para mejorar la claridad de los movimientos, la experiencia de Gmail y las funciones de la aplicación.</p><p>Evita incluir contraseñas, datos de tarjetas o información bancaria sensible en tus comentarios.</p><a href="/privacidad.html" target="_blank" rel="noopener">Cómo protegemos tu información</a></aside>
+      </div>
     </section>
   </main>
   <nav class="mobile-nav" aria-label="Navegación móvil"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Resumen</span></button>
