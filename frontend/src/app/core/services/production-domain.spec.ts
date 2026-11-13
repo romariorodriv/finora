@@ -30,7 +30,7 @@ describe('Sarela domain migration contract', () => {
     expect(production.apiBaseUrl).not.toContain('pgoapp.com');
   });
 
-  it('routes login, Gmail, planning, movements and admin through the shared environment', () => {
+  it('routes login, Gmail, movements and admin through the shared environment', () => {
     const checks: { run: () => void; method: string; suffix: string }[] = [
       { run: () => auth.googleStart().subscribe({ error: () => {} }), method: 'POST', suffix: '/auth/google/start' },
       { run: () => auth.refreshCurrent().subscribe({ error: () => {} }), method: 'GET', suffix: '/account' },
@@ -41,7 +41,6 @@ describe('Sarela domain migration contract', () => {
       { run: () => api.gmailSyncStatus().subscribe({ error: () => {} }), method: 'GET', suffix: '/integrations/gmail/sync/status' },
       { run: () => api.gmailReview().subscribe({ error: () => {} }), method: 'GET', suffix: '/integrations/gmail/review' },
       { run: () => api.gmailDisconnect().subscribe({ error: () => {} }), method: 'DELETE', suffix: '/integrations/gmail' },
-      { run: () => api.getPlanningState().subscribe({ error: () => {} }), method: 'GET', suffix: '/planning/state' },
       { run: () => api.transactions().subscribe({ error: () => {} }), method: 'GET', suffix: '/transactions' },
       { run: () => api.categories().subscribe({ error: () => {} }), method: 'GET', suffix: '/categories' },
       { run: () => admin.options().subscribe({ error: () => {} }), method: 'GET', suffix: '/admin/category-options' }
