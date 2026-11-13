@@ -221,6 +221,7 @@ export class AppComponent implements OnInit, OnDestroy {
       next: () => {
         this.showToast(this.editingId ? 'Movimiento actualizado' : 'Movimiento guardado');
         this.cancelEdit();
+        this.movementEditorOpen = false;
         this.loadDashboard();
         this.loadTransactions();
       },
@@ -229,6 +230,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   editTransaction(tx: TransactionResponse): void {
+    this.movementEditorOpen = true;
     this.editingId = tx.id;
     this.txForm = {
       description: tx.description,
