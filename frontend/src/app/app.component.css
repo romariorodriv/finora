@@ -157,3 +157,5 @@ main:focus { outline: 0; }
 @keyframes sarela-import-indeterminate {0%{transform:translateX(-110%)}100%{transform:translateX(290%)}}
 @media(max-width:1050px){.sarela-movements-layout{grid-template-columns:1fr;}}
 @media(max-width:600px){.sarela-section-header{margin:5px 0 20px;gap:10px}.sarela-section-header>app-icon{display:none}.sarela-section-header h1{font-size:29px}.sarela-section-header p:not(.eyebrow){font-size:12px}.sarela-gmail-illustration{flex-basis:60px;width:60px;height:60px;border-radius:19px}.sarela-rating-options{gap:5px}.sarela-rating-options button{min-height:86px;padding:10px 2px}.sarela-rating-options button span{font-size:22px}.sarela-rating-options button small{font-size:9px}.sarela-consent-dialog{padding:28px 20px}.sarela-consent-actions{grid-template-columns:1fr;}.mobile-nav{grid-template-columns:repeat(4,minmax(0,1fr));}}
+
+@media(max-width:900px){.mobile-nav{grid-template-columns:repeat(4,minmax(0,1fr));}}
