@@ -183,7 +183,7 @@ try {
       (withJs.match(/id="hero-title"/gi) || []).length !== 1 ||
       !/href="\/mis-finanzas\.html"/i.test(withJs) ||
       !/href="\/aprende\.html"/i.test(withJs)) {
-    throw new Error('Client bootstrap did not preserve a single functional public landing.');
+    throw new Error('Client bootstrap did not preserve one landing. counts: landing=' + (withJs.match(/<app-landing\\b/gi)||[]).length + ', hero=' + (withJs.match(/id="hero-title"/gi)||[]).length + ', finances=' + /href="\\/mis-finanzas\\.html"/i.test(withJs) + ', aprende=' + /href="\\/aprende\\.html"/i.test(withJs) + '. DOM excerpt: ' + withJs.slice(withJs.indexOf('<app-root'),withJs.indexOf('<app-root')+700));
   }
   console.log('PASS: Angular client bootstrap retains a single public landing without duplication.');
 
