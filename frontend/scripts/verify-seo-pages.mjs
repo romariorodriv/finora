@@ -7,7 +7,8 @@ const slugs = [
   'mis-finanzas','suscripciones','calculadoras','aprende',
   'como-funciona','seguridad','guia-control-de-gastos',
   'calculadora-gastos-hormiga','calculadora-presupuesto',
-  'calculadora-suscripciones'
+  'calculadora-suscripciones',
+  'acerca-de-sarela', 'guia-donde-se-va-mi-dinero', 'guia-presupuesto-sueldo', 'guia-gastos-hormiga', 'guia-revisar-suscripciones', 'guia-fecha-corte-pago', 'guia-fin-de-mes'
 ];
 const sitemap = readFileSync(resolve(root, 'public/sitemap.xml'),'utf8');
 const landing = readFileSync(resolve(root, 'src/app/landing/landing.component.html'),'utf8');
