@@ -111,7 +111,7 @@ try {
   const url = 'http://127.0.0.1:' + server.address().port + '/';
   const rendered = await dumpDom(chrome, url, profile);
   const rootMatch = rendered.match(/<app-root\b[^>]*>([\s\S]*?)<\/app-root>/i);
-  if (!rootMatch) throw new Error('Chrome did not render an Angular app-root.');
+  if (!rootMatch) throw new Error('Chrome did not render an Angular app-root. Initial DOM: ' + rendered.slice(0, 1500));
   const root = rootMatch[1];
   const required = [
     /<app-landing\b/i,
