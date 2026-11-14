@@ -42,3 +42,46 @@ Esta rama añade recursos públicos indexables independientes de Angular, enlace
 El script existente exige la distribución dedicada `E2R1MKOPXY5S3Z`, hace backup S3, publica sin `--delete` e invalida CloudFront. No ejecutar manualmente en un bucket supuesto. Tras publicar, registrar backup path y commit de frontend. Si hay regresiones, usar `rollback-google-frontend.ps1` con el backup generado.
 
 **Bloqueantes para declarar 'SEO OK':** renderizado real de `/` sin depender de JS, redirecciones, HTTP 404 para rutas inválidas, revisión de CloudFront y comprobaciones Search Console/Bing. Ninguno de esos bloqueantes se debe marcar como resuelto sin prueba de producción.
+
+
+## Actualización del recorrido de la landing — 14/11/2026
+
+Se detectó que la navegación a productos estaba escondida principalmente en el footer. Se modificó el componente Angular de la landing sin tocar el flujo de autenticación:
+- Navegación superior visible: Productos, Calculadoras, Aprende y Cómo funciona.
+- En móvil los enlaces ya no se ocultan: se distribuyen en una fila horizontal accesible.
+- Tres tarjetas de producto con CTA reales a sus páginas HTML públicas.
+- Sección separada 'Cómo funciona' con pasos de Google, permiso opcional de Gmail y gastos reconocidos.
+- Sección 'Aprende' visible, dos recursos con imágenes existentes y enlaces a guía y calculadora.
+- Diseño original conservado: blanco, verde lima, tipografía y mockups existentes.
+- Nueva 404.html con directiva noindex; **solo funcionará como HTTP 404 real después de configurar el origen / distribución para entregar ese status**.
+- Nueva herramienta de solo lectura: `frontend/scripts/audit-cloudfront-seo.ps1 -ProfileName pgo`. Inspecciona los IDs CloudFront documentados; nunca escribe configuraciones.
+
+### Pendientes de infraestructura que no se resuelven modificando S3
+- `www.sarelaapp.com` y `sarela.pgoapp.com` siguen requiriendo redirecciones permanentes reales, según distribución y hostname. No ejecutar redirects del dominio anterior antes de validar OAuth, cookies, retornos y permisos.
+- `/index.html` debe consolidarse en `/` con redirección 301/308 verificada, sin perder querystrings de callback.
+- `/admin` debe ofrecer la SPA únicamente a clientes autorizados, con guard y exclusión de indexación. Las rutas inexistentes deben devolver HTTP 404 real.
+- La landing inicial Angular requiere prerender/SSG tras adaptar `localStorage`, `history`, `location` y restauración de sesión; no usar un HTML falso que exponga información privada.
+- CloudFront routing, políticas de caché, WAF y headers deben verificarse en la cuenta real antes de desplegar.
+
+### Comandos de QA antes de fusionar
+```powershell
+cd frontend
+npm ci
+npm run build
+npm run qa:seo
+npm run qa:domain
+npm run qa:legal
+npm run qa:brand
+npm test -- --watch=false --browsers=ChromeHeadless
+```
+El workflow de GitHub `.github/workflows/sarela-seo.yml` ejecuta esas comprobaciones. **Un fallo en la suite completa es bloqueo de release hasta determinar si es regresión de la rama o deuda previa en main.**
+
+### Release AWS
+```powershell
+cd frontend
+.\scripts\audit-cloudfront-seo.ps1 -ProfileName pgo
+.\scripts\publish-google-frontend.ps1 -ProfileName pgo
+# Solo tras confirmar cuenta, backup, pruebas y OAuth:
+.\scripts\publish-google-frontend.ps1 -ProfileName pgo -Apply
+```
+No se ha ejecutado ningún despliegue AWS desde GitHub. La publicación que ya existe en producción fue realizada previamente fuera de estas herramientas.
