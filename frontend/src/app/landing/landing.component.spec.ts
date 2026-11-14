@@ -93,9 +93,21 @@ describe('Public Sarela landing and access flow', () => {
     expect(root().querySelectorAll('figcaption').length).toBe(2);
     for(const caption of Array.from(root().querySelectorAll('figcaption'))) expect(caption.textContent).toContain('Datos de ejemplo');
   });
+  it('lets visitors discover products, calculators, Learn and how Sarela works',()=>{
+    const landing=root().querySelector('app-landing') as HTMLElement;
+    for (const href of ['/mis-finanzas.html','/suscripciones.html','/calculadoras.html','/aprende.html']) {
+      expect(landing.querySelector('a[href="'+href+'"]')).withContext(href).not.toBeNull();
+    }
+    expect(landing.querySelector('#productos .steps-grid')).not.toBeNull();
+    expect(landing.querySelectorAll('#productos .step a[href$=".html"]').length).toBe(3);
+    expect(landing.querySelector('#como-funciona .landing-process-grid')).not.toBeNull();
+    expect(landing.querySelector('#aprende .landing-learn-grid')).not.toBeNull();
+    expect(landing.querySelector('a[href="/guia-control-de-gastos.html"]')).not.toBeNull();
+    expect(landing.querySelector('a[href="/calculadora-gastos-hormiga.html"]')).not.toBeNull();
+  });
   it('loads local Google marks without depending on decorative images',async()=>{
     const images=Array.from(root().querySelectorAll<HTMLImageElement>('app-landing img'));
-    expect(images.length).toBe(3);
+    expect(images.length).toBe(5);
     await Promise.all(images.map(image=>image.decode()));
     for(const image of images) expect(image.naturalWidth).toBeGreaterThan(0);
     expect(root().querySelectorAll('app-landing-preview').length).toBe(3);
