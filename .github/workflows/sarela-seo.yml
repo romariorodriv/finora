@@ -39,6 +39,8 @@ jobs:
         run: npm run qa:seo
       - name: Deep public SEO and content audit
         run: npm run qa:public
+      - name: Real-browser public page and calculator QA
+        run: npm run qa:browser
       - name: Domain verification
         run: npm run qa:domain
       - name: Legal verification
