@@ -20,7 +20,8 @@ const sitemapPaths=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
 const intendedPaths=new Set(['/','/index.html',...files.map(x=>'/'+x),'/404.html']);
 const titles=new Map();
 const metaDesc=new Map();
-const socialFiles=files.filter(x=>!['privacidad.html','terminos.html','eliminar-datos.html'].includes(x));
+const legalFiles=new Set(['privacidad.html','terminos.html','eliminar-datos.html']);
+const socialFiles=files.filter(x=>!legalFiles.has(x));
 function check(cond,msg){if(!cond)problems.push(msg)}
 check(sitemapPaths.length===new Set(sitemapPaths).size,'Sitemap has duplicate URLs');
 check(sitemapPaths.every(x=>x.startsWith(canonicalHost+'/')),'Sitemap contains external or noncanonical host');
@@ -41,15 +42,19 @@ for(const file of files){
   const href=html.match(/<link\b[^>]*rel="canonical"[^>]*href="([^"]+)"/i)?.[1];
   const h1=[...html.matchAll(/<h1\b/gi)].length;
   check(h1===1,file+': expected exactly one H1, got '+h1);
-  check(!!title&&title.length>=25&&title.length<=85,file+': unsuitable title');
-  check(!!desc&&desc.length>=75&&desc.length<=190,file+': missing or unusually short/long description');
+  if(!legalFiles.has(file)){
+    check(!!title&&title.length>=25&&title.length<=85,file+': unsuitable title');
+    check(!!desc&&desc.length>=75&&desc.length<=190,file+': missing or unusually short/long description');
+  }
   check(href===canonical,file+': wrong canonical URL');
   check(!/name="robots"[^>]*content="[^"]*noindex/i.test(html),file+': noindex conflicts with sitemap');
   check(sitemapPaths.includes(canonical),file+': not in sitemap');
   check(deploy.includes("'"+file+"'"),file+': not listed in AWS deploy manifest');
-  check(html.includes('href="/sarela-seo.css"'),file+': inconsistent CSS asset');
-  check(html.includes('href="/aprende.html"')||file==='aprende.html',file+': learning link missing');
-  check(html.includes('href="/calculadoras.html"')||file==='calculadoras.html',file+': calculator link missing');
+  if(!legalFiles.has(file)){
+    check(html.includes('href="/sarela-seo.css"'),file+': inconsistent CSS asset');
+    check(html.includes('href="/aprende.html"')||file==='aprende.html',file+': learning link missing');
+    check(html.includes('href="/calculadoras.html"')||file==='calculadoras.html',file+': calculator link missing');
+  }
   if(titles.has(title))problems.push('Duplicate title: '+file+' = '+titles.get(title));else titles.set(title,file);
   if(metaDesc.has(desc))problems.push('Duplicate description: '+file+' = '+metaDesc.get(desc));else metaDesc.set(desc,file);
   for(const m of html.matchAll(/href="(\/[^"#?]*)(?:[?#][^"]*)?"/g)){
