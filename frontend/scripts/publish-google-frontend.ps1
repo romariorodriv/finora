@@ -16,6 +16,17 @@ $sarelaLegalFiles=@('privacidad.html','terminos.html','eliminar-datos.html','sar
 foreach($sarelaPage in (@('index.html','404.html')+$sarelaLegalFiles+$sarelaSeoFiles+@('sarela-seo.css'))){
   if(-not (Test-Path -LiteralPath (Join-Path $BuildDirectory $sarelaPage))){throw "Missing build artifact: $sarelaPage"}
 }
+# Fail closed: never deploy a fresh SPA shell as the public home by mistake.
+# The static index must already contain the anonymous landing from the build step.
+if(-not $LegalOnly){
+  $sarelaIndex=Get-Content -LiteralPath (Join-Path $BuildDirectory 'index.html') -Raw
+  if($sarelaIndex -notmatch 'data-sarela-prerender="anonymous-landing"'){
+    throw 'Public index lacks the verified prerendered landing. Run npm run build and npm run qa:prerender. No AWS writes.'
+  }
+  foreach($sarelaHref in @('/mis-finanzas.html','/suscripciones.html','/calculadoras.html','/aprende.html')){
+    if(-not $sarelaIndex.Contains('href="'+$sarelaHref+'"')){throw "Prerendered index missing $sarelaHref. No AWS writes."}
+  }
+}
 # Only operator-reviewed legal documents may be published.
 foreach($sarelaPage in @('privacidad.html','terminos.html','eliminar-datos.html')){
   $sarelaHtml=Get-Content -LiteralPath (Join-Path $BuildDirectory $sarelaPage) -Raw
