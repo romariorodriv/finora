@@ -44,11 +44,9 @@ const server = createServer(async (req, res) => {
       res.writeHead(403); res.end(); return;
     }
     const contents = await readFile(absolute);
-    if (decoded === '/') console.log('PRERENDER_REQUEST',decoded,'200',absolute,contents.length);
     res.writeHead(200, { 'Content-Type': mime[extname(absolute)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
     res.end(contents);
-  } catch (err) {
-    console.log('PRERENDER_REQUEST_FAILURE', req.url, String(err).slice(0,400));
+  } catch {
     res.writeHead(404); res.end('Not found');
   }
 });
@@ -113,9 +111,10 @@ try {
     server.listen(0, '127.0.0.1', resolveListen);
   });
   const url = 'http://127.0.0.1:' + server.address().port + '/';
-  console.log('PRERENDER_URL', url, 'CHROME', chrome);
   const testResponse = await fetch(url);
-  console.log('PRERENDER_SELF_CHECK', testResponse.status, (await testResponse.text()).slice(0,160));
+  if (testResponse.status !== 200 || !(await testResponse.text()).includes('<app-root></app-root>')) {
+    throw new Error('Local prerender server did not return the expected Angular shell.');
+  }
   const rendered = await dumpDom(chrome, url, profile);
   const rootMatch = rendered.match(/<app-root\b[^>]*>([\s\S]*?)<\/app-root>/i);
   if (!rootMatch) throw new Error('Chrome did not render an Angular app-root. Initial DOM: ' + rendered.slice(0, 1500));
