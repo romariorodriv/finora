@@ -93,11 +93,28 @@ describe('Public Sarela landing and access flow', () => {
     expect(root().querySelectorAll('figcaption').length).toBe(2);
     for(const caption of Array.from(root().querySelectorAll('figcaption'))) expect(caption.textContent).toContain('Datos de ejemplo');
   });
+  it('lets visitors discover products, calculators, Learn and how Sarela works',()=>{
+    const landing=root().querySelector('app-landing') as HTMLElement;
+    for (const href of ['/mis-finanzas.html','/suscripciones.html','/calculadoras.html','/aprende.html']) {
+      expect(landing.querySelector('a[href="'+href+'"]')).withContext(href).not.toBeNull();
+    }
+    expect(landing.querySelector('#productos .steps-grid')).not.toBeNull();
+    expect(landing.querySelectorAll('#productos .step a[href$=".html"]').length).toBe(3);
+    expect(landing.querySelector('#como-funciona .landing-process-grid')).not.toBeNull();
+    expect(landing.querySelector('#aprende .landing-learn-grid')).not.toBeNull();
+    expect(landing.querySelector('a[href="/guia-control-de-gastos.html"]')).not.toBeNull();
+    expect(landing.querySelector('a[href="/calculadora-gastos-hormiga.html"]')).not.toBeNull();
+  });
   it('loads local Google marks without depending on decorative images',async()=>{
     const images=Array.from(root().querySelectorAll<HTMLImageElement>('app-landing img'));
-    expect(images.length).toBe(3);
-    await Promise.all(images.map(image=>image.decode()));
-    for(const image of images) expect(image.naturalWidth).toBeGreaterThan(0);
+    const googleMarks=images.filter(image=>image.getAttribute('src')?.includes('google-mark.svg'));
+    const learnImages=images.filter(image=>image.closest('.landing-learn-card'));
+    expect(googleMarks.length).toBe(3);
+    expect(learnImages.length).toBe(2);
+    // Browser defers off-screen loading=lazy images; decode only eagerly loaded Google icons.
+    await Promise.all(googleMarks.map(image=>image.decode()));
+    for(const image of googleMarks) expect(image.naturalWidth).toBeGreaterThan(0);
+    for(const image of learnImages) expect(image.getAttribute('loading')).toBe('lazy');
     expect(root().querySelectorAll('app-landing-preview').length).toBe(3);
   });
   it('starts Google from each conversion action without requesting Gmail consent',()=>{
@@ -121,7 +138,14 @@ describe('Public Sarela landing and access flow', () => {
     document.body.appendChild(frame);
     try {
       const doc=frame.contentDocument!;
-      for(const style of Array.from(document.head.querySelectorAll('style'))) doc.head.appendChild(style.cloneNode(true));
+      // Include linked/global stylesheets, not only Angular-injected <style> elements.
+      // Otherwise the iframe measures an unstyled app and reports false overflows.
+      for (const sheet of Array.from(document.styleSheets)) {
+        const style=doc.createElement('style');
+        try { style.textContent=Array.from(sheet.cssRules).map(rule=>rule.cssText).join('\n'); }
+        catch { continue; }
+        doc.head.appendChild(style);
+      }
       doc.body.appendChild(root().querySelector('app-landing')!.cloneNode(true));
       for(const width of [320,390,768,1024,1440]) {
         frame.style.width=width+'px';await new Promise(resolve=>setTimeout(resolve,40));

@@ -9,7 +9,8 @@
     "test": "ng test",
     "qa:domain": "node scripts/verify-domain-migration.mjs",
     "qa:legal": "node scripts/verify-legal-pages.mjs",
-    "qa:brand": "node scripts/verify-sarela-brand.mjs"
+    "qa:brand": "node scripts/verify-sarela-brand.mjs",
+    "qa:seo": "node scripts/verify-seo-pages.mjs"
   },
   "private": true,
   "dependencies": {
