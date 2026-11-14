@@ -33,7 +33,7 @@ for(const slug of ['mis-finanzas','suscripciones','calculadoras','aprende']){
 
 const publicLandingLinks = [
   '/mis-finanzas.html','/suscripciones.html','/calculadoras.html','/aprende.html',
-  '/como-funciona.html','/guia-control-de-gastos.html','/calculadora-gastos-hormiga.html'
+  '/como-funciona.html','/guia-donde-se-va-mi-dinero.html','/calculadora-gastos-hormiga.html'
 ];
 for (const target of publicLandingLinks) {
   if (!landing.includes('href="'+target+'"')) problems.push('Landing link missing '+target);
