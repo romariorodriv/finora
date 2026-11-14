@@ -16,7 +16,8 @@ import { tmpdir } from 'node:os';
 import { join, resolve, extname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const build = fileURLToPath(new URL('../dist/frontend/browser/', import.meta.url));
+const build = resolve(fileURLToPath(new URL('../dist/frontend/browser/', import.meta.url)));
+// Normalize away the trailing separator before applying the directory containment guard.
 const indexFile = resolve(build, 'index.html');
 const html = await readFile(indexFile, 'utf8');
 if (!/<app-root><\/app-root>/.test(html)) {
