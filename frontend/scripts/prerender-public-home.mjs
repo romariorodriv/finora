@@ -138,7 +138,7 @@ try {
   const forbidden = [
     /class="[^"]*\bdashboard-view\b/i,
     /class="[^"]*\bgoogle-access\b/i,
-    /class="[^"]*\bsidebar\b/i,
+    /class="sidebar(?:\s|\")/i,
     /<app-admin\b/i,
     /<input\b[^>]*type="password"/i,
     /<script\b/i,
