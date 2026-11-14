@@ -179,11 +179,11 @@ try {
   // Also ensure Angular's browser bootstrap replaces the snapshot rather than
   // duplicating the landing. This uses the same isolated, cookie-free profile.
   const withJs = await dumpDom(chrome, url, profile);
-  if ((withJs.match(/<app-landing\b/gi) || []).length !== 1 ||
+  if ((withJs.match(/<app-landing(?=[\s>])/gi) || []).length !== 1 ||
       (withJs.match(/id="hero-title"/gi) || []).length !== 1 ||
       !/href="\/mis-finanzas\.html"/i.test(withJs) ||
       !/href="\/aprende\.html"/i.test(withJs)) {
-    throw new Error('Client bootstrap did not preserve one landing: ' + JSON.stringify({landingCount:(withJs.match(/<app-landing\b/gi)||[]).length,heroCount:(withJs.match(/id="hero-title"/gi)||[]).length,financesLink:withJs.includes('href="/mis-finanzas.html"'),learnLink:withJs.includes('href="/aprende.html"'),rootExcerpt:withJs.slice(withJs.indexOf('<app-root'),withJs.indexOf('<app-root')+500)}));
+    throw new Error('Client bootstrap did not preserve one landing: ' + JSON.stringify({landingCount:(withJs.match(/<app-landing(?=[\s>])/gi)||[]).length,heroCount:(withJs.match(/id="hero-title"/gi)||[]).length,financesLink:withJs.includes('href="/mis-finanzas.html"'),learnLink:withJs.includes('href="/aprende.html"'),rootExcerpt:withJs.slice(withJs.indexOf('<app-root'),withJs.indexOf('<app-root')+500)}));
   }
   console.log('PASS: Angular client bootstrap retains a single public landing without duplication.');
 
