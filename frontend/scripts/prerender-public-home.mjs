@@ -95,6 +95,7 @@ function dumpDom(chrome, url, profile) {
     child.on('close', code => {
       clearTimeout(timeout);
       if (code !== 0 || stdout.length > 12000000) reject(new Error('Chrome prerender failed: ' + stderr.slice(-700)));
+      else if (!stdout.trim()) reject(new Error('Chrome returned empty DOM; stderr: ' + stderr.slice(-2300)));
       else resolve(stdout);
     });
   });
