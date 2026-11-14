@@ -11,7 +11,7 @@ param(
 $ErrorActionPreference='Stop'
 if(-not $BuildDirectory){$BuildDirectory=Join-Path $PSScriptRoot '../dist/frontend/browser'}
 $BuildDirectory=(Resolve-Path -LiteralPath $BuildDirectory).Path
-$sarelaSeoFiles=@('mis-finanzas.html','suscripciones.html','calculadoras.html','aprende.html','como-funciona.html','seguridad.html','guia-control-de-gastos.html','calculadora-gastos-hormiga.html','calculadora-presupuesto.html','calculadora-suscripciones.html')
+$sarelaSeoFiles=@('mis-finanzas.html','suscripciones.html','calculadoras.html','aprende.html','como-funciona.html','seguridad.html','guia-control-de-gastos.html','calculadora-gastos-hormiga.html','calculadora-presupuesto.html','calculadora-suscripciones.html','acerca-de-sarela.html','guia-donde-se-va-mi-dinero.html','guia-presupuesto-sueldo.html','guia-gastos-hormiga.html','guia-revisar-suscripciones.html','guia-fecha-corte-pago.html','guia-fin-de-mes.html')
 $sarelaLegalFiles=@('privacidad.html','terminos.html','eliminar-datos.html','sarela-legal.css','sarela-icon.svg','robots.txt','sitemap.xml')
 foreach($sarelaPage in (@('index.html','404.html')+$sarelaLegalFiles+$sarelaSeoFiles+@('sarela-seo.css'))){
   if(-not (Test-Path -LiteralPath (Join-Path $BuildDirectory $sarelaPage))){throw "Missing build artifact: $sarelaPage"}

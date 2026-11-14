@@ -102,7 +102,7 @@ describe('Public Sarela landing and access flow', () => {
     expect(landing.querySelectorAll('#productos .step a[href$=".html"]').length).toBe(3);
     expect(landing.querySelector('#como-funciona .landing-process-grid')).not.toBeNull();
     expect(landing.querySelector('#aprende .landing-learn-grid')).not.toBeNull();
-    expect(landing.querySelector('a[href="/guia-control-de-gastos.html"]')).not.toBeNull();
+    expect(landing.querySelector('a[href="/guia-donde-se-va-mi-dinero.html"]')).not.toBeNull();
     expect(landing.querySelector('a[href="/calculadora-gastos-hormiga.html"]')).not.toBeNull();
   });
   it('loads local Google marks without depending on decorative images',async()=>{

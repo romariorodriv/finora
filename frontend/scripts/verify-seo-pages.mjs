@@ -7,7 +7,8 @@ const slugs = [
   'mis-finanzas','suscripciones','calculadoras','aprende',
   'como-funciona','seguridad','guia-control-de-gastos',
   'calculadora-gastos-hormiga','calculadora-presupuesto',
-  'calculadora-suscripciones'
+  'calculadora-suscripciones',
+  'acerca-de-sarela', 'guia-donde-se-va-mi-dinero', 'guia-presupuesto-sueldo', 'guia-gastos-hormiga', 'guia-revisar-suscripciones', 'guia-fecha-corte-pago', 'guia-fin-de-mes'
 ];
 const sitemap = readFileSync(resolve(root, 'public/sitemap.xml'),'utf8');
 const landing = readFileSync(resolve(root, 'src/app/landing/landing.component.html'),'utf8');
@@ -32,7 +33,7 @@ for(const slug of ['mis-finanzas','suscripciones','calculadoras','aprende']){
 
 const publicLandingLinks = [
   '/mis-finanzas.html','/suscripciones.html','/calculadoras.html','/aprende.html',
-  '/como-funciona.html','/guia-control-de-gastos.html','/calculadora-gastos-hormiga.html'
+  '/como-funciona.html','/guia-donde-se-va-mi-dinero.html','/calculadora-gastos-hormiga.html'
 ];
 for (const target of publicLandingLinks) {
   if (!landing.includes('href="'+target+'"')) problems.push('Landing link missing '+target);
