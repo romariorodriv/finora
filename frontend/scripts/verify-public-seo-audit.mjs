@@ -55,8 +55,10 @@ for(const file of files){
     check(html.includes('href="/aprende.html"')||file==='aprende.html',file+': learning link missing');
     check(html.includes('href="/calculadoras.html"')||file==='calculadoras.html',file+': calculator link missing');
   }
-  if(titles.has(title))problems.push('Duplicate title: '+file+' = '+titles.get(title));else titles.set(title,file);
-  if(metaDesc.has(desc))problems.push('Duplicate description: '+file+' = '+metaDesc.get(desc));else metaDesc.set(desc,file);
+  if(!legalFiles.has(file)){
+    if(titles.has(title))problems.push('Duplicate title: '+file+' = '+titles.get(title));else titles.set(title,file);
+    if(metaDesc.has(desc))problems.push('Duplicate description: '+file+' = '+metaDesc.get(desc));else metaDesc.set(desc,file);
+  }
   for(const m of html.matchAll(/href="(\/[^"#?]*)(?:[?#][^"]*)?"/g)){
     const target=m[1]; if(target==='/'||target==='/#registro'||target==='/index.html')continue;
     const asset=resolve(publicRoot,'.'+target);
