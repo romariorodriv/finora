@@ -107,9 +107,14 @@ describe('Public Sarela landing and access flow', () => {
   });
   it('loads local Google marks without depending on decorative images',async()=>{
     const images=Array.from(root().querySelectorAll<HTMLImageElement>('app-landing img'));
-    expect(images.length).toBe(5);
-    await Promise.all(images.map(image=>image.decode()));
-    for(const image of images) expect(image.naturalWidth).toBeGreaterThan(0);
+    const googleMarks=images.filter(image=>image.getAttribute('src')?.includes('google-mark.svg'));
+    const learnImages=images.filter(image=>image.closest('.landing-learn-card'));
+    expect(googleMarks.length).toBe(3);
+    expect(learnImages.length).toBe(2);
+    // Browser defers off-screen loading=lazy images; decode only eagerly loaded Google icons.
+    await Promise.all(googleMarks.map(image=>image.decode()));
+    for(const image of googleMarks) expect(image.naturalWidth).toBeGreaterThan(0);
+    for(const image of learnImages) expect(image.getAttribute('loading')).toBe('lazy');
     expect(root().querySelectorAll('app-landing-preview').length).toBe(3);
   });
   it('starts Google from each conversion action without requesting Gmail consent',()=>{
