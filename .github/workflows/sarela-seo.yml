@@ -8,6 +8,7 @@ on:
     branches:
       - feature/seo-growth-20261114
       - feature/sarela-static-prerender-home-20261114
+      - feature/seo-content-design-growth-20261114
     paths:
       - 'frontend/**'
       - '.github/workflows/sarela-seo.yml'
@@ -36,6 +37,8 @@ jobs:
         run: npm run qa:prerender
       - name: SEO links, sitemap and static pages
         run: npm run qa:seo
+      - name: Deep public SEO and content audit
+        run: npm run qa:public
       - name: Domain verification
         run: npm run qa:domain
       - name: Legal verification
