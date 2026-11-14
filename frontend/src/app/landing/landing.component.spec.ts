@@ -137,6 +137,10 @@ describe('Public Sarela landing and access flow', () => {
       doc.body.appendChild(root().querySelector('app-landing')!.cloneNode(true));
       for(const width of [320,390,768,1024,1440]) {
         frame.style.width=width+'px';await new Promise(resolve=>setTimeout(resolve,40));
+        if(doc.documentElement.scrollWidth>width+1) {
+          const offenders=Array.from(doc.querySelectorAll('*')).map(e=>({tag:e.tagName,cls:(e as HTMLElement).className?.toString().slice(0,55),r:Math.round(e.getBoundingClientRect().right),w:Math.round(e.getBoundingClientRect().width)})).filter(x=>x.r>width+1).slice(0,14);
+          console.log('SARELA_OVERFLOW_DIAGNOSTIC',width,doc.documentElement.scrollWidth,JSON.stringify(offenders));
+        }
         expect(doc.documentElement.scrollWidth).withContext('horizontal overflow at '+width).toBeLessThanOrEqual(width+1);
         const steps=Array.from(doc.querySelectorAll('.step')).map(e=>e.getBoundingClientRect());
         if(width<=600) expect(steps[1].top).toBeGreaterThan(steps[0].bottom);
