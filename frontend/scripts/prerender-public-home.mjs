@@ -176,6 +176,16 @@ try {
     throw new Error('Final prerendered build is not legible with JavaScript disabled.');
   }
   console.log('PASS: final built HTML remains readable with JavaScript disabled.');
+  // Also ensure Angular's browser bootstrap replaces the snapshot rather than
+  // duplicating the landing. This uses the same isolated, cookie-free profile.
+  const withJs = await dumpDom(chrome, url, profile);
+  if ((withJs.match(/<app-landing\b/gi) || []).length !== 1 ||
+      (withJs.match(/id="hero-title"/gi) || []).length !== 1 ||
+      !/href="\/mis-finanzas\.html"/i.test(withJs) ||
+      !/href="\/aprende\.html"/i.test(withJs)) {
+    throw new Error('Client bootstrap did not preserve a single functional public landing.');
+  }
+  console.log('PASS: Angular client bootstrap retains a single public landing without duplication.');
 
   console.log('PASS: anonymous Sarela home prerendered into index.html; ' + required.length +
     ' landing checks; ' + styleTags.length + ' scoped style tags; ' + next.length + ' bytes. No private views.');
