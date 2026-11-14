@@ -41,3 +41,24 @@ jobs:
         run: npm run qa:brand
       - name: Angular tests
         run: npm test -- --watch=false --browsers=ChromeHeadless
+
+  baseline:
+    # Informational comparison: test existing main without changing application code.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          submodules: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Report pre-existing main test failures (informational)
+        run: npm test -- --watch=false --browsers=ChromeHeadless
+        continue-on-error: true
