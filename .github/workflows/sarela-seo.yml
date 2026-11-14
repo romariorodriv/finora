@@ -1,0 +1,43 @@
+name: Sarela frontend and SEO checks
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/sarela-seo.yml'
+  push:
+    branches:
+      - feature/seo-growth-20261114
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/sarela-seo.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build production frontend
+        run: npm run build
+      - name: SEO links, sitemap and static pages
+        run: npm run qa:seo
+      - name: Domain verification
+        run: npm run qa:domain
+      - name: Legal verification
+        run: npm run qa:legal
+      - name: Brand verification
+        run: npm run qa:brand
+      - name: Angular tests
+        run: npm test -- --watch=false --browsers=ChromeHeadless
