@@ -13,7 +13,7 @@ if(-not $BuildDirectory){$BuildDirectory=Join-Path $PSScriptRoot '../dist/fronte
 $BuildDirectory=(Resolve-Path -LiteralPath $BuildDirectory).Path
 $sarelaSeoFiles=@('mis-finanzas.html','suscripciones.html','calculadoras.html','aprende.html','como-funciona.html','seguridad.html','guia-control-de-gastos.html','calculadora-gastos-hormiga.html','calculadora-presupuesto.html','calculadora-suscripciones.html')
 $sarelaLegalFiles=@('privacidad.html','terminos.html','eliminar-datos.html','sarela-legal.css','sarela-icon.svg','robots.txt','sitemap.xml')
-foreach($sarelaPage in (@('index.html')+$sarelaLegalFiles+$sarelaSeoFiles+@('sarela-seo.css'))){
+foreach($sarelaPage in (@('index.html','404.html')+$sarelaLegalFiles+$sarelaSeoFiles+@('sarela-seo.css'))){
   if(-not (Test-Path -LiteralPath (Join-Path $BuildDirectory $sarelaPage))){throw "Missing build artifact: $sarelaPage"}
 }
 # Only operator-reviewed legal documents may be published.
@@ -87,12 +87,12 @@ foreach($sarelaAsset in @('robots.txt','sitemap.xml')){
   Invoke-SarelaAws @('s3','cp',(Join-Path $BuildDirectory $sarelaAsset),($sarelaTarget+$sarelaAsset),'--content-type',$sarelaType,'--cache-control','no-cache,no-store,must-revalidate') | Out-Null
 }
 $sarelaHtmlFiles=@('privacidad.html','terminos.html','eliminar-datos.html')
-if(-not $LegalOnly){$sarelaHtmlFiles+= @('index.html')+$sarelaSeoFiles}
+if(-not $LegalOnly){$sarelaHtmlFiles+= @('index.html','404.html')+$sarelaSeoFiles}
 foreach($sarelaPage in $sarelaHtmlFiles){
   Invoke-SarelaAws @('s3','cp',(Join-Path $BuildDirectory $sarelaPage),($sarelaTarget+$sarelaPage),'--content-type','text/html; charset=utf-8','--cache-control','no-cache,no-store,must-revalidate') | Out-Null
 }
 $sarelaPaths=@('/privacidad.html','/terminos.html','/eliminar-datos.html','/sarela-legal.css','/sarela-icon.svg','/robots.txt','/sitemap.xml')
-if(-not $LegalOnly){$sarelaPaths+=@('/','/index.html');$sarelaPaths+=@($sarelaSeoFiles | ForEach-Object { '/'+$_ });$sarelaPaths+='/sarela-seo.css'}
+if(-not $LegalOnly){$sarelaPaths+=@('/','/index.html','/404.html');$sarelaPaths+=@($sarelaSeoFiles | ForEach-Object { '/'+$_ });$sarelaPaths+='/sarela-seo.css'}
 Invoke-SarelaAws (@('cloudfront','create-invalidation','--distribution-id',$sarelaDistribution.Id,'--paths')+$sarelaPaths) | Out-Null
 Write-Output "Frontend files published. Backup: $BackupDirectory"
 Write-Output 'Rollback: run rollback-google-frontend.ps1 with this BackupDirectory and the same ProfileName; preview first, then -Apply.'
