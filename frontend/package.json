@@ -4,13 +4,14 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build && node scripts/prerender-public-home.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "qa:domain": "node scripts/verify-domain-migration.mjs",
     "qa:legal": "node scripts/verify-legal-pages.mjs",
     "qa:brand": "node scripts/verify-sarela-brand.mjs",
-    "qa:seo": "node scripts/verify-seo-pages.mjs"
+    "qa:seo": "node scripts/verify-seo-pages.mjs",
+    "qa:prerender": "node scripts/verify-prerender.mjs"
   },
   "private": true,
   "dependencies": {
