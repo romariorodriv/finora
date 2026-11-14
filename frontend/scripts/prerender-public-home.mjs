@@ -43,9 +43,11 @@ const server = createServer(async (req, res) => {
       res.writeHead(403); res.end(); return;
     }
     const contents = await readFile(absolute);
+    if (decoded === '/') console.log('PRERENDER_REQUEST',decoded,'200',absolute,contents.length);
     res.writeHead(200, { 'Content-Type': mime[extname(absolute)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
     res.end(contents);
-  } catch {
+  } catch (err) {
+    console.log('PRERENDER_REQUEST_FAILURE', req.url, String(err).slice(0,400));
     res.writeHead(404); res.end('Not found');
   }
 });
@@ -76,7 +78,7 @@ async function findBrowser() {
 
 function dumpDom(chrome, url, profile) {
   const args = [
-    '--headless=new', '--no-sandbox', '--disable-gpu',
+    '--headless=new', '--no-sandbox', '--no-proxy-server', '--disable-gpu',
     '--disable-dev-shm-usage', '--disable-extensions',
     '--no-first-run', '--no-default-browser-check',
     '--disable-background-networking', '--disable-sync',
