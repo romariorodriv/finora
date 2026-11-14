@@ -77,7 +77,7 @@ async function findBrowser() {
   throw new Error('Chrome/Chromium not found. Install Chrome or set CHROME_BIN to its full path. Prerender is required; do not deploy SPA-only index.');
 }
 
-function dumpDom(chrome, url, profile) {
+function dumpDom(chrome, url, profile, extraArgs = []) {
   const args = [
     '--headless=new', '--no-sandbox', '--no-proxy-server', '--disable-gpu',
     '--disable-dev-shm-usage', '--disable-extensions',
@@ -86,7 +86,7 @@ function dumpDom(chrome, url, profile) {
     '--host-resolver-rules=MAP api.sarelaapp.com ~NOTFOUND, MAP api-sarela.pgoapp.com ~NOTFOUND',
     '--user-data-dir=' + profile,
     '--virtual-time-budget=9000',
-    '--dump-dom', url
+    ...extraArgs, '--dump-dom', url
   ];
   return new Promise((resolve, reject) => {
     const child = spawn(chrome, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -165,6 +165,18 @@ try {
   if (!next.includes('data-sarela-prerender="anonymous-landing"')) throw new Error('Failed to install prerender snapshot.');
   if (next.length > 800000) throw new Error('Prerender index exceeded 800 KB; investigate asset inlining.');
   await writeFile(indexFile, next, 'utf8');
+
+  // Final built artifact check: Google and other non-JavaScript crawlers must
+  // receive content from index.html even when scripts cannot execute.
+  const noJs = await dumpDom(chrome, url, profile, ['--disable-javascript']);
+  if (!/<app-landing\b/i.test(noJs) ||
+      !/id="hero-title"/i.test(noJs) ||
+      !/href="\/calculadoras\.html"/i.test(noJs) ||
+      !/href="\/aprende\.html"/i.test(noJs)) {
+    throw new Error('Final prerendered build is not legible with JavaScript disabled.');
+  }
+  console.log('PASS: final built HTML remains readable with JavaScript disabled.');
+
   console.log('PASS: anonymous Sarela home prerendered into index.html; ' + required.length +
     ' landing checks; ' + styleTags.length + ' scoped style tags; ' + next.length + ' bytes. No private views.');
 } finally {
