@@ -12,7 +12,8 @@
     "qa:brand": "node scripts/verify-sarela-brand.mjs",
     "qa:seo": "node scripts/verify-seo-pages.mjs",
     "qa:prerender": "node scripts/verify-prerender.mjs",
-    "qa:public": "node scripts/verify-public-seo-audit.mjs"
+    "qa:public": "node scripts/verify-public-seo-audit.mjs",
+    "qa:browser": "node scripts/verify-public-browser.mjs"
   },
   "private": true,
   "dependencies": {
