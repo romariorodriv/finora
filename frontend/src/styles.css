@@ -675,7 +675,7 @@ body .sarela-home-gmail-strip button:hover {background:#d8f0d9;}
 
 
 /* SEO landing journey: preserve Sarela's existing look and give every product a clear route. */
-app-landing{display:block;max-width:100%;overflow-x:clip}
+app-landing{display:block;width:100%;max-width:100%;overflow-x:hidden}
 app-landing .landing-section-eyebrow{margin:0 0 12px;font-size:12px;font-weight:750;letter-spacing:.12em;color:#53672e}
 app-landing .landing-section-lead{max-width:650px;margin:0 0 30px;color:#454741;font-size:17px;line-height:1.55}
 app-landing .landing-card-link,app-landing .landing-inline-link{display:inline-flex;align-items:center;gap:9px;margin-top:20px;font-size:14px;font-weight:750;color:#254d25;text-decoration:underline;text-underline-offset:5px}
