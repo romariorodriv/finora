@@ -16,6 +16,16 @@ describe('Premium UI functional flows', () => {
     services=premiumTestServices();
     TestBed.configureTestingModule({imports: [AppComponent],providers: [provideRouter([]),{provide: ApiService,useValue: services.api},{provide: AuthService,useValue: services.auth}]});
     fixture=TestBed.createComponent(AppComponent);fixture.detectChanges();
+    // Legacy spending tests explicitly exercise the Gastos view; Inicio now shows the agent catalog.
+    fixture.componentInstance.go('dashboard');fixture.detectChanges();
+  });
+  it('shows the new agent catalog and opens Vivienda without requesting Gmail', () => {
+    fixture.componentInstance.go('agents');fixture.detectChanges();
+    expect(root().textContent).toContain('Sarela Vivienda');
+    expect(root().textContent).toContain('Sarela Auto');
+    expect(services.api.gmailAuthorizationUrl).not.toHaveBeenCalled();
+    fixture.componentInstance.go('housing');fixture.detectChanges();
+    expect(root().querySelector('app-housing-agent')).not.toBeNull();
   });
   it('offers a separate, optional Gmail permission after Google login', () => {
     const key = 'sarela:gmail-onboarding-dismissed:1';
@@ -227,7 +237,7 @@ describe('Premium UI functional flows', () => {
       duplicatesSkipped:1,reviewRequired:1,unsupported:0,rejected:0,failed:1,retryCount:0,stale:true,hasMorePages:false
     }));
     fixture.componentInstance.loadGmailJob();fixture.detectChanges();
-    expect(root().querySelector('.gmail-job')?.textContent).toContain('Parcial');
+    expect(root().querySelector('.gmail-job')?.textContent).toContain('parcial');
     expect(root().querySelector('.gmail-job')?.textContent).toContain('información está incompleta');
     expect(root().querySelector('.import-counts')?.textContent).toContain('Por revisar');
     expect(fixture.componentInstance.syncResult?.transactionsCreated).toBe(2);
@@ -276,7 +286,7 @@ describe('Premium UI functional flows', () => {
     second.error({error:{message:'Historial no disponible'}});fixture.detectChanges();
     expect(c.transactionsLoading).toBeFalse();expect(root().querySelector('[role="alert"]')?.textContent).toContain('Historial no disponible');
     services.api.transactionHistory.and.returnValue(of({items:[],total:0,page:0,totalPages:0}));c.loadTransactions();fixture.detectChanges();
-    expect(c.movementError).toBe('');expect(root().textContent).toContain('Registra tu primer movimiento');
+    expect(c.movementError).toBe('');expect(root().textContent).toContain('Aún no hay movimientos');
   });
 
 });
