@@ -24,6 +24,26 @@ export class ApiService {
 
   constructor(private readonly http: HttpClient) {}
 
+  /** Runs one housing investigation through the authenticated Spring Boot API. */
+  analyzeHousing(request: {
+    income: number; essential_expenses: number; monthly_debts: number;
+    savings: number; districts: string[];
+  }): Observable<{
+    agent:string; status:string;
+    budget:{monthly_budget:number;estimated_max_loan:number;estimated_max_price:number;
+      available_down_payment:number;annual_effective_rate_assumed:number;years_assumed:number;assumptions:string[]};
+    search:{status:string;message:string;results:{title:string;url:string;excerpt:string;verified:boolean}[]};
+    note:string;
+  }> {
+    return this.http.post<{
+      agent:string;status:string;
+      budget:{monthly_budget:number;estimated_max_loan:number;estimated_max_price:number;
+        available_down_payment:number;annual_effective_rate_assumed:number;years_assumed:number;assumptions:string[]};
+      search:{status:string;message:string;results:{title:string;url:string;excerpt:string;verified:boolean}[]};
+      note:string;
+    }>(`${this.baseUrl}/agents/housing/analyze`, request);
+  }
+
   categories(): Observable<string[]> {
     return this.http.get<string[]>(`${this.baseUrl}/categories`);
   }
