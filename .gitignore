@@ -13,3 +13,7 @@ logs/
 *~
 .idea/
 .vscode/
+
+# Local agent evidence (runtime-generated)
+agents/state.json
+agents/__pycache__/
