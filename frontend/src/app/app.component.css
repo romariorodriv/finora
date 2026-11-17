@@ -109,3 +109,6 @@ main:focus { outline: 0; }
 .agent-coming-soon h1{font-size:clamp(26px,3vw,40px);margin:0 0 16px}
 .agent-coming-soon p{color:#567060;line-height:1.7}
 .agent-coming-soon .primary{margin-top:17px}
+
+/* Keep horizontally scrollable ledgers inside the mobile viewport rather than widening the whole page. */
+@media (max-width:600px){.app main{min-width:0;overflow-x:clip}}
