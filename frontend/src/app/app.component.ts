@@ -1,4 +1,6 @@
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { AgentHubComponent } from './agents/agent-hub.component';
+import { HousingAgentComponent } from './agents/housing-agent.component';
 import { LandingComponent } from './landing/landing.component';
 import { IconComponent } from './shared/icon.component';
 import { FocusTrapDirective } from './shared/focus-trap.directive';
@@ -29,12 +31,12 @@ import {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, IconComponent, FocusTrapDirective, LandingComponent, RouterOutlet],
+  imports: [CommonModule, FormsModule, IconComponent, FocusTrapDirective, LandingComponent, RouterOutlet, AgentHubComponent, HousingAgentComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./dashboard/dashboard.styles.css', './app.component.css']
 })
 export class AppComponent implements OnInit, OnDestroy {
-  view: 'dashboard' | 'movements' | 'import' | 'feedback' | 'admin' = 'dashboard';
+  view: 'agents' | 'housing' | 'auto' | 'debts' | 'dashboard' | 'movements' | 'import' | 'feedback' | 'admin' = 'agents';
   dashboardLoading = false;
   dashboardError = '';
   transactionsLoading = false;
@@ -101,7 +103,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly merchantColors = ['#173c34', '#5f927d', '#9ec7b2', '#d3e2d9', '#eef2ef', '#c8d4cc'];
 
   constructor(public readonly auth: AuthService, private readonly api: ApiService, private readonly router: Router) {
-    this.routeSubscription=router.events.subscribe(event=>{if(event instanceof NavigationEnd){if(event.urlAfterRedirects.startsWith('/admin'))this.view='admin';else if(this.view==='admin')this.view='dashboard';if(!this.auth.user)this.syncPublicView();}});
+    this.routeSubscription=router.events.subscribe(event=>{if(event instanceof NavigationEnd){if(event.urlAfterRedirects.startsWith('/admin'))this.view='admin';else if(this.view==='admin')this.view='agents';if(!this.auth.user)this.syncPublicView();}});
   }
 
   ngOnInit(): void {
@@ -112,7 +114,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const authResult = params.get('auth');
     const gmailResult = params.get('gmail');
     this.linkRequired = authResult === 'link_required';
-    this.onboardingRequested = authResult === 'connected';
+    this.onboardingRequested = false; // Gmail is requested inside the specific agent, not at sign-in
     this.autoOpenSummary = gmailResult === 'connected';
     if (this.linkRequired || authResult === 'failed' || authResult === 'cancelled') this.publicView = 'access';
     if (authResult === 'failed') this.error = 'No pudimos verificar el acceso con Google. Intenta nuevamente.';
@@ -150,7 +152,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.authSubmitting = true; this.error = '';
     this.auth.linkGoogle(this.linkPassword).pipe(finalize(() => { this.authSubmitting = false; this.linkPassword = ''; })).subscribe({
       next: () => this.auth.refreshCurrent().subscribe({
-        next: () => { this.linkRequired = false; this.onboardingRequested = true; this.loadApp(); },
+        next: () => { this.linkRequired = false; this.onboardingRequested = false; this.loadApp(); },
         error: error => this.error = this.message(error)
       }),
       error: error => this.error = this.message(error)
@@ -189,7 +191,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.selectedCategory = undefined; this.selectedMerchant = undefined;
         this.gmail = undefined; this.syncResult = undefined;
         void this.router.navigateByUrl('/');
-        this.returnToLanding(); this.view = 'dashboard';
+        this.returnToLanding(); this.view = 'agents';
       },
       error: error => this.showToast('No se pudo cerrar la sesión: ' + this.message(error))
     });
