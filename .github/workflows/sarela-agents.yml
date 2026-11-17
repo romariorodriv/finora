@@ -8,8 +8,10 @@ on:
       - 'frontend/src/app/app.component.*'
       - 'frontend/src/app/landing/landing.component.html'
       - '.github/workflows/sarela-agents.yml'
-  push:
-    branches: [feature/sarela-agent-hub-v1]
+  workflow_dispatch:
+concurrency:
+  group: sarela-agent-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   python:
     runs-on: ubuntu-latest
