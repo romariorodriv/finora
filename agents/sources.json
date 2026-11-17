@@ -1,0 +1,14 @@
+{
+  "sources": [
+    {
+      "id": "claro_postpago",
+      "label": "Claro Perú — postpago",
+      "url": "https://www.claro.com.pe/personas/movil/postpago/"
+    },
+    {
+      "id": "entel_planes",
+      "label": "Entel Perú — planes móviles",
+      "url": "https://www.entel.pe/planes?tab=2"
+    }
+  ]
+}
