@@ -80,6 +80,16 @@ El servicio usa la API externa configurada en `search.py`. Define `TAVILY_API_KE
 
 **Las URLs mostradas son candidatos, no departamentos confirmados.** Todavía deben implementarse extracción de fichas, deduplicación, comparación de precio, moneda, área, vigencia, contacto y cobertura de los portales. No prometer «el depa más barato de Lima».
 
+### Inicio rápido con Docker (sin AWS)
+
+Se añadió un overlay `docker-compose.agents.yml` para ejecutar PostgreSQL, Java y Python en red interna. Desde la raíz del repositorio, define `SARELA_AGENT_INTERNAL_KEY` en un archivo `.env` local excluido de Git, y opcionalmente `TAVILY_API_KEY`. Después:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.agents.yml up --build
+```
+
+Java queda en `http://127.0.0.1:8080`. Python **no publica puerto al host**: Java lo contacta por `http://agent:8001` en la red del Compose. En otra terminal inicia Angular: `cd frontend && npm ci && npm start`. No conectar este Compose a datos productivos.
+
 ## 5. Conectar con Spring Boot y Angular
 
 En el backend de Java, define:
