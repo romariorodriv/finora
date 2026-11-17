@@ -78,7 +78,7 @@ describe('Public Sarela landing and access flow', () => {
       (services.auth as unknown as {user:AuthService['user']}).user=null;return of(undefined);
     });
     fixture.detectChanges();
-    expect(root().querySelector('.dashboard-view')).not.toBeNull();
+    expect(root().querySelector('app-agent-hub')).not.toBeNull();
     fixture.componentInstance.logout();fixture.detectChanges();expect(root().querySelector('app-landing')).not.toBeNull();
   });
   it('provides working section anchors, legal links and honest Gmail and pricing copy',()=>{
