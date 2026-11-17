@@ -187,7 +187,7 @@
           <div class="empty" *ngIf="!transactionsLoading && !movementError && movementTotal === 0">{{hasMovementFilters() ? 'No encontramos movimientos con estos filtros.' : 'Aún no hay movimientos. Puedes agregar uno o conectar Gmail.'}}</div>
           <div class="sarela-ledger-table-scroll" *ngIf="!transactionsLoading && !movementError && movementTotal>0">
             <table class="sarela-ledger-table">
-              <thead><tr><th scope="col">Fecha</th><th scope="col">Comercio</th><th scope="col">Categoría</th><th scope="col">Descripción</th><th scope="col" class="numeric">Monto</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead>
+              <thead><tr><th scope="col">Fecha</th><th scope="col">Comercio</th><th scope="col">Categoría</th><th scope="col">Descripción</th><th scope="col" class="numeric">Monto</th><th scope="col" aria-label="Acciones"></th></tr></thead>
               <tbody>
                 <tr class="tx-actions" *ngFor="let tx of pagedTransactions()">
                   <td class="date">{{movementDate(tx.date)}}</td>
