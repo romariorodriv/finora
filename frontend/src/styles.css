@@ -735,3 +735,9 @@ app-landing .landing-footer nav{gap:12px 18px;flex-wrap:wrap}
   body .app .sarela-ledger-table-scroll{width:100%;max-width:100%;min-width:0;overflow-x:auto}
   body .app .sarela-ledger-heading-actions .sarela-sync-chip{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 }
+
+/* Isolate the ledger panel's internal table scroller from document width on phones. */
+@media (max-width:650px){
+  body .app .sarela-ledger-history{min-width:0;max-width:100%;overflow:hidden}
+  body .app .sarela-ledger-table-scroll{contain:inline-size;overflow-x:auto;overflow-y:hidden}
+}
