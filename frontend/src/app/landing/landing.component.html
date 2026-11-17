@@ -16,15 +16,14 @@
 <main id="landing-content" tabindex="-1">
     <section class="hero section-wrap" id="inicio" aria-labelledby="hero-title">
         <div class="hero-copy">
-            <p class="eyebrow-pill">TU DINERO, MÁS CLARO</p>
-            <h1 id="hero-title">¿En qué se fue<br>tu dinero?<span>Ahora puedes verlo.</span></h1>
-            <p class="hero-description">Organiza los movimientos que llegan a tu Gmail y entiende tus gastos sin hacerlo
-                a mano.</p>
+            <p class="eyebrow-pill">TUS AGENTES FINANCIEROS</p>
+            <h1 id="hero-title">Tu dinero tiene metas.<span>Sarela investiga contigo.</span></h1>
+            <p class="hero-description">Empieza con Sarela Vivienda: investiga opciones para tu primer departamento y calcula un presupuesto prudente. Sarela Gastos conserva tus herramientas financieras actuales.</p>
             <div class="hero-actions"><button class="google-button primary" type="button"
                     (click)="accessRequested.emit('register')"><img src="images/google-mark.svg" width="24" height="24"
                         alt="">Continuar con Google</button><a class="secondary-button" href="#como-funciona">Ver cómo
                     funciona</a></div>
-            <p class="consent-note"><app-icon name="lock" [size]="18" />Tú decides cuándo conectar Gmail.</p>
+            <p class="consent-note"><app-icon name="lock" [size]="18" />Vivienda no necesita Gmail. El permiso de Gmail es independiente.</p>
         </div>
         <!-- Product illustration built in code; decorative assets can be replaced independently. -->
         <figure class="hero-art" aria-labelledby="hero-preview-caption">
@@ -36,29 +35,29 @@
         </figure>
     </section>
     <div class="clarity-divider section-wrap"><span></span>
-        <p>Menos correos sueltos. Más claridad.</p><span></span>
+        <p>Un objetivo, una investigación, mejores decisiones.</p><span></span>
     </div>
     <section class="how-section section-wrap" id="productos" aria-labelledby="how-title">
         <p class="landing-section-eyebrow">EXPLORA SARELA</p>
-        <h2 id="how-title">Tres formas de cuidar tu dinero.</h2>
-        <p class="landing-section-lead">Empieza entendiendo tus gastos y descubre recursos gratuitos para tomar mejores decisiones.</p>
+        <h2 id="how-title">Conoce los primeros agentes de Sarela.</h2>
+        <p class="landing-section-lead">Vivienda llega primero; otros especialistas se incorporarán progresivamente.</p>
         <div class="steps-grid">
             <article class="step"><span class="step-icon"><app-icon name="user" [size]="30" /></span><span
                     class="step-index">01</span>
-                <h3>Mis finanzas</h3>
-                <p>Revisa los gastos detectados y organízalos por comercio y categoría.</p>
+                <h3>Sarela Vivienda</h3>
+                <p>Estima tu presupuesto de compra e investiga opciones inmobiliarias. Disponible en beta técnica.</p>
                 <a class="landing-card-link" href="/mis-finanzas.html" aria-label="Conocer Mis Finanzas">Conocer Mis Finanzas <span aria-hidden="true">→</span></a>
             </article>
             <article class="step"><span class="step-icon"><app-icon name="mail" [size]="30" /></span><span
                     class="step-index">02</span>
-                <h3>Suscripciones</h3>
-                <p>Aprende a identificar tus pagos recurrentes y calcula cuánto representan al año.</p>
+                <h3>Sarela Gastos</h3>
+                <p>Revisa movimientos y categorías. Las funciones de Gmail requieren consentimiento adicional.</p>
                 <a class="landing-card-link" href="/suscripciones.html" aria-label="Explorar Suscripciones">Explorar Suscripciones <span aria-hidden="true">→</span></a>
             </article>
             <article class="step"><span class="step-icon"><app-icon name="bars" [size]="30" /></span><span
                     class="step-index">03</span>
-                <h3>Calculadoras</h3>
-                <p>Calcula tu presupuesto, tus gastos pequeños y el costo de tus suscripciones.</p>
+                <h3>Sarela Auto y Deudas</h3>
+                <p>Próximamente: decisiones de compra de autos y análisis de obligaciones financieras.</p>
                 <a class="landing-card-link" href="/calculadoras.html" aria-label="Usar calculadoras gratuitas">Usar calculadoras <span aria-hidden="true">→</span></a>
             </article>
         </div>
@@ -67,12 +66,12 @@
         <div class="landing-process-heading">
             <p class="landing-section-eyebrow">SIN COMPLICACIONES</p>
             <h2 id="process-title">Cómo funciona Sarela</h2>
-            <p class="landing-section-lead">Inicia sesión y decide si quieres conectar Gmail. Son permisos diferentes.</p>
+            <p class="landing-section-lead">Inicia sesión, elige un agente y solicita una investigación. Gmail solo se solicita para las funciones que lo necesitan.</p>
         </div>
         <div class="landing-process-grid">
             <div><span>01</span><h3>Entra con Google</h3><p>Crea tu espacio financiero personal.</p></div>
-            <div><span>02</span><h3>Conecta Gmail si quieres</h3><p>Autoriza la lectura para identificar notificaciones financieras compatibles.</p></div>
-            <div><span>03</span><h3>Revisa tus gastos</h3><p>Consulta los movimientos reconocidos por comercio y categoría.</p></div>
+            <div><span>02</span><h3>Elige un agente</h3><p>Vivienda no requiere Gmail. Gastos puede solicitarlo por separado y con tu consentimiento.</p></div>
+            <div><span>03</span><h3>Revisa resultados</h3><p>Consulta estimaciones y fuentes con límites claramente identificados.</p></div>
         </div>
         <p class="flow-note"><app-icon name="info" [size]="21" /><span>Conectarlo es opcional. Google concede acceso de lectura al buzón para identificar notificaciones financieras compatibles; no hay conexión bancaria directa ni garantía de que todos los gastos aparezcan.</span></p>
         <a class="landing-inline-link" href="/como-funciona.html">Conocer el funcionamiento y los límites <span aria-hidden="true">→</span></a>
