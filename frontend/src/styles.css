@@ -728,3 +728,10 @@ app-landing .landing-learn-card>img{height:160px}
 app-landing .landing-learn-card h3{font-size:21px}
 app-landing .landing-footer nav{gap:12px 18px;flex-wrap:wrap}
 }
+/* Responsive ledger: grid items with wide tables must shrink inside a scroll container. */
+@media (max-width:650px){
+  body .app .sarela-ledger-content{grid-template-columns:minmax(0,1fr);min-width:0;max-width:100%}
+  body .app .sarela-ledger-content > .panel{min-width:0;max-width:100%}
+  body .app .sarela-ledger-table-scroll{width:100%;max-width:100%;min-width:0;overflow-x:auto}
+  body .app .sarela-ledger-heading-actions .sarela-sync-chip{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+}
