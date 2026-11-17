@@ -103,3 +103,9 @@ main:focus { outline: 0; }
 .import-counts dt{font-size:.8rem;color:#52665d}.import-counts dd{margin:.3rem 0;font-size:1.5rem;font-weight:700}
 .import-notice{padding:1rem;line-height:1.6}.gmail-review li{overflow-wrap:anywhere;margin:.7rem 0}
 @media(max-width:600px){.import-counts{grid-template-columns:repeat(2,minmax(0,1fr))}.gmail-consent,.gmail-job,.gmail-review,.privacy-actions{padding:1rem}}
+
+/* Agent catalog staging: existing expenses UI is intentionally kept intact. */
+.agent-coming-soon{max-width:800px;background:#fff;border:1px solid #dce9df;border-radius:18px;padding:clamp(24px,4vw,48px);margin:14px auto 40px}
+.agent-coming-soon h1{font-size:clamp(26px,3vw,40px);margin:0 0 16px}
+.agent-coming-soon p{color:#567060;line-height:1.7}
+.agent-coming-soon .primary{margin-top:17px}
