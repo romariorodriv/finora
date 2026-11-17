@@ -5,7 +5,7 @@
     <div class="auth-wordmark"><span class="finora-brand-ring" aria-hidden="true"></span><span>sarela</span></div>
     <p class="eyebrow">TU DINERO, MÁS CLARO</p>
     <h1>Tu dinero,<br>más claro.</h1>
-    <p>Organiza los movimientos que llegan a tu Gmail y entiende tus gastos sin hacerlo a mano.</p>
+    <p>Encuentra agentes que investigan opciones para que tomes mejores decisiones con tu dinero.</p>
     <div class="auth-steps"><div><app-icon name="wallet" /><span>Confirma tu saldo</span></div><div><app-icon name="calendar" /><span>Anticipa tus pagos</span></div><div><app-icon name="spark" /><span>Decide con claridad</span></div></div>
     <small class="auth-footnote"><app-icon name="lock" [size]="14" /> Tu espacio financiero personal.</small>
   </div>
@@ -33,9 +33,9 @@
 <a class="skip-link" href="#main-content" *ngIf="auth.user">Ir al contenido</a>
 <div *ngIf="auth.user" class="app sarela-home-shell" [class.sarela-home-active]="view === 'dashboard'">
   <aside class="sidebar">
-    <button class="logo finora-app-logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al inicio"><span class="finora-app-ring" aria-hidden="true"></span><span>sarela</span></button>
+    <button class="logo finora-app-logo" type="button" (click)="go('agents')" aria-label="Sarela, ir al inicio"><span class="finora-app-ring" aria-hidden="true"></span><span>sarela</span></button>
     <p class="sidebar-caption">TU ESPACIO</p>
-    <nav aria-label="Navegación principal"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Inicio</span></button>
+    <nav aria-label="Navegación principal"><button type="button" [class.active]="view === 'agents'" [attr.aria-current]="view === 'agents' ? 'page' : null" (click)="go('agents')"><app-icon name="grid" /><span>Agentes</span></button><button type="button" [class.active]="view === 'housing'" (click)="go('housing')"><app-icon name="grid" /><span>Vivienda</span></button><button type="button" [class.active]="view === 'auto'" (click)="go('auto')"><app-icon name="grid" /><span>Auto</span></button><button type="button" [class.active]="view === 'debts'" (click)="go('debts')"><app-icon name="wallet" /><span>Deudas</span></button><button type="button" [class.active]="view === 'dashboard'" (click)="go('dashboard')"><app-icon name="wallet" /><span>Gastos</span></button>
       <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>Movimientos</span></button>
       <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>Conexión Gmail</span></button>
       <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>Tu opinión</span></button></nav>
@@ -44,11 +44,25 @@
   </aside>
   <main id="main-content" tabindex="-1">
     <header class="topbar">
-      <button class="mobile-brand logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al resumen"><span class="brand">S</span><span>Sarela.</span></button>
-      <div class="breadcrumb">Mi espacio <span>/</span><b>{{ view === 'dashboard' ? 'Resumen' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conexión Gmail' : view === 'admin' ? 'Administración' : 'Tu opinión' }}</b></div>
-      <div class="topbar-actions"><button class="ghost compact admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()" aria-label="Abrir administración"><app-icon name="shield" [size]="17" /><span>Administrar</span></button><button class="connection-pill" type="button" (click)="go('import')"><span class="status-dot" [class.connected]="gmail?.connected"></span><span>{{ !gmail ? 'Consultando Gmail' : gmail.connected ? 'Gmail conectado' : 'Gmail sin conectar' }}</span><app-icon name="down" [size]="14" /></button><div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div><button class="mobile-logout" type="button" aria-label="Cerrar sesión" (click)="logout()"><app-icon name="logout" [size]="18" /></button></div>
+      <button class="mobile-brand logo" type="button" (click)="go('agents')" aria-label="Sarela, ir al inicio"><span class="brand">S</span><span>Sarela.</span></button>
+      <div class="breadcrumb">Mi espacio <span>/</span><b>{{ view === 'agents' ? 'Agentes' : view === 'housing' ? 'Vivienda' : view === 'auto' ? 'Auto' : view === 'debts' ? 'Deudas' : view === 'dashboard' ? 'Gastos' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conexión Gmail' : view === 'admin' ? 'Administración' : 'Tu opinión' }}</b></div>
+      <div class="topbar-actions"><button class="ghost compact admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()" aria-label="Abrir administración"><app-icon name="shield" [size]="17" /><span>Administrar</span></button><button *ngIf="view === 'dashboard' || view === 'debts' || view === 'import' || view === 'movements'" class="connection-pill" type="button" (click)="go('import')"><span class="status-dot" [class.connected]="gmail?.connected"></span><span>{{ !gmail ? 'Consultando Gmail' : gmail.connected ? 'Gmail conectado' : 'Gmail sin conectar' }}</span><app-icon name="down" [size]="14" /></button><div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div><button class="mobile-logout" type="button" aria-label="Cerrar sesión" (click)="logout()"><app-icon name="logout" [size]="18" /></button></div>
     </header>
     <router-outlet></router-outlet>
+    <app-agent-hub *ngIf="view === 'agents'" (select)="go($event)"></app-agent-hub>
+    <app-housing-agent *ngIf="view === 'housing'"></app-housing-agent>
+    <section class="agent-coming-soon" *ngIf="view === 'auto'">
+      <h1>Sarela Auto</h1><p>En preparación. Aquí podrás analizar el costo real de comprar y mantener un vehículo, no solo su precio.</p>
+      <button class="primary" (click)="go('agents')">Explorar agentes</button>
+    </section>
+    <section class="agent-coming-soon" *ngIf="view === 'debts'">
+      <h1>Sarela Deudas</h1>
+      <p *ngIf="!gmail?.connected">Para analizar notificaciones financieras de Gmail, necesitarás conectar tu cuenta con autorización expresa. Todavía no analizamos deudas automáticamente.</p>
+      <p *ngIf="gmail?.connected">Gmail está conectado, pero todavía no hay un motor de análisis de deudas completo. Tus gastos y movimientos permanecen disponibles.</p>
+      <button class="primary" *ngIf="!gmail?.connected" (click)="go('import')">Conocer conexión Gmail</button>
+      <button class="primary" *ngIf="gmail?.connected" (click)="go('dashboard')">Ver mis gastos</button>
+    </section>
+
     <section class="panel import-wait" *ngIf="view==='dashboard' && waitingForImport()" role="status">
       <p class="eyebrow">TU PRIMERA IMPORTACIÓN</p><h2>{{importStatusLabel()}}</h2>
       <p>{{gmailJobError || syncResult?.message || 'Estamos comprobando el estado de la importación.'}}</p>
