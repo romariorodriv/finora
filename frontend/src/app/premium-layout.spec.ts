@@ -29,7 +29,12 @@ describe('Premium UI responsive layout in real browser viewports', () => {
         for (const view of ['dashboard','movements','import','feedback'] as const) {
           fixture.componentInstance.go(view);fixture.detectChanges();await fixture.whenStable();copyStyles();
           await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
-          expect(doc.documentElement.scrollWidth).withContext(`${view} at ${width}px`).toBeLessThanOrEqual(width+1);
+          const overflowers = Array.from(doc.querySelectorAll<HTMLElement>('body *'))
+             .filter(element => element.getBoundingClientRect().right > width + 2 && element.getBoundingClientRect().width > 0)
+             .slice(0, 12)
+             .map(element => `${element.tagName.toLowerCase()}.${String(element.className).slice(0,65)} right=${Math.round(element.getBoundingClientRect().right)}`)
+             .join(' | ');
+           expect(doc.documentElement.scrollWidth).withContext(`${view} at ${width}px; overflow: ${overflowers}`).toBeLessThanOrEqual(width+1);
           expect(win.innerWidth).toBe(width);
           const sidebar=win.getComputedStyle(doc.querySelector('.sidebar')!);
           const mobile=win.getComputedStyle(doc.querySelector('.mobile-nav')!);
