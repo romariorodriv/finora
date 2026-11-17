@@ -1,0 +1,26 @@
+name: Sarela agent pilot
+on:
+  pull_request:
+    paths:
+      - 'agents/**'
+      - '.github/workflows/sarela-agent-pilot.yml'
+  push:
+    branches:
+      - feature/sarela-financial-agent-pilot
+    paths:
+      - 'agents/**'
+      - '.github/workflows/sarela-agent-pilot.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile Python sources
+        run: python -m compileall -q agents
+      - name: Run agent unit tests
+        run: python -m unittest discover -s agents -p 'test_*.py' -v
