@@ -208,7 +208,7 @@ describe('Premium UI functional flows', () => {
   it('explains Gmail before asking Google for consent and allows skipping it', () => {
     fixture.componentInstance.go('import');fixture.componentInstance.connectGmail();fixture.detectChanges();
     expect(root().querySelector('.sarela-consent-dialog')?.textContent).toContain('solo lectura');
-    expect(root().querySelector('.gmail-consent')?.textContent).toContain('no solo de correos bancarios');
+    expect(root().querySelector('.gmail-consent')?.textContent).toContain('no solo a correos bancarios');
     expect(root().querySelector('.gmail-consent')?.textContent).toContain('90');
     expect(services.api.gmailAuthorizationUrl).not.toHaveBeenCalled();
     const skip=Array.from(root().querySelectorAll<HTMLButtonElement>('.sarela-consent-dialog button')).find(button=>button.textContent?.includes('Ahora no'))!;
