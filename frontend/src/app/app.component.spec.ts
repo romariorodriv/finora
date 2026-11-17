@@ -207,13 +207,13 @@ describe('Premium UI functional flows', () => {
 
   it('explains Gmail before asking Google for consent and allows skipping it', () => {
     fixture.componentInstance.go('import');fixture.componentInstance.connectGmail();fixture.detectChanges();
-    expect(root().querySelector('.gmail-consent')?.textContent).toContain('solo lectura');
+    expect(root().querySelector('.sarela-consent-dialog')?.textContent).toContain('solo lectura');
     expect(root().querySelector('.gmail-consent')?.textContent).toContain('no solo de correos bancarios');
     expect(root().querySelector('.gmail-consent')?.textContent).toContain('90');
     expect(services.api.gmailAuthorizationUrl).not.toHaveBeenCalled();
-    const skip=Array.from(root().querySelectorAll<HTMLButtonElement>('.gmail-consent button')).find(button=>button.textContent?.includes('Ahora no'))!;
+    const skip=Array.from(root().querySelectorAll<HTMLButtonElement>('.sarela-consent-dialog button')).find(button=>button.textContent?.includes('Ahora no'))!;
     skip.click();fixture.detectChanges();
-    expect(fixture.componentInstance.view).toBe('dashboard');
+    expect(fixture.componentInstance.view).toBe('import');
     expect(services.api.gmailAuthorizationUrl).not.toHaveBeenCalled();
   });
 
@@ -250,8 +250,8 @@ describe('Premium UI functional flows', () => {
     }));
     fixture.componentInstance.loadGmailJob();fixture.detectChanges();
     expect(fixture.componentInstance.dashboard?.expenses).toBe(testDashboard.expenses);
-    expect(root().querySelector('.import-notice')?.textContent).toContain('solo movimientos registrados');
-    expect(root().querySelector('.import-notice')?.textContent).not.toContain('al día');
+    expect(root().querySelector('.finora-home-note')?.textContent).toContain('incompletos');
+    expect(root().querySelector('.finora-home-note')?.textContent).not.toContain('al día');
   });
 
   it('warns about uninterpreted messages even when the candidate scan has finished', () => {
@@ -260,8 +260,8 @@ describe('Premium UI functional flows', () => {
       duplicatesSkipped:0,reviewRequired:1,unsupported:2,rejected:0,failed:0,retryCount:0,stale:false,hasMorePages:false
     }));
     fixture.componentInstance.loadGmailJob();fixture.detectChanges();
-    const notice=root().querySelector('.import-notice')?.textContent || '';
-    expect(notice).toContain('1 correos por revisar');
+    const notice=root().querySelector('.finora-home-note')?.textContent || '';
+    expect(notice).toContain('1 correo por revisar');
     expect(notice).toContain('2 no interpretados');
     expect(notice).toContain('no representa todo tu historial bancario');
   });
