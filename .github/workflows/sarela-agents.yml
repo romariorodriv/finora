@@ -4,9 +4,8 @@ on:
     paths:
       - 'agent_service/**'
       - 'backend/src/main/java/com/finora/app/agents/**'
-      - 'frontend/src/app/agents/**'
-      - 'frontend/src/app/app.component.*'
-      - 'frontend/src/app/landing/landing.component.html'
+      - 'frontend/src/app/**'
+      - 'frontend/src/styles.css'
       - '.github/workflows/sarela-agents.yml'
   workflow_dispatch:
 concurrency:
