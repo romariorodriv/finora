@@ -24,7 +24,7 @@ describe('Public Sarela landing and access flow', () => {
   afterEach(()=>history.replaceState({},'',previousUrl));
   it('shows the landing before access and does not request private data',()=>{
     expect(root().querySelector('app-landing')).not.toBeNull();expect(root().querySelector('.auth')).toBeNull();
-    expect(root().querySelector('h1')?.textContent).toContain('¿En qué se fue');
+    expect(root().querySelector('h1')?.textContent).toContain('Tu dinero tiene metas');
     expect(services.api.dashboard).not.toHaveBeenCalled();
     expect(root().querySelector('app-landing')?.textContent).not.toContain('S/ 3,240');
   });
