@@ -112,3 +112,11 @@ main:focus { outline: 0; }
 
 /* Keep horizontally scrollable ledgers inside the mobile viewport rather than widening the whole page. */
 @media (max-width:600px){.app main{min-width:0;overflow-x:clip}}
+
+/* Mobile ledger must keep its wide table within a scroll container, not widen the viewport. */
+@media (max-width:650px){
+  body .app .sarela-ledger-content{grid-template-columns:minmax(0,1fr);min-width:0}
+  body .app .sarela-ledger-content > .panel{min-width:0;max-width:100%}
+  body .app .sarela-ledger-table-scroll{width:100%;min-width:0;overflow-x:auto}
+  body .app .sarela-ledger-heading-actions .sarela-sync-chip{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+}
