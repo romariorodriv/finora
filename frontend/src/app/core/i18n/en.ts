@@ -660,5 +660,21 @@ export const en = {
   "Moneda inválida": "Invalid currency",
   "Categoría no válida": "Invalid category",
   "Correo o contraseña incorrectos": "Incorrect email or password",
-  "Otros comercios": "Other merchants"
+  "Otros comercios": "Other merchants",
+  "No compatible": "Unsupported",
+  "Fallido": "Failed",
+  "Recibido": "Received",
+  "Procesando": "Processing",
+  "Importado": "Imported",
+  "Rechazado": "Rejected",
+  "Estado no disponible": "Status unavailable",
+  "El remitente no está entre los admitidos. No se creó un movimiento.": "The sender is not among the supported senders. No transaction was created.",
+  "No pudimos confirmar los datos necesarios. Revisa el correo original.": "We could not confirm the required data. Review the original email.",
+  "El mensaje supera el tamaño admitido y requiere revisión.": "The message exceeds the supported size and needs review.",
+  "No se pudo procesar tras varios intentos. Revisa el correo original.": "Processing failed after several attempts. Review the original email.",
+  "Ocurrió un error al procesar el mensaje. Puedes volver a actualizar.": "An error occurred while processing the message. You can update again.",
+  "El formato de este correo no es compatible. No se creó un movimiento.": "This email format is not supported. No transaction was created.",
+  "Revisa el correo original en Gmail. Este registro no confirma un gasto.": "Review the original email in Gmail. This record does not confirm an expense.",
+  "En movimientos de Gmail, la fecha corresponde a la recepción del correo, no necesariamente a la fecha bancaria.": "For Gmail transactions, the date is the email receipt date, not necessarily the bank transaction date.",
+  "Los correos reenviados desde una dirección personal pueden quedar pendientes por su remitente.": "Emails forwarded from a personal address may remain pending because of their sender."
 } as const satisfies Record<keyof typeof es, string>;

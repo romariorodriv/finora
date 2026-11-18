@@ -134,7 +134,7 @@
         <div>
           <p class="eyebrow">{{ 'TUS FINANZAS, EN ORDEN' | t }}</p>
           <h1>{{ 'Tus movimientos' | t }} <span aria-hidden="true" class="sarela-heading-spark">✧</span></h1>
-          <p>{{ 'Consulta y analiza tus gastos, compras, pagos y otros movimientos registrados.' | t }}</p>
+          <p>{{ 'Consulta y analiza tus gastos, compras, pagos y otros movimientos registrados.' | t }}</p><p class="section-copy">{{ 'En movimientos de Gmail, la fecha corresponde a la recepción del correo, no necesariamente a la fecha bancaria.' | t }}</p>
         </div>
         <div class="sarela-ledger-heading-actions">
           <span class="sarela-sync-chip" *ngIf="gmail?.connected"><app-icon name="check" [size]="16" /> {{ 'Gmail conectado · {0}' | t: [lastSyncLabel()] }}</span>
@@ -261,7 +261,7 @@
         <button class="ghost" (click)="go('dashboard')">{{ 'Ver resumen registrado' | t }}</button>
       </section>
       <p class="form-error" role="alert" *ngIf="gmailJobError">{{ lang.errorText(gmailJobError) }} <button class="ghost" (click)="loadGmailJob()">{{ 'Reintentar consulta' | t }}</button></p>
-      <section class="panel gmail-review" *ngIf="gmailReview as review"><h3>{{ 'Correos pendientes o no compatibles' | t }}</h3><p>{{ 'Consulta el correo original en Gmail para revisar su información. No se han inventado movimientos para estos casos.' | t }}</p><ul><li *ngFor="let item of review.items">{{ item.subject || lang.t('Sin asunto') }} · {{ item.status | t }} · {{ importDate(item.receivedAt) }}</li></ul><p *ngIf="!review.items.length">{{ 'No hay correos pendientes en esta página.' | t }}</p><button class="ghost" [disabled]="review.page===0" (click)="loadGmailReview(review.page-1)">{{ 'Anterior' | t }}</button><button class="ghost" [disabled]="review.page+1>=review.totalPages" (click)="loadGmailReview(review.page+1)">{{ 'Siguiente' | t }}</button></section>
+      <section class="panel gmail-review" *ngIf="gmailReview as review"><h3>{{ 'Correos pendientes o no compatibles' | t }}</h3><p>{{ 'Consulta el correo original en Gmail para revisar su información. No se han inventado movimientos para estos casos.' | t }}</p><p>{{ 'Los correos reenviados desde una dirección personal pueden quedar pendientes por su remitente.' | t }}</p><ul><li *ngFor="let item of review.items">{{ item.subject || lang.t('Sin asunto') }} · {{ gmailReviewLabel(item.status) }} · {{ importDate(item.receivedAt) }}<small>{{ gmailReviewReason(item.reason, item.status) }}</small></li></ul><p *ngIf="!review.items.length">{{ 'No hay correos pendientes en esta página.' | t }}</p><button class="ghost" [disabled]="review.page===0" (click)="loadGmailReview(review.page-1)">{{ 'Anterior' | t }}</button><button class="ghost" [disabled]="review.page+1>=review.totalPages" (click)="loadGmailReview(review.page+1)">{{ 'Siguiente' | t }}</button></section>
       <section class="panel privacy-actions"><h3>{{ 'Tus datos' | t }}</h3><p>{{ 'Desconectar Gmail conserva los movimientos ya importados. Puedes eliminar definitivamente tu cuenta de Sarela, tus movimientos y la conexión Gmail de manera automática. Si vuelves en el futuro, comenzarás desde cero. Las copias de seguridad se gestionan según la política de conservación.' | t }}</p><button class="ghost danger" (click)="requestDataDeletion()" [disabled]="deletingAccount">{{ deletingAccount ? lang.t('Eliminando cuenta…') : lang.t('Eliminar mi cuenta y mis datos') }}</button><p role="status" *ngIf="deletionMessage">{{ (deletionMessage | t) }}</p><a [href]="lang.language() === 'en' ? '/en-eliminar-datos.html' : '/eliminar-datos.html'" target="_blank" rel="noopener">{{ 'Cómo se tramita la eliminación' | t }}</a></section>
       <div class="connection-benefits"><article><app-icon name="search" /><h3>{{ 'Menos trabajo manual' | t }}</h3><p>{{ 'Encuentra movimientos en tus notificaciones bancarias.' | t }}</p></article><article><app-icon name="refresh" /><h3>{{ 'A tu ritmo' | t }}</h3><p>{{ 'Actualiza tus movimientos cuando lo necesites.' | t }}</p></article><article><app-icon name="shield" /><h3>{{ 'Tú tienes el control' | t }}</h3><p>{{ 'Puedes desconectar tu cuenta desde esta pantalla.' | t }}</p></article></div>
       <div class="update-summary" *ngIf="syncResult && (syncResult.status==='COMPLETED' || syncResult.status==='PARTIAL')">
@@ -331,7 +331,7 @@
 <aside class="category-drawer" *ngIf="selectedCategory" appFocusTrap role="dialog" aria-modal="true" [attr.aria-label]="'Detalle de categoria' | t">
   <button class="drawer-close" type="button" [attr.aria-label]="'Cerrar detalle de categoría' | t" (click)="closeCategory()"><app-icon name="close" /></button>
   <p class="eyebrow dark">{{ 'DETALLE DE CATEGORÍA' | t }}</p>
-  <h2>{{ lang.language() === 'es' ? selectedCategory.label : lang.t(selectedCategory.macroCategory) }}</h2>
+  <h2>{{ categoryLabel(selectedCategory.label) }}</h2>
   <strong>{{ '{0} este mes' | t: [money(selectedCategory.total)] }}</strong>
   <h3>{{ 'Distribución' | t }}</h3>
   <div class="subcategory-row" *ngFor="let item of selectedCategory.subcategories">

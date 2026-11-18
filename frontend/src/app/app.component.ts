@@ -408,7 +408,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   categoryDistribution(): CategorySpendingPoint[] {
-    return calculateMacroCategoryDistribution(this.dashboard?.macroCategories, this.chartColors).map(item => ({...item, name: this.lang.language() === 'es' ? item.name : this.lang.t(item.macroCategory || item.name)}));
+    return calculateMacroCategoryDistribution(this.dashboard?.macroCategories, this.chartColors).map(item => ({...item, name: this.categoryLabel(item.name)}));
   }
 
   merchantDistribution(): CategorySpendingPoint[] {
@@ -750,6 +750,28 @@ export class AppComponent implements OnInit, OnDestroy {
   categoryLabel(name: string): string {
     const defaults = ['Alimentacion','Alimentación','Transporte','Gasolina','Salud','Servicios','Suscripciones','Otros','Sin categoría','ALIMENTACION','TRANSPORTE','SALUD','SERVICIOS','SUSCRIPCIONES','OTROS','UNCATEGORIZED'];
     return defaults.includes(name) ? this.lang.t(name) : name;
+  }
+
+  gmailReviewLabel(status: string): string {
+    const labels: Record<string, string> = {
+      REVIEW_REQUIRED: 'Por revisar', IGNORED: 'No compatible', FAILED: 'Fallido',
+      RECEIVED: 'Recibido', PROCESSING: 'Procesando', IMPORTED: 'Importado', REJECTED: 'Rechazado'
+    };
+    return this.lang.t(labels[status] || 'Estado no disponible');
+  }
+
+  gmailReviewReason(reason: string | undefined, status: string): string {
+    const reasons: Record<string, string> = {
+      SENDER_NOT_TRUSTED: 'El remitente no está entre los admitidos. No se creó un movimiento.',
+      AMBIGUOUS_MESSAGE: 'No pudimos confirmar los datos necesarios. Revisa el correo original.',
+      MESSAGE_TOO_LARGE: 'El mensaje supera el tamaño admitido y requiere revisión.',
+      PROCESSING_REVIEW_REQUIRED: 'No se pudo procesar tras varios intentos. Revisa el correo original.',
+      PROCESSING_ERROR: 'Ocurrió un error al procesar el mensaje. Puedes volver a actualizar.'
+    };
+    const fallback = status === 'IGNORED'
+      ? 'El formato de este correo no es compatible. No se creó un movimiento.'
+      : 'Revisa el correo original en Gmail. Este registro no confirma un gasto.';
+    return this.lang.t(reasons[reason || ''] || fallback);
   }
 
   importMessage(job: GmailSyncResponse): string {

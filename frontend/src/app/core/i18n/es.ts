@@ -659,5 +659,21 @@ export const es = {
   "Moneda inválida": "Moneda inválida",
   "Categoría no válida": "Categoría no válida",
   "Correo o contraseña incorrectos": "Correo o contraseña incorrectos",
-  "Otros comercios": "Otros comercios"
+  "Otros comercios": "Otros comercios",
+  "No compatible": "No compatible",
+  "Fallido": "Fallido",
+  "Recibido": "Recibido",
+  "Procesando": "Procesando",
+  "Importado": "Importado",
+  "Rechazado": "Rechazado",
+  "Estado no disponible": "Estado no disponible",
+  "El remitente no está entre los admitidos. No se creó un movimiento.": "El remitente no está entre los admitidos. No se creó un movimiento.",
+  "No pudimos confirmar los datos necesarios. Revisa el correo original.": "No pudimos confirmar los datos necesarios. Revisa el correo original.",
+  "El mensaje supera el tamaño admitido y requiere revisión.": "El mensaje supera el tamaño admitido y requiere revisión.",
+  "No se pudo procesar tras varios intentos. Revisa el correo original.": "No se pudo procesar tras varios intentos. Revisa el correo original.",
+  "Ocurrió un error al procesar el mensaje. Puedes volver a actualizar.": "Ocurrió un error al procesar el mensaje. Puedes volver a actualizar.",
+  "El formato de este correo no es compatible. No se creó un movimiento.": "El formato de este correo no es compatible. No se creó un movimiento.",
+  "Revisa el correo original en Gmail. Este registro no confirma un gasto.": "Revisa el correo original en Gmail. Este registro no confirma un gasto.",
+  "En movimientos de Gmail, la fecha corresponde a la recepción del correo, no necesariamente a la fecha bancaria.": "En movimientos de Gmail, la fecha corresponde a la recepción del correo, no necesariamente a la fecha bancaria.",
+  "Los correos reenviados desde una dirección personal pueden quedar pendientes por su remitente.": "Los correos reenviados desde una dirección personal pueden quedar pendientes por su remitente."
 } as const;

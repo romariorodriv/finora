@@ -102,4 +102,45 @@ describe('Sarela ES/EN integration', () => {
     expect(lang.text('El 45% de tus gastos se concentro en Mi comercio.')).toBe('45% of your spending was at Mi comercio.');
   });
 
+  it('renders real catalog IDs as translated labels while sending the original ID to category detail', () => {
+    const {fixture,services,lang,root}=setup();
+    expect(fixture.componentInstance.categoryDistribution()[0].macroCategory).toBe('CAT_7');
+    expect(fixture.componentInstance.categoryDistribution()[0].name).toBe('Suscripciones');
+    lang.setLanguage('en');fixture.detectChanges();
+    expect(root.querySelector('.finora-home-category-name')?.textContent).toBe('Subscriptions');
+    (root.querySelector('.finora-home-category-list button') as HTMLButtonElement).click();fixture.detectChanges();
+    expect(services.api.categoryDetail).toHaveBeenCalledWith('CAT_7');
+    expect(root.querySelector('.category-drawer h2')?.textContent).toBe('Subscriptions');
+    expect(root.textContent).not.toContain('CAT_7');
+    lang.setLanguage('es');fixture.detectChanges();
+    expect(root.querySelector('.category-drawer h2')?.textContent).toBe('Suscripciones');
+  });
+  it('preserves custom category labels, totals and uncategorized keys from the backend', () => {
+    const {fixture,lang}=setup();lang.setLanguage('en');const c=fixture.componentInstance;
+    c.dashboard={...c.dashboard!,macroCategories:[
+      {macroCategory:'CAT_23',label:'Viaje a Cusco',total:45.50,percentage:75},
+      {macroCategory:'UNCATEGORIZED',label:'Sin categoría',total:15.50,percentage:25}
+    ]};
+    const categories=c.categoryDistribution();
+    expect(categories.map(item=>item.name)).toEqual(['Viaje a Cusco','Uncategorized']);
+    expect(categories.map(item=>item.macroCategory)).toEqual(['CAT_23','UNCATEGORIZED']);
+    expect(categories.map(item=>item.value)).toEqual([45.50,15.50]);
+  });
+  it('explains pending and unsupported emails in both languages without exposing internal reason codes', () => {
+    const {fixture,lang,root}=setup();const c=fixture.componentInstance;
+    c.go('import');c.gmailReview={page:0,total:2,totalPages:1,items:[
+      {id:1,subject:'Mi correo original',status:'REVIEW_REQUIRED',reason:'SENDER_NOT_TRUSTED'},
+      {id:2,subject:'Otra notificación',status:'IGNORED'}
+    ]};lang.setLanguage('en');fixture.detectChanges();
+    const review=root.querySelector('.gmail-review')!;
+    expect(review.textContent).toContain('The sender is not among the supported senders');
+    expect(review.textContent).toContain('This email format is not supported');
+    expect(review.textContent).toContain('Mi correo original');
+    expect(review.textContent).not.toContain('SENDER_NOT_TRUSTED');
+    lang.setLanguage('es');fixture.detectChanges();
+    expect(review.textContent).toContain('El remitente no está entre los admitidos');
+    expect(c.gmailReviewReason('FUTURE_REASON','REVIEW_REQUIRED')).toContain('no confirma un gasto');
+    expect(c.gmailReviewLabel('FUTURE_STATUS')).toBe('Estado no disponible');
+  });
+
 });
