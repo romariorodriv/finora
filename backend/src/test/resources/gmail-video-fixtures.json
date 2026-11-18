@@ -1,0 +1,7 @@
+[
+  {"id":"fictional-purchase","sender":"notificaciones@notificacionesbcp.com.pe","subject":"Realizaste un consumo","body":"Realizaste un consumo de S/ 32.90 con tu Tarjeta de Débito BCP en DLC*Spotify.","receivedAt":"2026-11-18T15:00:00Z","amount":"32.90","currency":"PEN","merchant":"Spotify","type":"EXPENSE","parserCategory":"Suscripciones","expected":"IMPORTED_OR_PENDING_CATEGORY"},
+  {"id":"fictional-rejected","sender":"notificaciones@notificacionesbcp.com.pe","subject":"Se rechazó tu compra","body":"Monto: S/ 32.90\nNombre del comercio: DLC*Spotify\nMotivo: Fondos insuficientes","receivedAt":"2026-11-18T15:00:00Z","amount":"32.90","currency":"PEN","merchant":"Spotify","type":"EXPENSE","parserCategory":"Suscripciones","expected":"REJECTED"},
+  {"id":"fictional-ambiguous","sender":"notificaciones@notificacionesbcp.com.pe","subject":"Constancia de transferencia entre mis cuentas","body":"Monto no disponible","receivedAt":"2026-11-18T15:00:00Z","expected":"REVIEW_REQUIRED"},
+  {"id":"fictional-promotion","sender":"notificaciones@notificacionesbcp.com.pe","subject":"Oferta de compra","body":"Compra tu SOAT y participa por S/ 1000","receivedAt":"2026-11-18T15:00:00Z","expected":"IGNORED"},
+  {"id":"fictional-forward","sender":"demo@example.test","subject":"BCP consumo","body":"Realizaste un consumo de S/ 32.90 con tu Tarjeta de Débito BCP en DLC*Spotify.","receivedAt":"2026-11-18T15:00:00Z","expected":"UNSUPPORTED_SENDER_BODY_NOT_READ"}
+]

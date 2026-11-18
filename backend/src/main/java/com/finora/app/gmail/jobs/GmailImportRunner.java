@@ -23,7 +23,16 @@ public class GmailImportRunner {
    var page=gmail.search(token,query,claim.nextPageToken);
    for(var ref:page.messages()){
     jobs.heartbeat(userId,claim.runId,claim.leaseToken);
-    try{messages.process(claim,gmail.getMessage(token,ref.id()));}
+    try{
+     var metadata=gmail.getMessageMetadata(token,ref.id());
+     if(GmailMessageProcessor.isRecognizedNotificationSender(metadata.sender())){
+      messages.process(claim,gmail.getMessage(token,ref.id()));
+     }else{
+      // Do not inspect unknown bodies just to decide they are unsupported.
+      // Keep an explicit review record: metadata alone cannot classify the content.
+      messages.processMetadata(claim,metadata);
+     }
+    }
     catch(GoogleGmailClient.GmailApiException e){if(e.status==404)messages.failed(claim,ref.id());else throw e;}
     catch(ApiException e){throw e;}
     catch(Exception e){messages.failed(claim,ref.id());}

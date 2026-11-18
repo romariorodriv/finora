@@ -292,4 +292,24 @@ describe('Premium UI functional flows', () => {
     expect(c.movementError).toBe('');expect(root().textContent).toContain('Aún no hay movimientos');
   });
 
+  it('renders category insights from structured data in both languages and preserves custom labels', () => {
+    const c=fixture.componentInstance;
+    c.dashboard={...testDashboard, merchants:[], macroCategories:[{macroCategory:'CAT_7',label:'Suscripciones',total:120,percentage:100}],insightTitle:'Tu mayor categoria es Suscripciones'};
+    c.lang.setLanguage('en');fixture.detectChanges();
+    expect(c.financialInsightTitle()).toBe('Your largest spending category is Subscriptions.');
+    expect(root().textContent).not.toContain('Your largest category is Suscripciones');
+    expect(c.dashboard.expenses).toBe(testDashboard.expenses);
+    c.dashboard.macroCategories![0].label='Viaje a Cusco';
+    expect(c.financialInsightTitle()).toBe('Your largest spending category is Viaje a Cusco.');
+    c.lang.setLanguage('es');
+    expect(c.financialInsightTitle()).toBe('Tu categoría con mayor gasto es Viaje a Cusco.');
+    localStorage.removeItem('sarela.language');
+  });
+
+  it('explains metadata-only review in English without claiming that the body was processed', () => {
+    const c=fixture.componentInstance;c.lang.setLanguage('en');
+    expect(c.gmailReviewReason('UNSUPPORTED_SENDER_BODY_NOT_READ','REVIEW_REQUIRED')).toContain('The body was not read');
+    c.lang.setLanguage('es');localStorage.removeItem('sarela.language');
+  });
+
 });

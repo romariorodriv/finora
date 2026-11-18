@@ -72,4 +72,28 @@ class GoogleGmailClientTest {
     assertFalse(tokens.toString().contains("rotated-refresh"));
   }
 
+  @Test void metadataRequestsOnlySenderSubjectAndIdentifiersWithoutBody() throws Exception {
+    when(response.statusCode()).thenReturn(200);
+    when(response.body()).thenReturn("{\"threadId\":\"t\",\"internalDate\":\"1795000000000\",\"payload\":{\"headers\":[{\"name\":\"From\",\"value\":\"unknown@example.test\"},{\"name\":\"Subject\",\"value\":\"Compra\"}],\"body\":{\"data\":\"c2VjcmV0\"}}}");
+    var message=client.getMessageMetadata("access","m");assertNull(message.plainText());assertEquals("Compra",message.subject());
+    var request=org.mockito.ArgumentCaptor.forClass(HttpRequest.class);
+    verify(http).send(request.capture(),org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<String>>any());
+    String query=java.net.URLDecoder.decode(request.getValue().uri().getRawQuery(),java.nio.charset.StandardCharsets.UTF_8);
+    assertTrue(query.contains("format=metadata"));assertTrue(query.contains("metadataHeaders=From&metadataHeaders=Subject"));
+    assertTrue(query.contains("fields=id,threadId,internalDate,payload(headers)"));assertFalse(query.contains("body"));
+  }
+  @Test void fullMessageKeepsNestedInlineBodyButSkipsTextAttachment() throws Exception {
+    when(response.statusCode()).thenReturn(200);
+    when(response.body()).thenReturn("""
+      {"threadId":"t","internalDate":"1795000000000","payload":{"mimeType":"multipart/mixed","headers":[],"parts":[
+      {"mimeType":"text/plain","filename":"private.txt","body":{"data":"c2VjcmV0"}},
+      {"mimeType":"multipart/alternative","parts":[{"mimeType":"text/plain","body":{"data":"Uy8gMzIuOTA"}}]}]}}
+      """);
+    assertEquals("S/ 32.90",client.getMessage("access","m").plainText());
+    var request=org.mockito.ArgumentCaptor.forClass(HttpRequest.class);
+    verify(http).send(request.capture(),org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<String>>any());
+    String query=java.net.URLDecoder.decode(request.getValue().uri().getRawQuery(),java.nio.charset.StandardCharsets.UTF_8);
+    assertTrue(query.contains("format=full&fields="));assertTrue(query.contains("parts"));assertFalse(query.contains("raw"));
+  }
+
 }

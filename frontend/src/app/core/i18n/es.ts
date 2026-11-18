@@ -620,6 +620,8 @@ export const es = {
   "Hay movimientos que Sarela todavia puede clasificar mejor.": "Hay movimientos que Sarela todavia puede clasificar mejor.",
   "Tu mayor comercio fue {0}": "Tu mayor comercio fue {0}",
   "El {0}% de tus gastos se concentro en {1}.": "El {0}% de tus gastos se concentro en {1}.",
+  "Tu categoría con mayor gasto es {0}.": "Tu categoría con mayor gasto es {0}.",
+  "No se leyó el cuerpo: remitente no admitido. Revisa el original en Gmail; no se creó un movimiento.": "No se leyó el cuerpo: remitente no admitido. Revisa el original en Gmail; no se creó un movimiento.",
   "Tu mayor categoria es {0}": "Tu mayor categoria es {0}",
   "Representa el {0}% de tus gastos de este mes.": "Representa el {0}% de tus gastos de este mes.",
   "Conecta Gmail para iniciar la importación.": "Conecta Gmail para iniciar la importación.",

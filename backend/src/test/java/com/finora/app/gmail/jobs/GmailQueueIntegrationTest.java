@@ -40,6 +40,9 @@ class GmailQueueIntegrationTest {
   token="Bearer "+jwt.issue(owner.id,owner.email);otherToken="Bearer "+jwt.issue(other.id,other.email);
   var c=new GmailConnection();c.userId=owner.id;c.gmailAddress=owner.email;c.encryptedAccessToken=cipher.encrypt("old-access");c.encryptedRefreshToken=cipher.encrypt("refresh-secret");c.accessTokenExpiresAt=Instant.now().minusSeconds(60);
   connection=connections.saveAndFlush(c);
+  when(google.getMessageMetadata(anyString(),anyString())).thenAnswer(invocation->{
+   var m=purchase(invocation.getArgument(1));return new GmailClient.Message(m.id(),m.threadId(),m.sender(),m.subject(),null,m.receivedAt());
+  });
  }
  void validToken(){when(google.refresh(anyString())).thenReturn(new GmailClient.Tokens("access-ok","refresh-secret",3600));}
  GmailClient.Message purchase(String id){return new GmailClient.Message(id,"thread-"+id,"notificaciones@notificacionesbcp.com.pe","Realizaste un consumo",
@@ -71,7 +74,7 @@ class GmailQueueIntegrationTest {
  @Test void unsupportedAndAmbiguousMessagesNeverInventTransactions() {
   validToken();
   when(google.search(anyString(),anyString(),isNull())).thenReturn(new GmailClient.Page(List.of(new GmailClient.MessageRef("promo","t"),new GmailClient.MessageRef("ambiguous","t")),null));
-  when(google.getMessage(anyString(),eq("promo"))).thenReturn(new GmailClient.Message("promo","t","promociones@example.test","Oferta","Compra hoy",Instant.now()));
+  when(google.getMessage(anyString(),eq("promo"))).thenReturn(new GmailClient.Message("promo","t","notificaciones@notificacionesbcp.com.pe","Oferta","Compra hoy",Instant.now()));
   when(google.getMessage(anyString(),eq("ambiguous"))).thenReturn(new GmailClient.Message("ambiguous","t","notificaciones@notificacionesbcp.com.pe","Constancia de transferencia entre mis cuentas","Monto no disponible",Instant.now()));
   store.enqueue(owner.id);runner.runPage(owner.id);
   var result=store.status(owner.id);assertEquals(1,result.unsupported());assertEquals(1,result.reviewRequired());assertEquals(0,result.transactionsCreated());assertTrue(ownerTransactions().isEmpty());
@@ -80,9 +83,9 @@ class GmailQueueIntegrationTest {
   validToken();
   when(google.search(anyString(),anyString(),isNull())).thenReturn(
     new GmailClient.Page(List.of(new GmailClient.MessageRef("forged-financial-message","t")),null));
-  when(google.getMessage(anyString(),eq("forged-financial-message"))).thenReturn(
+  when(google.getMessageMetadata(anyString(),eq("forged-financial-message"))).thenReturn(
     new GmailClient.Message("forged-financial-message","t","alerts@attacker.test",
-      "BCP consumo", "Realizaste un consumo de S/ 32.90 con tu Tarjeta de Débito BCP en DLC*Spotify.",Instant.now()));
+      "BCP consumo", null,Instant.now()));
   store.enqueue(owner.id);runner.runPage(owner.id);
   assertEquals(0,store.status(owner.id).transactionsCreated());
   assertEquals(1,store.status(owner.id).reviewRequired());
@@ -90,7 +93,8 @@ class GmailQueueIntegrationTest {
   var message=imported.findByUserIdAndGmailConnectionIdAndExternalMessageId(
     owner.id,connection.id,"forged-financial-message").orElseThrow();
   assertEquals(ImportedMessage.Status.REVIEW_REQUIRED,message.processingStatus);
-  assertEquals("SENDER_NOT_TRUSTED",message.errorCode);
+  assertEquals("UNSUPPORTED_SENDER_BODY_NOT_READ",message.errorCode);
+  verify(google,never()).getMessage(anyString(),eq("forged-financial-message"));
  }
  @Test void missingGoogleDateIsReviewableAndNeverDefaultsToToday() {
   validToken();when(google.search(anyString(),anyString(),isNull())).thenReturn(new GmailClient.Page(List.of(new GmailClient.MessageRef("date-missing","t")),null));
@@ -244,6 +248,43 @@ class GmailQueueIntegrationTest {
   mvc.perform(delete("/api/v1/integrations/gmail").header("Authorization",token)).andExpect(status().isOk());
   for(var c:connections.findByUserId(owner.id)){assertEquals(GmailConnection.Status.DISCONNECTED,c.status);assertNull(c.encryptedRefreshToken);assertNull(c.encryptedAccessToken);}
   assertEquals(GmailConnection.Status.CONNECTED,connections.findById(foreign.id).orElseThrow().status);
+ }
+
+ @Test void unknownPromotionAndAmbiguousSubjectAreReviewableWithoutReadingBodies() {
+  validToken();
+  when(google.search(anyString(),anyString(),isNull())).thenReturn(new GmailClient.Page(List.of(
+    new GmailClient.MessageRef("unknown-promo","t"),new GmailClient.MessageRef("unknown-ambiguous","t")),null));
+  for(String id:List.of("unknown-promo","unknown-ambiguous")) {
+   when(google.getMessageMetadata(anyString(),eq(id))).thenReturn(new GmailClient.Message(id,"t","unknown@example.test",id.equals("unknown-promo")?"Compra hoy":"Pago pendiente",null,Instant.now()));
+  }
+  store.enqueue(owner.id);runner.runPage(owner.id);
+  assertEquals(2,store.status(owner.id).reviewRequired());assertTrue(ownerTransactions().isEmpty());
+  verify(google,never()).getMessage(anyString(),anyString());
+ }
+ @Test void amountOnlyInBodyStillCreatesExactFinancialMovement() {
+  validToken();
+  when(google.search(anyString(),anyString(),isNull())).thenReturn(new GmailClient.Page(List.of(new GmailClient.MessageRef("body-only","t")),null));
+  var m=purchase("body-only");
+  when(google.getMessage(anyString(),eq("body-only"))).thenReturn(m);
+  store.enqueue(owner.id);runner.runPage(owner.id);
+  var rows=ownerTransactions();assertEquals(1,rows.size());
+  assertEquals(0,new java.math.BigDecimal("32.90").compareTo(rows.get(0).amount));assertEquals("PEN",rows.get(0).currency);
+  var order=inOrder(google);order.verify(google).getMessageMetadata("access-ok","body-only");order.verify(google).getMessage("access-ok","body-only");
+ }
+ @Test void transientMetadataFailureRetriesWithoutRequestingBodyOrRecordingUnsupported() {
+  validToken();
+  when(google.search(anyString(),anyString(),isNull())).thenReturn(new GmailClient.Page(List.of(new GmailClient.MessageRef("temporary","t")),null));
+  when(google.getMessageMetadata(anyString(),eq("temporary"))).thenThrow(new GoogleGmailClient.GmailApiException(503,"HTTP 503"));
+  store.enqueue(owner.id);runner.runPage(owner.id);
+  assertEquals("PENDING",store.status(owner.id).status());assertEquals(1,store.status(owner.id).retryCount());
+  assertEquals(0,store.status(owner.id).reviewRequired());verify(google,never()).getMessage(anyString(),anyString());
+ }
+ @Test void rejectedSupportedMessageIsReadButNeverCreatesExpense() {
+  validToken();
+  when(google.search(anyString(),anyString(),isNull())).thenReturn(new GmailClient.Page(List.of(new GmailClient.MessageRef("rejected-minimal","t")),null));
+  when(google.getMessage(anyString(),eq("rejected-minimal"))).thenReturn(new GmailClient.Message("rejected-minimal","t","notificaciones@notificacionesbcp.com.pe","Se rechazó tu compra","Monto: S/ 32.90. Nombre del comercio: DLC*Spotify. Fondos insuficientes",Instant.now()));
+  store.enqueue(owner.id);runner.runPage(owner.id);
+  assertEquals(1,store.status(owner.id).rejected());assertTrue(ownerTransactions().isEmpty());
  }
 
 }

@@ -621,6 +621,8 @@ export const en = {
   "Hay movimientos que Sarela todavia puede clasificar mejor.": "Some transactions could be classified more accurately by Sarela.",
   "Tu mayor comercio fue {0}": "Your largest merchant was {0}",
   "El {0}% de tus gastos se concentro en {1}.": "{0}% of your spending was at {1}.",
+  "Tu categoría con mayor gasto es {0}.": "Your largest spending category is {0}.",
+  "No se leyó el cuerpo: remitente no admitido. Revisa el original en Gmail; no se creó un movimiento.": "The body was not read: unsupported sender. Review the original in Gmail; no transaction was created.",
   "Tu mayor categoria es {0}": "Your largest category is {0}",
   "Representa el {0}% de tus gastos de este mes.": "It accounts for {0}% of your spending this month.",
   "Conecta Gmail para iniciar la importación.": "Connect Gmail to start importing.",
