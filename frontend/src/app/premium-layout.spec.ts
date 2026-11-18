@@ -1,3 +1,4 @@
+import { LanguageService, LANGUAGE_KEY } from './core/i18n/language.service';
 import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
@@ -6,10 +7,11 @@ import { AuthService } from './core/services/auth.service';
 import { premiumTestServices } from './premium.test-fixtures';
 
 describe('Premium UI responsive layout in real browser viewports', () => {
-  for (const width of [1440,1024,768,390]) {
-    it(`keeps landing, dashboard, movements, Gmail, feedback and authentication within ${width}px`, async () => {
+  for (const language of ['es','en'] as const) for (const width of [1440,1024,768,390]) {
+    it(`keeps landing, dashboard, movements, Gmail, feedback and authentication within ${width}px (${language})`, async () => {
       const services=premiumTestServices();
       TestBed.configureTestingModule({imports: [AppComponent],providers: [provideRouter([]),{provide: ApiService,useValue:services.api},{provide: AuthService,useValue:services.auth}]});
+      TestBed.inject(LanguageService).setLanguage(language);
       const fixture=TestBed.createComponent(AppComponent);fixture.detectChanges();await fixture.whenStable();
       const frame=document.createElement('iframe');frame.title=`Layout QA ${width}`;
       frame.style.cssText=`position:fixed;left:0;top:0;width:${width}px;height:1000px;border:0;visibility:hidden;pointer-events:none`;
@@ -58,7 +60,7 @@ describe('Premium UI responsive layout in real browser viewports', () => {
         expect(doc.documentElement.scrollWidth).withContext(`login at ${width}px`).toBeLessThanOrEqual(width+1);
         fixture.componentInstance.authMode='register';fixture.detectChanges();await fixture.whenStable();
         expect(doc.documentElement.scrollWidth).withContext(`register at ${width}px`).toBeLessThanOrEqual(width+1);
-      } finally { fixture.destroy();frame.remove(); }
+      } finally { fixture.destroy();frame.remove();TestBed.inject(LanguageService).setLanguage('es');localStorage.removeItem(LANGUAGE_KEY); }
     });
   }
 });
