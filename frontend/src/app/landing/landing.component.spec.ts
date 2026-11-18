@@ -117,19 +117,20 @@ describe('Public Sarela landing and access flow', () => {
     for(const image of learnImages) expect(image.getAttribute('loading')).toBe('lazy');
     expect(root().querySelectorAll('app-landing-preview').length).toBe(3);
   });
-  it('starts Google from each conversion action without requesting Gmail consent',()=>{
-    for(const selector of ['.nav-google','.hero-actions .primary','.discover-button','.final-cta .primary']) {
+  it('opens access choices from landing without immediately starting Google',()=>{
+    for (const selector of ['.nav-google','.hero-actions .primary','.discover-button','.final-cta .primary']) {
       click(selector);
-      expect(services.auth.googleStart).toHaveBeenCalled();
+      expect(root().querySelector('.google-access')).not.toBeNull();
+      expect(services.auth.googleStart).not.toHaveBeenCalled();
       expect(services.api.gmailAuthorizationUrl).not.toHaveBeenCalled();
       click('.auth-back');
     }
-    expect(services.auth.googleStart).toHaveBeenCalledTimes(4);
   });
-  it('shows a retryable access error when Google start is unavailable',()=>{
+  it('keeps Google sign-in as an explicit choice with retryable errors',()=>{
     (services.auth.googleStart as jasmine.Spy).and.returnValue(throwError(()=>new Error('Sin conexión')));
     click('.hero-actions .primary');
-    expect(root().querySelector('.google-access')).not.toBeNull();
+    click('.google-access');
+    expect(services.auth.googleStart).toHaveBeenCalledTimes(1);
     expect(fixture.componentInstance.authSubmitting).toBeFalse();
     expect(fixture.componentInstance.error).not.toBe('');
   });
