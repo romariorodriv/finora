@@ -68,6 +68,14 @@ Perfil local:
 mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
+## Acceso demo local
+
+Para probar la aplicación financiera sin credenciales Google, activa explícitamente `SARELA_DEV_LOGIN_ENABLED=true` y arranca el backend con el perfil `local`. Abre el frontend en `http://localhost:4200` y elige el acceso demo en el diálogo de acceso. El endpoint `POST /api/v1/auth/dev/login` exige una conexión loopback y un origen permitido; crea una sesión normal para `demo@sarela.invalid`. La cuenta demo es compartida entre las sesiones locales y no conecta Gmail.
+
+El acceso demo está desactivado por defecto y no debe habilitarse en despliegues públicos. Google y Gmail conservan sus flujos reales independientes.
+
+Consulta el [informe de restauración](docs/SARELA_RESTAURACION_2026_11_18.md) para el alcance, las ramas comparadas y la validación.
+
 ## Frontend
 
 Requisitos: Node 22/npm 10 o compatibles con Angular 19.
