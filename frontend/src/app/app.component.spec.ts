@@ -19,6 +19,12 @@ describe('Premium UI functional flows', () => {
     // Legacy spending tests explicitly exercise the Gastos view; Inicio now shows the agent catalog.
     fixture.componentInstance.go('dashboard');fixture.detectChanges();
   });
+  it('offers local-only demo login without requesting Google credentials', () => {
+    expect(fixture.componentInstance.localDemoAvailable).toBeTrue();
+    fixture.componentInstance.continueWithDemo(); fixture.detectChanges();
+    expect(services.auth.demoLogin).toHaveBeenCalledTimes(1);
+    expect(services.auth.googleStart).not.toHaveBeenCalled();
+  });
   it('shows the new agent catalog and opens Vivienda without requesting Gmail', () => {
     fixture.componentInstance.go('agents');fixture.detectChanges();
     expect(root().textContent).toContain('Sarela Vivienda');
