@@ -66,5 +66,6 @@ export class AdminComponent implements OnInit,OnDestroy {
    return parts.join(' · ');
   }catch{return this.lang.t('Revisa los filtros antes de confirmar.');}
  }
+ date(value:string){const date=new Date(/^\d{4}-\d{2}-\d{2}$/.test(value)?value+'T12:00:00':value);return Number.isNaN(date.valueOf())?'—':new Intl.DateTimeFormat(this.lang.locale(),{dateStyle:'medium'}).format(date);}
  money(amount:number,currency:string){if(currency==='UNK')return `${Number(amount).toLocaleString(this.lang.locale(),{minimumFractionDigits:2})} (${this.lang.t('Sin moneda registrada')})`;try{return new Intl.NumberFormat(this.lang.locale(),{style:'currency',currency}).format(amount);}catch{return `${amount} ${currency}`;}}
 }

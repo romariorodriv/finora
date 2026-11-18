@@ -27,6 +27,8 @@ describe('Sarela ES/EN integration', () => {
     expect(root.querySelector('h1')?.textContent).toContain('Where did');
     expect(root.querySelector('.nav-google')?.textContent).toContain('Continue with Google');
     expect(document.documentElement.lang).toBe('en');
+    const canonical=document.querySelector('link[rel="canonical"]');
+    if(canonical)expect(canonical.getAttribute('href')).toBe('https://sarelaapp.com/en.html');
     expect(document.title).toContain('Track your personal expenses');
     expect(localStorage.getItem(LANGUAGE_KEY)).toBe('en');
     lang.setLanguage('es');fixture.detectChanges();
@@ -88,4 +90,16 @@ describe('Sarela ES/EN integration', () => {
     const {fixture,lang,services}=setup();lang.setLanguage('en');const prompt=spyOn(window,'prompt').and.returnValue('ELIMINAR');
     fixture.componentInstance.requestDataDeletion();expect(prompt.calls.mostRecent().args[0]).toContain('Type DELETE');expect(services.api.requestDataDeletion).not.toHaveBeenCalled();
   });
+  it('keeps an in-memory language when localStorage is unavailable', () => {
+    spyOn(Storage.prototype,'getItem').and.throwError('blocked');
+    spyOn(Storage.prototype,'setItem').and.throwError('blocked');
+    const lang=TestBed.inject(LanguageService);expect(lang.language()).toBe('es');
+    expect(()=>lang.setLanguage('en')).not.toThrow();expect(lang.t('Inicio')).toBe('Home');
+  });
+  it('translates parameterized insights without changing merchant names or amounts', () => {
+    const lang=TestBed.inject(LanguageService);lang.setLanguage('en');
+    expect(lang.text('Tu mayor comercio fue Mi comercio')).toBe('Your largest merchant was Mi comercio');
+    expect(lang.text('El 45% de tus gastos se concentro en Mi comercio.')).toBe('45% of your spending was at Mi comercio.');
+  });
+
 });

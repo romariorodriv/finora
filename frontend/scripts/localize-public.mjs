@@ -19,7 +19,11 @@ function url(value) {
 function json(value) {
   if (typeof value === 'string') return translate(url(value));
   if (Array.isArray(value)) return value.map(json);
-  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k,v]) => [k, k === 'inLanguage' ? 'en' : json(v)]));
+  if (value && typeof value === 'object') {
+    const translated = Object.fromEntries(Object.entries(value).map(([k,v]) => [k, k === 'inLanguage' ? 'en' : json(v)]));
+    if (['WebSite','WebPage','FAQPage','Article','WebApplication','CollectionPage'].includes(value['@type'])) translated.inLanguage = 'en';
+    return translated;
+  }
   return value;
 }
 function script(source) {
@@ -57,7 +61,7 @@ for (const page of pages) {
   const english = parse(original); walk(english);
   const esUrl = 'https://sarelaapp.com/' + page, enUrl = 'https://sarelaapp.com/en-' + page;
   const alternates = `<link rel="alternate" hreflang="es" href="${esUrl}"><link rel="alternate" hreflang="en" href="${enUrl}"><link rel="alternate" hreflang="x-default" href="${esUrl}">`;
-  const decorate = (html, isEnglish) => html.replace('</head>', alternates + '<link rel="stylesheet" href="/language-switcher.css"><script src="/public-language.js" defer></script></head>')
+  const decorate = (html, isEnglish) => html.replace('</head>', alternates + `<meta property="og:locale" content="${isEnglish?'en_US':'es_PE'}">` + '<link rel="stylesheet" href="/language-switcher.css"><script src="/public-language.js" defer></script></head>')
     .replace('</body>', `<nav class="public-language-switcher" aria-label="${isEnglish?'Language':'Idioma'}"><a href="/${page}?lang=es" lang="es" aria-label="Español" aria-current="${!isEnglish}">ES</a><a href="/en-${page}?lang=en" lang="en" aria-label="English" aria-current="${isEnglish}">EN</a></nav></body>`);
   writeFileSync(resolve(built, page), decorate(original, false));
   writeFileSync(resolve(built, 'en-' + page), decorate(serialize(english), true));

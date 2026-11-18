@@ -658,5 +658,6 @@ export const es = {
   "Registro no encontrado.": "Registro no encontrado.",
   "Moneda inválida": "Moneda inválida",
   "Categoría no válida": "Categoría no válida",
-  "Correo o contraseña incorrectos": "Correo o contraseña incorrectos"
+  "Correo o contraseña incorrectos": "Correo o contraseña incorrectos",
+  "Otros comercios": "Otros comercios"
 } as const;

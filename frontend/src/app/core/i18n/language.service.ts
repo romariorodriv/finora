@@ -49,6 +49,20 @@ export class LanguageService {
         window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
       }
     }
+    if (window && ['/', '/en.html'].includes(window.location.pathname)) {
+      const canonical = 'https://sarelaapp.com/' + (language === 'en' ? 'en.html' : '');
+      this.document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonical);
+      this.document.querySelector('meta[property="og:url"]')?.setAttribute('content', canonical);
+      for (const script of Array.from(this.document.querySelectorAll('script[type="application/ld+json"]'))) {
+        try {
+          const data = JSON.parse(script.textContent || '{}');
+          for (const entity of data['@graph'] ?? []) if (entity['@type'] === 'WebSite') {
+            entity.inLanguage = language === 'en' ? 'en' : 'es-PE'; entity.url = canonical;
+          }
+          script.textContent = JSON.stringify(data);
+        } catch { /* unrelated malformed structured data must not block language selection */ }
+      }
+    }
     this.document.documentElement.lang = language;
     this.document.title = this.t('Sarela | Controla tus gastos personales y entiende tu dinero');
     for (const [selector, key] of [

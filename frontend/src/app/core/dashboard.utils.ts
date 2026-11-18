@@ -49,7 +49,6 @@ export function normalizeDashboard(response: DashboardResponse): DashboardRespon
 export function calculateDailySpending(daily: Record<string, number>, range: 7 | 30, locale = 'es-PE'): DailySpendingPoint[] {
   return Object.entries(daily)
     .map(([date, value]) => {
-      const [, month, day] = date.split('-').map(Number);
       return {
         date,
         label: new Intl.DateTimeFormat(locale, {day:'2-digit',month:'short'}).format(new Date(`${date}T12:00:00`)),

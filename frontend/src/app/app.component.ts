@@ -412,7 +412,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   merchantDistribution(): CategorySpendingPoint[] {
-    return calculateMerchantDistribution(this.dashboard?.merchants, this.merchantColors);
+    return calculateMerchantDistribution(this.dashboard?.merchants, this.merchantColors).map(item => ({...item, name: item.merchant === '__OTHER_MERCHANTS__' ? this.lang.t('Otros comercios') : item.name}));
   }
 
   donutStyle(items: CategorySpendingPoint[]): Record<string, string> {

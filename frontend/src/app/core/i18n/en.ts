@@ -659,5 +659,6 @@ export const en = {
   "Registro no encontrado.": "Record not found.",
   "Moneda inválida": "Invalid currency",
   "Categoría no válida": "Invalid category",
-  "Correo o contraseña incorrectos": "Incorrect email or password"
+  "Correo o contraseña incorrectos": "Incorrect email or password",
+  "Otros comercios": "Other merchants"
 } as const satisfies Record<keyof typeof es, string>;
