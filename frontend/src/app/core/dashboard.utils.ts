@@ -46,14 +46,12 @@ export function normalizeDashboard(response: DashboardResponse): DashboardRespon
   };
 }
 
-export function calculateDailySpending(daily: Record<string, number>, range: 7 | 30): DailySpendingPoint[] {
-  const monthLabels = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+export function calculateDailySpending(daily: Record<string, number>, range: 7 | 30, locale = 'es-PE'): DailySpendingPoint[] {
   return Object.entries(daily)
     .map(([date, value]) => {
-      const [, month, day] = date.split('-').map(Number);
       return {
         date,
-        label: `${String(day).padStart(2, '0')} ${monthLabels[month - 1]}`,
+        label: new Intl.DateTimeFormat(locale, {day:'2-digit',month:'short'}).format(new Date(`${date}T12:00:00`)),
         value: Number(value)
       };
     })

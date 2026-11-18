@@ -1,3 +1,6 @@
+import { inject } from '@angular/core';
+import { LanguageService } from '../core/i18n/language.service';
+import { TranslatePipe } from '../core/i18n/translate.pipe';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,8 +9,10 @@ import { IconComponent } from '../shared/icon.component';
 import { FocusTrapDirective } from '../shared/focus-trap.directive';
 import { AdminService, AdminCategory, AdminRule, AdminTx, AdminPage, AdminFilters, AdminBatch, AdminAudit, CurrencyTotal } from './admin.service';
 const emptyPage=<T>():AdminPage<T>=>({items:[],totalElements:0,totalPages:0,page:0});
-@Component({selector:'app-admin',imports:[CommonModule,FormsModule,IconComponent,FocusTrapDirective],templateUrl:'./admin.component.html',styleUrl:'./admin.component.css'})
+@Component({selector:'app-admin',imports:[TranslatePipe,CommonModule,FormsModule,IconComponent,FocusTrapDirective],templateUrl:'./admin.component.html',styleUrl:'./admin.component.css'})
 export class AdminComponent implements OnInit,OnDestroy {
+ readonly lang = inject(LanguageService);
+
  tab:'categories'|'transactions'|'rules'|'history'='categories';loading=false;error='';success='';
  catalog:AdminCategory[]=[];categoryPage=emptyPage<AdminCategory>();txPage=emptyPage<AdminTx>();rulePage=emptyPage<AdminRule>();auditPage=emptyPage<AdminAudit>();batchPage=emptyPage<AdminBatch>();totals:CurrencyTotal[]=[];
  categorySearch='';categoryActive='';ruleSearch='';selected=new Set<number>();bulkCategoryId:number|null=null;
@@ -22,7 +27,7 @@ export class AdminComponent implements OnInit,OnDestroy {
  ngOnInit(){this.refreshCatalog();this.loadCategories();}
  ngOnDestroy(){this.destroy$.next();this.destroy$.complete();}
  emptyFilters():AdminFilters{return {q:'',from:'',to:'',categoryId:null,reviewStatus:'',userId:null,uncategorized:false};}
- private run<T>(request:Observable<T>,next:(value:T)=>void){this.loading=true;this.error='';request.pipe(takeUntil(this.destroy$),finalize(()=>this.loading=false)).subscribe({next,error:e=>{this.error=e?.error?.message||'No pudimos completar la operación. Vuelve a intentarlo.';}});}
+ private run<T>(request:Observable<T>,next:(value:T)=>void){this.loading=true;this.error='';request.pipe(takeUntil(this.destroy$),finalize(()=>this.loading=false)).subscribe({next,error:e=>{this.error=this.lang.error(e);}});}
  refreshCatalog(){this.api.options().pipe(takeUntil(this.destroy$)).subscribe({next:c=>this.catalog=c,error:()=>this.error='No se pudo cargar el catálogo.'});}
  activeCategories(){return this.catalog.filter(c=>c.active);}
  categoryName(id:number|null){return this.catalog.find(c=>c.id===id)?.name||'Sin categoría';}
@@ -49,6 +54,18 @@ export class AdminComponent implements OnInit,OnDestroy {
  revert(batch:AdminBatch){this.confirmation={title:'Revertir este lote',message:'Se restaurarán las clasificaciones anteriores. Si existen cambios posteriores, el servidor rechazará toda la reversión para protegerlos.',action:()=>this.run(this.api.revertBatch(batch.id),()=>{this.success='Lote revertido.';this.loadHistory();this.refreshCatalog();})};}
  confirm(){const action=this.confirmation?.action;this.confirmation=undefined;action?.();}
  label(code:string){const labels:Record<string,string>={AUTOMATIC:'Automática',LEGACY:'Histórica',GLOBAL_RULE:'Regla global',USER_RULE:'Regla de cuenta',MANUAL_USER:'Corrección del usuario',MANUAL_ADMIN:'Corrección administrativa',PREVIEW:'Vista previa',APPLIED:'Aplicado',REVERTED:'Revertido',MANUAL_CORRECTION:'Corrección de selección',RULE_APPLY:'Aplicación de regla',CATEGORY_REASSIGN:'Reasignación',CATEGORY_CREATE:'Categoría creada',CATEGORY_UPDATE:'Categoría editada',RULE_CREATE:'Regla creada',RULE_UPDATE:'Regla editada',PREVIEW_CREATE:'Vista previa creada',CORRECTION:'Clasificación corregida',BATCH_APPLY:'Lote aplicado',BATCH_REVERT:'Lote revertido',USER_CORRECTION:'Corrección personal',ROLE_GRANT:'Permiso concedido',CATEGORY:'Categoría',RULE:'Regla',USER:'Cuenta',TRANSACTION:'Consumo',BATCH:'Lote',DATABASE_OPERATOR:'Operador de base de datos',MANUAL:'Manual',GMAIL:'Gmail',BANK_EMAIL:'Correo bancario'};return labels[code]||code;}
- scopeLabel(scope?:string){try{const f=JSON.parse(scope||'{}') as AdminFilters;return `${f.userId?'Cuenta #'+f.userId:'Todas las cuentas'} · ${f.from||'Sin fecha inicial'} → ${f.to||'Sin fecha final'} · ${f.categoryId?this.categoryName(f.categoryId):'Todas las categorías'}${f.q?' · Búsqueda: '+f.q:''}${f.reviewStatus?' · '+(f.reviewStatus==='PENDING'?'Pendientes':'Revisados'):''}${f.uncategorized?' · Solo pendientes/sin categoría':''}`;}catch{return 'Revisa los filtros antes de confirmar.';}}
- money(amount:number,currency:string){if(currency==='UNK')return `${Number(amount).toLocaleString('es-PE',{minimumFractionDigits:2})} (sin moneda registrada)`;try{return new Intl.NumberFormat('es-PE',{style:'currency',currency}).format(amount);}catch{return `${amount} ${currency}`;}}
+ scopeLabel(scope?:string){
+  try {
+   const f=JSON.parse(scope||'{}') as AdminFilters;
+   const parts=[f.userId?this.lang.t('Cuenta #{0}',[f.userId]):this.lang.t('Todas las cuentas'),
+    (f.from||this.lang.t('Sin fecha inicial'))+' → '+(f.to||this.lang.t('Sin fecha final')),
+    f.categoryId?this.categoryName(f.categoryId):this.lang.t('Todas las categorías')];
+   if(f.q)parts.push(this.lang.t('Búsqueda: {0}',[f.q]));
+   if(f.reviewStatus)parts.push(this.lang.t(f.reviewStatus==='PENDING'?'Pendientes':'Revisados'));
+   if(f.uncategorized)parts.push(this.lang.t('Solo pendientes/sin categoría'));
+   return parts.join(' · ');
+  }catch{return this.lang.t('Revisa los filtros antes de confirmar.');}
+ }
+ date(value:string){const date=new Date(/^\d{4}-\d{2}-\d{2}$/.test(value)?value+'T12:00:00':value);return Number.isNaN(date.valueOf())?'—':new Intl.DateTimeFormat(this.lang.locale(),{dateStyle:'medium'}).format(date);}
+ money(amount:number,currency:string){if(currency==='UNK')return `${Number(amount).toLocaleString(this.lang.locale(),{minimumFractionDigits:2})} (${this.lang.t('Sin moneda registrada')})`;try{return new Intl.NumberFormat(this.lang.locale(),{style:'currency',currency}).format(amount);}catch{return `${amount} ${currency}`;}}
 }

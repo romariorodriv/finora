@@ -1,28 +1,33 @@
+import { inject } from '@angular/core';
+import { LanguageService } from '../core/i18n/language.service';
+import { TranslatePipe } from '../core/i18n/translate.pipe';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { IconComponent } from '../shared/icon.component';
 @Component({
- selector: 'app-landing-preview', imports: [IconComponent],
+ selector: 'app-landing-preview', imports: [TranslatePipe, IconComponent],
  template: `
  <div class="preview-shell" [class.detail]="detail">
-  <aside class="preview-sidebar" aria-hidden="true"><span class="preview-brand"><i></i>sarela</span><span class="selected"><app-icon name="home" [size]="14" />Inicio</span><span><app-icon name="wallet" [size]="14" />Gastos</span><span><app-icon name="grid" [size]="14" />Categorías</span><span><app-icon name="shield" [size]="14" />Ajustes</span></aside>
+  <aside class="preview-sidebar" aria-hidden="true"><span class="preview-brand"><i></i>{{ 'sarela' | t }}</span><span class="selected"><app-icon name="home" [size]="14" />{{ 'Inicio' | t }}</span><span><app-icon name="wallet" [size]="14" />{{ 'Gastos' | t }}</span><span><app-icon name="grid" [size]="14" />{{ 'Categorías' | t }}</span><span><app-icon name="shield" [size]="14" />{{ 'Ajustes' | t }}</span></aside>
   <div class="preview-main">
    <div class="phone-status" aria-hidden="true"><b>9:41</b><span>▮▮▮ ▰</span></div>
-   <div class="mobile-brand" aria-hidden="true"><span class="preview-brand"><i></i>sarela</span><app-icon name="rows" [size]="17" /></div>
+   <div class="mobile-brand" aria-hidden="true"><span class="preview-brand"><i></i>{{ 'sarela' | t }}</span><app-icon name="rows" [size]="17" /></div>
    @if (!detail) {
-    <div class="preview-greeting"><h3>Hola, Alex <span>👋</span></h3><span class="example-label">Datos de ejemplo</span></div><p class="preview-subtitle">Tus gastos, en orden.</p>
-    <div class="preview-total"><div><span>Gastos del mes</span><strong>S/ 1,480</strong></div><div class="mini-chart" aria-hidden="true"><i></i><i></i><i></i></div></div>
-    <div class="category-rows">@for (category of categories; track category.name) {<div class="category-row"><app-icon [name]="category.icon" [size]="19" /><div><b>{{category.name}}</b><span class="bar"><i [style.width.%]="category.width"></i></span></div><strong>{{category.amount}}</strong></div>}</div>
+    <div class="preview-greeting"><h3>{{ 'Hola, Alex' | t }} <span>👋</span></h3><span class="example-label">{{ 'Datos de ejemplo' | t }}</span></div><p class="preview-subtitle">{{ 'Tus gastos, en orden.' | t }}</p>
+    <div class="preview-total"><div><span>{{ 'Gastos del mes' | t }}</span><strong>{{ 'S/ 1,480' | t }}</strong></div><div class="mini-chart" aria-hidden="true"><i></i><i></i><i></i></div></div>
+    <div class="category-rows">@for (category of categories; track category.name) {<div class="category-row"><app-icon [name]="category.icon" [size]="19" /><div><b>{{ category.name | t }}</b><span class="bar"><i [style.width.%]="category.width"></i></span></div><strong>{{ category.amount }}</strong></div>}</div>
    } @else {
-    <h3 class="movement-title"><span aria-hidden="true">‹</span>Movimientos</h3><div class="preview-tabs" aria-hidden="true"><span>Todos</span><span>Alimentación</span><span>Transporte</span><span>Compras</span></div>
+    <h3 class="movement-title"><span aria-hidden="true">‹</span>{{ 'Movimientos' | t }}</h3><div class="preview-tabs" aria-hidden="true"><span>{{ 'Todos' | t }}</span><span>{{ 'Alimentación' | t }}</span><span>{{ 'Transporte' | t }}</span><span>{{ 'Compras' | t }}</span></div>
    }
-   <h4>{{detail ? 'Hoy' : 'Movimientos recientes'}}</h4>
-   <div class="transaction-list">@for (movement of movements; track movement.name) {<div class="preview-transaction"><span class="merchant-mark" [class.dark]="movement.name === 'Uber'">{{movement.mark}}</span><div><b>{{movement.name}}</b><span>{{movement.category}}</span></div><strong>{{movement.amount}}</strong></div>}</div>
+   <h4>{{ detail ? lang.t('Hoy') : lang.t('Movimientos recientes') }}</h4>
+   <div class="transaction-list">@for (movement of movements; track movement.name) {<div class="preview-transaction"><span class="merchant-mark" [class.dark]="movement.name === 'Uber'">{{ movement.mark }}</span><div><b>{{ movement.name }}</b><span>{{ movement.category | t }}</span></div><strong>{{ movement.amount }}</strong></div>}</div>
    <span class="phone-home" aria-hidden="true"></span>
   </div>
  </div>`,
  styleUrl: './landing-preview.component.css', changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LandingPreviewComponent {
+ readonly lang = inject(LanguageService);
+
  @Input() detail = false;
  readonly categories = [
   {name:'Alimentación',icon:'utensils' as const,amount:'S/ 620',width:77},

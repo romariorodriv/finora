@@ -1,3 +1,7 @@
+import { LanguageSwitcherComponent } from './core/i18n/language-switcher.component';
+import { inject } from '@angular/core';
+import { LanguageService } from './core/i18n/language.service';
+import { TranslatePipe } from './core/i18n/translate.pipe';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
 import { IconComponent } from './shared/icon.component';
@@ -29,11 +33,13 @@ import {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, IconComponent, FocusTrapDirective, LandingComponent, RouterOutlet],
+  imports: [LanguageSwitcherComponent, TranslatePipe, CommonModule, FormsModule, IconComponent, FocusTrapDirective, LandingComponent, RouterOutlet],
   templateUrl: './app.component.html',
   styleUrls: ['./dashboard/dashboard.styles.css', './app.component.css']
 })
 export class AppComponent implements OnInit, OnDestroy {
+ readonly lang = inject(LanguageService);
+
   view: 'dashboard' | 'movements' | 'import' | 'feedback' | 'admin' = 'dashboard';
   dashboardLoading = false;
   dashboardError = '';
@@ -367,9 +373,9 @@ export class AppComponent implements OnInit, OnDestroy {
   money(value: number | string | undefined, currency?: string): string {
     const unit=currency||this.dashboard?.currency||'PEN';
     const amount=Number(value||0);
-    if(unit==='UNK')return `${amount.toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})} (moneda no registrada)`;
-    if(unit==='PEN')return `S/ ${amount.toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-    try{return new Intl.NumberFormat('es-PE',{style:'currency',currency:unit}).format(amount);}catch{return `${amount} ${unit}`;}
+    if(unit==='UNK')return `${amount.toLocaleString(this.lang.locale(),{minimumFractionDigits:2,maximumFractionDigits:2})} (${this.lang.t('Moneda no registrada')})`;
+    if(unit==='PEN')return `S/ ${amount.toLocaleString(this.lang.locale(),{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    try{return new Intl.NumberFormat(this.lang.locale(),{style:'currency',currency:unit}).format(amount);}catch{return `${amount} ${unit}`;}
   }
 
   selectSpendingRange(range: 7 | 30): void {
@@ -381,7 +387,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   dailyPoints(): DailySpendingPoint[] {
-    return calculateDailySpending(this.dashboard?.daily ?? {}, this.selectedSpendingRange);
+    return calculateDailySpending(this.dashboard?.daily ?? {}, this.selectedSpendingRange, this.lang.locale());
   }
 
   linePoints(): string {
@@ -402,11 +408,11 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   categoryDistribution(): CategorySpendingPoint[] {
-    return calculateMacroCategoryDistribution(this.dashboard?.macroCategories, this.chartColors);
+    return calculateMacroCategoryDistribution(this.dashboard?.macroCategories, this.chartColors).map(item => ({...item, name: this.categoryLabel(item.name)}));
   }
 
   merchantDistribution(): CategorySpendingPoint[] {
-    return calculateMerchantDistribution(this.dashboard?.merchants, this.merchantColors);
+    return calculateMerchantDistribution(this.dashboard?.merchants, this.merchantColors).map(item => ({...item, name: item.merchant === '__OTHER_MERCHANTS__' ? this.lang.t('Otros comercios') : item.name}));
   }
 
   donutStyle(items: CategorySpendingPoint[]): Record<string, string> {
@@ -423,11 +429,11 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   financialInsightTitle(): string {
-    return this.dashboard?.insightTitle || 'Una senal para este mes';
+    return this.lang.text(this.dashboard?.insightTitle || 'Una senal para este mes');
   }
 
   financialInsight(): string {
-    return this.dashboard?.insightBody || generateFinancialInsight(this.categoryDistribution(), this.dashboard?.expenses ?? 0);
+    return this.lang.text(this.dashboard?.insightBody || generateFinancialInsight(this.categoryDistribution(), this.dashboard?.expenses ?? 0));
   }
 
   openCategory(item: CategorySpendingPoint): void {
@@ -509,7 +515,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.movementEditorOpen = false;
   }
   movementMerchantInitial(tx: TransactionResponse): string {
-    return (this.movementTitle(tx).trim().charAt(0) || 'S').toLocaleUpperCase('es-PE');
+    return (this.movementTitle(tx).trim().charAt(0) || 'S').toLocaleUpperCase(this.lang.locale());
   }
 
   previousMovementPage(): void {
@@ -533,20 +539,20 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   movementDate(date: string): string {
-    return new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'short' })
+    return new Intl.DateTimeFormat(this.lang.locale(), { day: 'numeric', month: 'short' })
       .format(new Date(`${date}T12:00:00`));
   }
 
   lastSyncLabel(): string {
     if (!this.gmail?.lastSyncAt) {
-      return 'Aun no has actualizado tus movimientos';
+      return this.lang.t('Aun no has actualizado tus movimientos');
     }
     const syncDate = new Date(this.gmail.lastSyncAt);
     const today = new Date();
     if (syncDate.toDateString() === today.toDateString()) {
-      return `Hoy, ${new Intl.DateTimeFormat('es-PE', { timeStyle: 'short' }).format(syncDate)}`;
+      return `${this.lang.t('Hoy')}, ${new Intl.DateTimeFormat(this.lang.locale(), { timeStyle: 'short' }).format(syncDate)}`;
     }
-    return new Intl.DateTimeFormat('es-PE', {
+    return new Intl.DateTimeFormat(this.lang.locale(), {
       dateStyle: 'medium',
       timeStyle: 'short'
     }).format(new Date(this.gmail.lastSyncAt));
@@ -554,8 +560,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   monthLabel(): string {
     const month = this.dashboard?.month;
-    if (!month || !/^\d{4}-\d{2}$/.test(month)) return 'Este mes';
-    return new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' }).format(new Date(`${month}-15T12:00:00`));
+    if (!month || !/^\d{4}-\d{2}$/.test(month)) return this.lang.t('Este mes');
+    return new Intl.DateTimeFormat(this.lang.locale(), { month: 'long', year: 'numeric' }).format(new Date(`${month}-15T12:00:00`));
   }
 
   recurringTotal(): number {
@@ -666,12 +672,12 @@ export class AppComponent implements OnInit, OnDestroy {
   importStatusLabel(): string {
     return ({NOT_STARTED:'Sin iniciar',PENDING:'Pendiente',IMPORTING:'Importando',COMPLETED:'Completada',PARTIAL:'Parcial',ERROR:'Error',CANCELLED:'Detenida'} as Record<string,string>)[this.syncResult?.status || 'NOT_STARTED'];
   }
-  importDate(value?: string): string { return value ? new Intl.DateTimeFormat('es-PE',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)) : '—'; }
+  importDate(value?: string): string { return value ? new Intl.DateTimeFormat(this.lang.locale(),{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)) : '—'; }
   loadGmailReview(page=0): void { this.api.gmailReview(page).subscribe({next: result => this.gmailReview = result,error: error => this.showToast(this.message(error))}); }
   requestDataDeletion(): void {
     if (this.deletingAccount) return;
-    const answer = window.prompt('Eliminar tu cuenta borrará tus movimientos y datos guardados de manera irreversible. Si regresas, crearás una cuenta nueva sin recuperar el historial. Escribe ELIMINAR para confirmar:');
-    if (answer !== 'ELIMINAR') return;
+    const answer = window.prompt(this.lang.t('Eliminar tu cuenta borrará tus movimientos y datos guardados de manera irreversible. Si regresas, crearás una cuenta nueva sin recuperar el historial. Escribe ELIMINAR para confirmar:'));
+    if (answer !== (this.lang.language() === 'es' ? 'ELIMINAR' : 'DELETE')) return;
     this.deletingAccount = true;
     this.api.requestDataDeletion().pipe(finalize(() => this.deletingAccount = false)).subscribe({
       next: () => window.location.replace('/?accountDeleted=1'),
@@ -736,14 +742,42 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!this.gmail.connected) {
       return 'Conecta Gmail cuando quieras importar movimientos desde notificaciones bancarias.';
     }
-    return `Cuenta: ${this.gmail.email || 'Gmail'} | Ultima actualizacion: ${this.lastSyncLabel()}`;
+    return this.lang.t('Cuenta: {0} | Ultima actualizacion: {1}', [this.gmail.email || 'Gmail', this.lang.text(this.lastSyncLabel())]);
   }
 
-  private message(error: any): string {
-    if (error?.status === 0) {
-      return 'No pudimos conectarnos con Sarela. Intenta nuevamente.';
-    }
-    return error?.error?.message || 'Algo salio mal. Intenta nuevamente.';
+  private message(error: any): string { return this.lang.error(error); }
+
+  categoryLabel(name: string): string {
+    const defaults = ['Alimentacion','Alimentación','Transporte','Gasolina','Salud','Servicios','Suscripciones','Otros','Sin categoría','ALIMENTACION','TRANSPORTE','SALUD','SERVICIOS','SUSCRIPCIONES','OTROS','UNCATEGORIZED'];
+    return defaults.includes(name) ? this.lang.t(name) : name;
+  }
+
+  gmailReviewLabel(status: string): string {
+    const labels: Record<string, string> = {
+      REVIEW_REQUIRED: 'Por revisar', IGNORED: 'No compatible', FAILED: 'Fallido',
+      RECEIVED: 'Recibido', PROCESSING: 'Procesando', IMPORTED: 'Importado', REJECTED: 'Rechazado'
+    };
+    return this.lang.t(labels[status] || 'Estado no disponible');
+  }
+
+  gmailReviewReason(reason: string | undefined, status: string): string {
+    const reasons: Record<string, string> = {
+      SENDER_NOT_TRUSTED: 'El remitente no está entre los admitidos. No se creó un movimiento.',
+      AMBIGUOUS_MESSAGE: 'No pudimos confirmar los datos necesarios. Revisa el correo original.',
+      MESSAGE_TOO_LARGE: 'El mensaje supera el tamaño admitido y requiere revisión.',
+      PROCESSING_REVIEW_REQUIRED: 'No se pudo procesar tras varios intentos. Revisa el correo original.',
+      PROCESSING_ERROR: 'Ocurrió un error al procesar el mensaje. Puedes volver a actualizar.'
+    };
+    const fallback = status === 'IGNORED'
+      ? 'El formato de este correo no es compatible. No se creó un movimiento.'
+      : 'Revisa el correo original en Gmail. Este registro no confirma un gasto.';
+    return this.lang.t(reasons[reason || ''] || fallback);
+  }
+
+  importMessage(job: GmailSyncResponse): string {
+    if (this.lang.language() === 'es') return job.message;
+    const translated = this.lang.text(job.message);
+    return translated !== job.message ? translated : this.lang.t(this.importProcessingLabel());
   }
 
   private authMessage(error: any, mode: 'login' | 'register'): string {

@@ -103,7 +103,7 @@ describe('Premium UI functional flows', () => {
   });
   it('preserves category and merchant drilldowns, closes with Escape and restores focus', () => {
     const category=root().querySelector('.finora-home-category-list button') as HTMLButtonElement;category.focus();category.click();fixture.detectChanges();
-    expect(services.api.categoryDetail).toHaveBeenCalledWith('SUSCRIPCIONES');
+    expect(services.api.categoryDetail).toHaveBeenCalledWith('CAT_7');
     expect(root().querySelector('[role="dialog"]')?.textContent).toContain('Software');
     expect(document.activeElement?.className).toBe('drawer-close');
     (document.activeElement as HTMLElement).dispatchEvent(new KeyboardEvent('keydown',{key:'Tab',bubbles:true,cancelable:true}));

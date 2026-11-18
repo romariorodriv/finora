@@ -47,7 +47,13 @@ describe('dashboard transformations', () => {
     const points = calculateDailySpending(fixture.daily, 30);
 
     expect(points.map(point => point.date)).toEqual(['2026-09-09', '2026-09-10']);
-    expect(points.map(point => point.label)).toEqual(['09 sep', '10 sep']);
+    // ICU may abbreviate September as sep or set. depending on the browser.
+    expect(points[0].label).toMatch(/09/);
+    expect(points[1].label).toMatch(/10/);
+    for (const point of points) expect(point.label).toMatch(/sep|set/i);
+    const english = calculateDailySpending(fixture.daily, 30, 'en-US');
+    expect(english[0].label).toMatch(/Sep/);
+    expect(english[0].label).toContain('09');
     expect(points.map(point => point.value)).toEqual([32.90, 271.60]);
   });
 

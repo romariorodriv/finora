@@ -15,7 +15,8 @@ for (const [name, heading] of pages) {
  const bytes = await readFile(resolve(build, name));
  const html = bytes.toString('utf8');
  if (!html.includes(`<h1>${heading}</h1>`) || !html.includes(`<title>${heading} | Sarela</title>`)) throw new Error(`Wrong legal document: ${name}`);
- if (html.includes('<app-root') || /<script[\s>]/i.test(html)) throw new Error(`Legal page is not standalone: ${name}`);
+ const withoutLanguageScript = html.replace('<script src="/public-language.js" defer></script>', '');
+ if (html.includes('<app-root') || /<script[\s>]/i.test(withoutLanguageScript)) throw new Error(`Legal page is not standalone: ${name}`);
  for (const target of ['privacidad.html','terminos.html','eliminar-datos.html','sarela-legal.css','sarela-icon.svg']) {
   if (!html.includes(`href="/${target}"`)) throw new Error(`Missing link or asset ${target} in ${name}`);
   await readFile(resolve(build,target));

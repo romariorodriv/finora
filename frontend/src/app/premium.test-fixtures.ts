@@ -5,13 +5,13 @@ import { AuthService } from './core/services/auth.service';
 import { DashboardResponse, TransactionResponse } from './core/models/api.models';
 export const testTransaction: TransactionResponse = {
   id: 7, userId: 1, description: 'Cargo de prueba', merchant: 'Comercio QA', amount: 120,
-  date: '2026-10-28', category: 'Suscripciones', macroCategory: 'SUSCRIPCIONES',
+  date: '2026-10-28', category: 'Suscripciones', macroCategory: 'CAT_7',
   type: 'EXPENSE', recurring: true, source: 'MANUAL', createdAt: '2026-10-28T12:00:00Z'
 };
 export const testDashboard: DashboardResponse = {
   month: '2026-10', expenses: 120, income: 1500, balance: 1380, expenseCount: 1,
   averageTicket: 120, dailyAverage: 4, projection: 124, categories: {Suscripciones: 120},
-  macroCategories: [{macroCategory: 'SUSCRIPCIONES', label: 'Suscripciones', total: 120, percentage: 100}],
+  macroCategories: [{macroCategory: 'CAT_7', label: 'Suscripciones', total: 120, percentage: 100}],
   merchants: [{merchant: 'Comercio QA', label: 'Comercio QA', total: 120, percentage: 100}],
   daily: {'2026-10-27': 30, '2026-10-28': 90}, transactions: [testTransaction], recurring: [testTransaction]
 };
@@ -22,7 +22,7 @@ export function premiumTestServices() {
   api.gmailStatus.and.returnValue(of({connected: true,configured: true,status: 'CONNECTED',email: 'qa@example.test'}));
   api.transactions.and.returnValue(of([testTransaction]));
   api.transactionHistory.and.returnValue(of({items:[testTransaction],total:1,page:0,totalPages:1}));
-  api.categoryDetail.and.returnValue(of({macroCategory: 'SUSCRIPCIONES',label: 'Suscripciones',total: 120,subcategories: [{name: 'Software',total: 120}],transactions: [testTransaction]}));
+  api.categoryDetail.and.returnValue(of({macroCategory: 'CAT_7',label: 'Suscripciones',total: 120,subcategories: [{name: 'Software',total: 120}],transactions: [testTransaction]}));
   api.merchantDetail.and.returnValue(of({merchant: 'Comercio QA',label: 'Comercio QA',total: 120,transactions: [testTransaction]}));
   api.sendFeedback.and.returnValue(of({id: 3,rating: 5,understoodSpending: 'YES',createdAt: '2026-10-30T12:00:00Z'}));
   const completeJob = {status:'COMPLETED' as const,message:'Importación completada.',stale:false,hasMorePages:false,retryCount:0,unsupported:0,messagesFound: 0,messagesProcessed: 0,transactionsCreated: 0,duplicatesSkipped: 0,reviewRequired: 0,rejected: 0,failed: 0};
