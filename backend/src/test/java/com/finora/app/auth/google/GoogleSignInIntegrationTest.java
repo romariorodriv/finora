@@ -41,6 +41,16 @@ class GoogleSignInIntegrationTest {
   assertTrue(response.getContentType().contains("application/json"));
   assertTrue(response.getContentAsString().contains("Inicia sesión con Google"));
  }
+ @Test void retiredResearchEndpointsAreNotAvailableToAuthenticatedUsers()throws Exception{
+  identity("retired-"+nonce,"retired-"+nonce+"@example.test");
+  Cookie session=callback(start()).getResponse().getCookie(AuthCookies.SESSION);
+  for(String path:List.of("/api/v1/agents/housing/analyze","/api/agents/housing/analyze")) {
+   mvc.perform(post(path).cookie(session).header("Origin","http://localhost:4200")
+    .contentType("application/json").content("{}"))
+    .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+  mvc.perform(get("/api/v1/dashboard").cookie(session)).andExpect(status().isOk());
+ }
  @Test void newUserGetsUserRoleAndOpaqueServerSessionWithoutBrowserTokens()throws Exception{
   identity("new-"+nonce,"new-"+nonce+"@example.test");var flow=start();var response=callback(flow).getResponse();
   assertEquals("http://localhost:4200/?auth=connected",response.getRedirectedUrl());

@@ -1,4 +1,4 @@
-<app-landing *ngIf="!auth.user && publicView === 'landing'" (accessRequested)="openAccess($event); continueWithGoogle()"></app-landing>
+<app-landing *ngIf="!auth.user && publicView === 'landing'" (accessRequested)="openAccess($event)"></app-landing>
 <section *ngIf="!auth.user && publicView === 'access'" class="auth">
   <button class="auth-back" type="button" (click)="returnToLanding()" [disabled]="authSubmitting"><app-icon name="arrow" [size]="15" />Volver a Sarela</button>
   <div class="auth-copy">
@@ -6,7 +6,7 @@
     <p class="eyebrow">TU DINERO, MÁS CLARO</p>
     <h1>Tu dinero,<br>más claro.</h1>
     <p>Organiza los movimientos que llegan a tu Gmail y entiende tus gastos sin hacerlo a mano.</p>
-    <div class="auth-steps"><div><app-icon name="wallet" /><span>Confirma tu saldo</span></div><div><app-icon name="calendar" /><span>Anticipa tus pagos</span></div><div><app-icon name="spark" /><span>Decide con claridad</span></div></div>
+    <div class="auth-steps"><div><app-icon name="wallet" /><span>Consulta tus gastos</span></div><div><app-icon name="calendar" /><span>Organiza movimientos</span></div><div><app-icon name="spark" /><span>Decide con claridad</span></div></div>
     <small class="auth-footnote"><app-icon name="lock" [size]="14" /> Tu espacio financiero personal.</small>
   </div>
 
@@ -14,6 +14,8 @@
     <ng-container *ngIf="!linkRequired">
       <p class="eyebrow">TU ESPACIO PERSONAL</p><h2>Bienvenido a Sarela.</h2>
       <p class="form-intro">Usamos Google para verificar tu identidad. El permiso para leer Gmail se solicita después y es opcional.</p>
+      <button *ngIf="localDemoAvailable" class="primary full local-demo-access" type="button" (click)="continueWithDemo()" [disabled]="authSubmitting">{{authSubmitting ? 'Ingresando…' : 'Entrar en modo demo (local)'}}</button>
+      <p *ngIf="localDemoAvailable" class="form-intro">Solo para pruebas en tu computadora. No conecta Gmail ni accede a cuentas reales.</p>
       <button class="primary full google-access" type="button" (click)="continueWithGoogle()" [disabled]="authSubmitting"><img src="images/google-mark.svg" width="22" height="22" alt="" aria-hidden="true">{{authSubmitting ? 'Conectando…' : 'Continuar con Google'}}</button>
       <p class="form-intro">¿Ya tenías una cuenta? Podrás vincularla y conservar tus movimientos.</p>
     </ng-container>
@@ -124,7 +126,7 @@
         <p>{{gmail?.connected ? (importActive() ? 'Estamos procesando tus notificaciones financieras.' : 'Importa o actualiza tus notificaciones financieras cuando quieras.') : 'Conectar Gmail es opcional. Puedes seguir registrando tus gastos manualmente.'}}</p>
         <button class="ghost" type="button" (click)="gmail?.connected ? syncGmail() : go('import')" [disabled]="syncingGmail || importActive()"><app-icon name="refresh" [size]="18"/>{{gmail?.connected ? (syncingGmail ? 'Actualizando…' : 'Actualizar ahora') : 'Conectar Gmail'}}</button>
       </div>
-      <p class="finora-home-note" *ngIf="syncResult && (syncResult.status !== 'COMPLETED' || syncResult.stale || syncResult.reviewRequired > 0 || syncResult.unsupported > 0 || syncResult.failed > 0)" role="status">{{syncResult.message}} Estos datos pueden estar incompletos; revisa tu conexión Gmail. <button type="button" (click)="go('import')">Ver estado</button></p>
+      <p class="finora-home-note" *ngIf="syncResult && (syncResult.status !== 'COMPLETED' || syncResult.stale || syncResult.reviewRequired > 0 || syncResult.unsupported > 0 || syncResult.failed > 0)" role="status">{{syncResult.message}} Estos datos pueden estar incompletos; el resumen muestra solo movimientos registrados y no representa todo tu historial bancario. <span *ngIf="syncResult.reviewRequired > 0">{{syncResult.reviewRequired}} {{syncResult.reviewRequired === 1 ? 'correo por revisar' : 'correos por revisar'}}.</span> <span *ngIf="syncResult.unsupported > 0">{{syncResult.unsupported}} no interpretados.</span> Revisa tu conexión Gmail. <button type="button" (click)="go('import')">Ver estado</button></p>
     </section>
     <section *ngIf="view === 'movements'" class="view movements-view sarela-ledger">
       <header class="sarela-ledger-heading">
@@ -173,7 +175,7 @@
           <div class="empty" *ngIf="!transactionsLoading && !movementError && movementTotal === 0">{{hasMovementFilters() ? 'No encontramos movimientos con estos filtros.' : 'Aún no hay movimientos. Puedes agregar uno o conectar Gmail.'}}</div>
           <div class="sarela-ledger-table-scroll" *ngIf="!transactionsLoading && !movementError && movementTotal>0">
             <table class="sarela-ledger-table">
-              <thead><tr><th scope="col">Fecha</th><th scope="col">Comercio</th><th scope="col">Categoría</th><th scope="col">Descripción</th><th scope="col" class="numeric">Monto</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead>
+              <thead><tr><th scope="col">Fecha</th><th scope="col">Comercio</th><th scope="col">Categoría</th><th scope="col">Descripción</th><th scope="col" class="numeric">Monto</th><th scope="col" aria-label="Acciones"></th></tr></thead>
               <tbody>
                 <tr class="tx-actions" *ngFor="let tx of pagedTransactions()">
                   <td class="date">{{movementDate(tx.date)}}</td>

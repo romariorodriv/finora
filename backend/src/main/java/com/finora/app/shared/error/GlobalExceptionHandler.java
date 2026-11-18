@@ -42,6 +42,11 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest().body(body(400,"BAD_REQUEST","Parámetro o fecha inválidos.",r));
   }
 
+  @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+  ResponseEntity<?> notFound(Exception e, HttpServletRequest r) {
+    return ResponseEntity.status(404).body(body(404, "NOT_FOUND", "Recurso no encontrado", r));
+  }
+
   @ExceptionHandler(Exception.class)
   ResponseEntity<?> unknown(Exception e, HttpServletRequest r) {
     log.error("Unhandled exception on {} {}",r.getMethod(),r.getRequestURI(),e);

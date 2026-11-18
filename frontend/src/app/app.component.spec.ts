@@ -17,6 +17,19 @@ describe('Premium UI functional flows', () => {
     TestBed.configureTestingModule({imports: [AppComponent],providers: [provideRouter([]),{provide: ApiService,useValue: services.api},{provide: AuthService,useValue: services.auth}]});
     fixture=TestBed.createComponent(AppComponent);fixture.detectChanges();
   });
+  it('offers local-only demo login without requesting Google credentials', () => {
+    expect(fixture.componentInstance.localDemoAvailable).toBeTrue();
+    fixture.componentInstance.continueWithDemo(); fixture.detectChanges();
+    expect(services.auth.demoLogin).toHaveBeenCalledTimes(1);
+    expect(services.auth.googleStart).not.toHaveBeenCalled();
+  });
+  it('opens the financial dashboard by default without extra destinations or Gmail authorization', () => {
+    expect(fixture.componentInstance.view).toBe('dashboard');
+    expect(root().querySelector('.dashboard-view')).not.toBeNull();
+    const destinations = Array.from(root().querySelectorAll('.sidebar nav button')).map(button => button.textContent?.trim());
+    expect(destinations).toEqual(['Inicio', 'Movimientos', 'Conexión Gmail', 'Tu opinión']);
+    expect(services.api.gmailAuthorizationUrl).not.toHaveBeenCalled();
+  });
   it('offers a separate, optional Gmail permission after Google login', () => {
     const key = 'sarela:gmail-onboarding-dismissed:1';
     localStorage.removeItem(key);
@@ -197,13 +210,13 @@ describe('Premium UI functional flows', () => {
 
   it('explains Gmail before asking Google for consent and allows skipping it', () => {
     fixture.componentInstance.go('import');fixture.componentInstance.connectGmail();fixture.detectChanges();
-    expect(root().querySelector('.gmail-consent')?.textContent).toContain('solo lectura');
-    expect(root().querySelector('.gmail-consent')?.textContent).toContain('no solo de correos bancarios');
-    expect(root().querySelector('.gmail-consent')?.textContent).toContain('90');
+    expect(root().querySelector('.sarela-consent-dialog')?.textContent).toContain('solo lectura');
+    expect(root().querySelector('.sarela-consent-dialog')?.textContent).toContain('no solo a correos bancarios');
+    expect(root().querySelector('.sarela-consent-dialog')?.textContent).toContain('90');
     expect(services.api.gmailAuthorizationUrl).not.toHaveBeenCalled();
-    const skip=Array.from(root().querySelectorAll<HTMLButtonElement>('.gmail-consent button')).find(button=>button.textContent?.includes('Ahora no'))!;
+    const skip=Array.from(root().querySelectorAll<HTMLButtonElement>('.sarela-consent-dialog button')).find(button=>button.textContent?.includes('Ahora no'))!;
     skip.click();fixture.detectChanges();
-    expect(fixture.componentInstance.view).toBe('dashboard');
+    expect(fixture.componentInstance.view).toBe('import');
     expect(services.api.gmailAuthorizationUrl).not.toHaveBeenCalled();
   });
 
@@ -227,7 +240,7 @@ describe('Premium UI functional flows', () => {
       duplicatesSkipped:1,reviewRequired:1,unsupported:0,rejected:0,failed:1,retryCount:0,stale:true,hasMorePages:false
     }));
     fixture.componentInstance.loadGmailJob();fixture.detectChanges();
-    expect(root().querySelector('.gmail-job')?.textContent).toContain('Parcial');
+    expect(root().querySelector('.gmail-job')?.textContent).toContain('parcial');
     expect(root().querySelector('.gmail-job')?.textContent).toContain('información está incompleta');
     expect(root().querySelector('.import-counts')?.textContent).toContain('Por revisar');
     expect(fixture.componentInstance.syncResult?.transactionsCreated).toBe(2);
@@ -240,8 +253,8 @@ describe('Premium UI functional flows', () => {
     }));
     fixture.componentInstance.loadGmailJob();fixture.detectChanges();
     expect(fixture.componentInstance.dashboard?.expenses).toBe(testDashboard.expenses);
-    expect(root().querySelector('.import-notice')?.textContent).toContain('solo movimientos registrados');
-    expect(root().querySelector('.import-notice')?.textContent).not.toContain('al día');
+    expect(root().querySelector('.finora-home-note')?.textContent).toContain('incompletos');
+    expect(root().querySelector('.finora-home-note')?.textContent).not.toContain('al día');
   });
 
   it('warns about uninterpreted messages even when the candidate scan has finished', () => {
@@ -250,8 +263,8 @@ describe('Premium UI functional flows', () => {
       duplicatesSkipped:0,reviewRequired:1,unsupported:2,rejected:0,failed:0,retryCount:0,stale:false,hasMorePages:false
     }));
     fixture.componentInstance.loadGmailJob();fixture.detectChanges();
-    const notice=root().querySelector('.import-notice')?.textContent || '';
-    expect(notice).toContain('1 correos por revisar');
+    const notice=root().querySelector('.finora-home-note')?.textContent || '';
+    expect(notice).toContain('1 correo por revisar');
     expect(notice).toContain('2 no interpretados');
     expect(notice).toContain('no representa todo tu historial bancario');
   });
@@ -276,7 +289,7 @@ describe('Premium UI functional flows', () => {
     second.error({error:{message:'Historial no disponible'}});fixture.detectChanges();
     expect(c.transactionsLoading).toBeFalse();expect(root().querySelector('[role="alert"]')?.textContent).toContain('Historial no disponible');
     services.api.transactionHistory.and.returnValue(of({items:[],total:0,page:0,totalPages:0}));c.loadTransactions();fixture.detectChanges();
-    expect(c.movementError).toBe('');expect(root().textContent).toContain('Registra tu primer movimiento');
+    expect(c.movementError).toBe('');expect(root().textContent).toContain('Aún no hay movimientos');
   });
 
 });
