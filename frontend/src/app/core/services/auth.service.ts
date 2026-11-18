@@ -24,6 +24,10 @@ export class AuthService {
   restoreSession(): Observable<AccountProfile | null> {
     return this.refreshCurrent().pipe(catchError(error => error.status === 401 || error.status === 403 ? of(null) : throwError(() => error)));
   }
+  /** Local developer-only login; backend disables this unless explicitly opted in. */
+  demoLogin(): Observable<{status: string}> {
+    return this.http.post<{status: string}>(this.baseUrl + '/auth/dev/login', {});
+  }
   googleStart(): Observable<{authorizationUrl: string}> {
     return this.http.post<{authorizationUrl: string}>(this.baseUrl + '/auth/google/start', {});
   }

@@ -13,3 +13,8 @@ logs/
 *~
 .idea/
 .vscode/
+
+# Agent development
+.venv/
+agent_service/__pycache__/
+agent_service/.pytest_cache/
