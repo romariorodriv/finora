@@ -33,6 +33,8 @@ jobs:
         run: npm ci
       - name: Build production frontend
         run: npm run build
+      - name: Verify Spanish and English catalogs and public artifacts
+        run: npm run qa:i18n
       - name: Verify initial anonymous HTML prerender
         run: npm run qa:prerender
       - name: SEO links, sitemap and static pages

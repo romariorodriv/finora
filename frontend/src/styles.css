@@ -736,3 +736,7 @@ app-landing .landing-footer nav{gap:12px 18px;flex-wrap:wrap}
   body .app .sarela-ledger-table-scroll{width:100%;max-width:100%;min-width:0;contain:inline-size;overflow-x:auto;overflow-y:hidden}
   body .app .sarela-ledger-heading-actions .sarela-sync-chip{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 }
+
+/* A single persistent selector also covers lazy admin, access and modal views. */
+.global-language-switcher{position:fixed;bottom:18px;right:18px;z-index:2000}
+@media(max-width:650px){.global-language-switcher{bottom:calc(78px + env(safe-area-inset-bottom));right:12px}}

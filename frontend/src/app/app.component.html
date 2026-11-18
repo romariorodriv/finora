@@ -1,76 +1,77 @@
+<app-language-switcher class="global-language-switcher" />
 <app-landing *ngIf="!auth.user && publicView === 'landing'" (accessRequested)="openAccess($event)"></app-landing>
 <section *ngIf="!auth.user && publicView === 'access'" class="auth">
-  <button class="auth-back" type="button" (click)="returnToLanding()" [disabled]="authSubmitting"><app-icon name="arrow" [size]="15" />Volver a Sarela</button>
+  <button class="auth-back" type="button" (click)="returnToLanding()" [disabled]="authSubmitting"><app-icon name="arrow" [size]="15" />{{ 'Volver a Sarela' | t }}</button>
   <div class="auth-copy">
-    <div class="auth-wordmark"><span class="finora-brand-ring" aria-hidden="true"></span><span>sarela</span></div>
-    <p class="eyebrow">TU DINERO, MÁS CLARO</p>
-    <h1>Tu dinero,<br>más claro.</h1>
-    <p>Organiza los movimientos que llegan a tu Gmail y entiende tus gastos sin hacerlo a mano.</p>
-    <div class="auth-steps"><div><app-icon name="wallet" /><span>Consulta tus gastos</span></div><div><app-icon name="calendar" /><span>Organiza movimientos</span></div><div><app-icon name="spark" /><span>Decide con claridad</span></div></div>
-    <small class="auth-footnote"><app-icon name="lock" [size]="14" /> Tu espacio financiero personal.</small>
+    <div class="auth-wordmark"><span class="finora-brand-ring" aria-hidden="true"></span><span>{{ 'sarela' | t }}</span></div>
+    <p class="eyebrow">{{ 'TU DINERO, MÁS CLARO' | t }}</p>
+    <h1>{{ 'Tu dinero,' | t }}<br>{{ 'más claro.' | t }}</h1>
+    <p>{{ 'Organiza los movimientos que llegan a tu Gmail y entiende tus gastos sin hacerlo a mano.' | t }}</p>
+    <div class="auth-steps"><div><app-icon name="wallet" /><span>{{ 'Consulta tus gastos' | t }}</span></div><div><app-icon name="calendar" /><span>{{ 'Organiza movimientos' | t }}</span></div><div><app-icon name="spark" /><span>{{ 'Decide con claridad' | t }}</span></div></div>
+    <small class="auth-footnote"><app-icon name="lock" [size]="14" />  {{ 'Tu espacio financiero personal.' | t }}</small>
   </div>
 
   <div class="login-card">
     <ng-container *ngIf="!linkRequired">
-      <p class="eyebrow">TU ESPACIO PERSONAL</p><h2>Bienvenido a Sarela.</h2>
-      <p class="form-intro">Usamos Google para verificar tu identidad. El permiso para leer Gmail se solicita después y es opcional.</p>
-      <button *ngIf="localDemoAvailable" class="primary full local-demo-access" type="button" (click)="continueWithDemo()" [disabled]="authSubmitting">{{authSubmitting ? 'Ingresando…' : 'Entrar en modo demo (local)'}}</button>
-      <p *ngIf="localDemoAvailable" class="form-intro">Solo para pruebas en tu computadora. No conecta Gmail ni accede a cuentas reales.</p>
-      <button class="primary full google-access" type="button" (click)="continueWithGoogle()" [disabled]="authSubmitting"><img src="images/google-mark.svg" width="22" height="22" alt="" aria-hidden="true">{{authSubmitting ? 'Conectando…' : 'Continuar con Google'}}</button>
-      <p class="form-intro">¿Ya tenías una cuenta? Podrás vincularla y conservar tus movimientos.</p>
+      <p class="eyebrow">{{ 'TU ESPACIO PERSONAL' | t }}</p><h2>{{ 'Bienvenido a Sarela.' | t }}</h2>
+      <p class="form-intro">{{ 'Usamos Google para verificar tu identidad. El permiso para leer Gmail se solicita después y es opcional.' | t }}</p>
+      <button *ngIf="localDemoAvailable" class="primary full local-demo-access" type="button" (click)="continueWithDemo()" [disabled]="authSubmitting">{{ authSubmitting ? lang.t('Ingresando…') : lang.t('Entrar en modo demo (local)') }}</button>
+      <p *ngIf="localDemoAvailable" class="form-intro">{{ 'Solo para pruebas en tu computadora. No conecta Gmail ni accede a cuentas reales.' | t }}</p>
+      <button class="primary full google-access" type="button" (click)="continueWithGoogle()" [disabled]="authSubmitting"><img src="images/google-mark.svg" width="22" height="22" alt="" aria-hidden="true">{{ authSubmitting ? lang.t('Conectando…') : lang.t('Continuar con Google') }}</button>
+      <p class="form-intro">{{ '¿Ya tenías una cuenta? Podrás vincularla y conservar tus movimientos.' | t }}</p>
     </ng-container>
     <form *ngIf="linkRequired" (ngSubmit)="linkGoogleAccount()">
-      <h2>Conserva tu cuenta anterior.</h2>
-      <p>Google verificó tu identidad. Confirma la contraseña anterior de tu cuenta para vincularla, incluidos sus movimientos y permisos.</p>
-      <label>Contraseña de tu cuenta anterior<input name="linkPassword" type="password" autocomplete="current-password" [(ngModel)]="linkPassword" maxlength="256" required></label>
-      <button class="primary full" [disabled]="authSubmitting || !linkPassword">Vincular cuenta</button>
-      <button class="ghost full" type="button" (click)="linkRequired=false;continueWithGoogle()">Usar otra cuenta de Google</button>
-      <small>Si no recuerdas la contraseña, solicita recuperación al operador. No vinculamos cuentas solo porque coincida el correo.</small>
+      <h2>{{ 'Conserva tu cuenta anterior.' | t }}</h2>
+      <p>{{ 'Google verificó tu identidad. Confirma la contraseña anterior de tu cuenta para vincularla, incluidos sus movimientos y permisos.' | t }}</p>
+      <label>{{ 'Contraseña de tu cuenta anterior' | t }}<input name="linkPassword" type="password" autocomplete="current-password" [(ngModel)]="linkPassword" maxlength="256" required></label>
+      <button class="primary full" [disabled]="authSubmitting || !linkPassword">{{ 'Vincular cuenta' | t }}</button>
+      <button class="ghost full" type="button" (click)="linkRequired=false;continueWithGoogle()">{{ 'Usar otra cuenta de Google' | t }}</button>
+      <small>{{ 'Si no recuerdas la contraseña, solicita recuperación al operador. No vinculamos cuentas solo porque coincida el correo.' | t }}</small>
     </form>
-    <p class="legal-links"><a href="/privacidad.html" target="_blank" rel="noopener">Privacidad</a> · <a href="/terminos.html" target="_blank" rel="noopener">Términos</a> · <a href="/eliminar-datos.html" target="_blank" rel="noopener">Eliminar datos</a></p>
-    <p class="form-error" role="alert" *ngIf="error">{{ error }}</p>
+    <p class="legal-links"><a [href]="lang.language() === 'en' ? '/en-privacidad.html' : '/privacidad.html'" target="_blank" rel="noopener">{{ 'Privacidad' | t }}</a> · <a [href]="lang.language() === 'en' ? '/en-terminos.html' : '/terminos.html'" target="_blank" rel="noopener">{{ 'Términos' | t }}</a> · <a [href]="lang.language() === 'en' ? '/en-eliminar-datos.html' : '/eliminar-datos.html'" target="_blank" rel="noopener">{{ 'Eliminar datos' | t }}</a></p>
+    <p class="form-error" role="alert" *ngIf="error">{{ lang.errorText(error) }}</p>
   </div>
 </section>
 
-<a class="skip-link" href="#main-content" *ngIf="auth.user">Ir al contenido</a>
+<a class="skip-link" href="#main-content" *ngIf="auth.user">{{ 'Ir al contenido' | t }}</a>
 <div *ngIf="auth.user" class="app sarela-home-shell" [class.sarela-home-active]="view === 'dashboard'">
   <aside class="sidebar">
-    <button class="logo finora-app-logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al inicio"><span class="finora-app-ring" aria-hidden="true"></span><span>sarela</span></button>
-    <p class="sidebar-caption">TU ESPACIO</p>
-    <nav aria-label="Navegación principal"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Inicio</span></button>
-      <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>Movimientos</span></button>
-      <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>Conexión Gmail</span></button>
-      <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>Tu opinión</span></button></nav>
-    <button class="ghost admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()"><app-icon name="shield" [size]="17" />Administración</button>
-    <div class="sidebar-footer"><div class="profile"><div class="avatar">{{ auth.user.name[0] }}</div><div><b>{{ auth.user.name }}</b><small>Mi cuenta · Sarela</small></div></div><button class="logout" type="button" (click)="logout()"><app-icon name="logout" [size]="17" />Cerrar sesión</button></div>
+    <button class="logo finora-app-logo" type="button" (click)="go('dashboard')" [attr.aria-label]="'Sarela, ir al inicio' | t"><span class="finora-app-ring" aria-hidden="true"></span><span>{{ 'sarela' | t }}</span></button>
+    <p class="sidebar-caption">{{ 'TU ESPACIO' | t }}</p>
+    <nav [attr.aria-label]="'Navegación principal' | t"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>{{ 'Inicio' | t }}</span></button>
+      <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>{{ 'Movimientos' | t }}</span></button>
+      <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>{{ 'Conexión Gmail' | t }}</span></button>
+      <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>{{ 'Tu opinión' | t }}</span></button></nav>
+    <button class="ghost admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()"><app-icon name="shield" [size]="17" />{{ 'Administración' | t }}</button>
+    <div class="sidebar-footer"><div class="profile"><div class="avatar">{{ auth.user.name[0] }}</div><div><b>{{ auth.user.name }}</b><small>{{ 'Mi cuenta · Sarela' | t }}</small></div></div><button class="logout" type="button" (click)="logout()"><app-icon name="logout" [size]="17" />{{ 'Cerrar sesión' | t }}</button></div>
   </aside>
   <main id="main-content" tabindex="-1">
     <header class="topbar">
-      <button class="mobile-brand logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al resumen"><span class="brand">S</span><span>Sarela.</span></button>
-      <div class="breadcrumb">Mi espacio <span>/</span><b>{{ view === 'dashboard' ? 'Resumen' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conexión Gmail' : view === 'admin' ? 'Administración' : 'Tu opinión' }}</b></div>
-      <div class="topbar-actions"><button class="ghost compact admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()" aria-label="Abrir administración"><app-icon name="shield" [size]="17" /><span>Administrar</span></button><button class="connection-pill" type="button" (click)="go('import')"><span class="status-dot" [class.connected]="gmail?.connected"></span><span>{{ !gmail ? 'Consultando Gmail' : gmail.connected ? 'Gmail conectado' : 'Gmail sin conectar' }}</span><app-icon name="down" [size]="14" /></button><div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div><button class="mobile-logout" type="button" aria-label="Cerrar sesión" (click)="logout()"><app-icon name="logout" [size]="18" /></button></div>
+      <button class="mobile-brand logo" type="button" (click)="go('dashboard')" [attr.aria-label]="'Sarela, ir al resumen' | t"><span class="brand">{{ 'S' | t }}</span><span>{{ 'Sarela.' | t }}</span></button>
+      <div class="breadcrumb">{{ 'Mi espacio' | t }} <span>/</span><b>{{ view === 'dashboard' ? lang.t('Resumen') : view === 'movements' ? lang.t('Movimientos') : view === 'import' ? lang.t('Conexión Gmail') : view === 'admin' ? lang.t('Administración') : lang.t('Tu opinión') }}</b></div>
+      <div class="topbar-actions"><button class="ghost compact admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()" [attr.aria-label]="'Abrir administración' | t"><app-icon name="shield" [size]="17" /><span>{{ 'Administrar' | t }}</span></button><button class="connection-pill" type="button" (click)="go('import')"><span class="status-dot" [class.connected]="gmail?.connected"></span><span>{{ !gmail ? lang.t('Consultando Gmail') : gmail.connected ? lang.t('Gmail conectado') : lang.t('Gmail sin conectar') }}</span><app-icon name="down" [size]="14" /></button><div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div><button class="mobile-logout" type="button" [attr.aria-label]="'Cerrar sesión' | t" (click)="logout()"><app-icon name="logout" [size]="18" /></button></div>
     </header>
     <router-outlet></router-outlet>
     <section class="panel import-wait" *ngIf="view==='dashboard' && waitingForImport()" role="status">
-      <p class="eyebrow">TU PRIMERA IMPORTACIÓN</p><h2>{{importStatusLabel()}}</h2>
-      <p>{{gmailJobError || syncResult?.message || 'Estamos comprobando el estado de la importación.'}}</p>
-      <p>El resumen todavía no está completo. Esto no significa que no tengas gastos.</p>
-      <button class="primary" (click)="go('import')">Ver progreso y conexión</button>
+      <p class="eyebrow">{{ 'TU PRIMERA IMPORTACIÓN' | t }}</p><h2>{{ (importStatusLabel() | t) }}</h2>
+      <p>{{ gmailJobError ? lang.errorText(gmailJobError) : syncResult ? importMessage(syncResult) : lang.t('Estamos comprobando el estado de la importación.') }}</p>
+      <p>{{ 'El resumen todavía no está completo. Esto no significa que no tengas gastos.' | t }}</p>
+      <button class="primary" (click)="go('import')">{{ 'Ver progreso y conexión' | t }}</button>
     </section>
     <section *ngIf="view === 'dashboard' && !waitingForImport()" class="view dashboard-view finora-home sarela-home-v4">
       <header class="finora-home-header sarela-home-heading">
-        <div><p class="finora-home-kicker">TU DINERO, MÁS CLARO</p><h1>Hola, {{ auth.user.name.split(' ')[0] }} <span aria-hidden="true">👋</span></h1><p>Esto es lo que necesitas saber de tus finanzas hoy.</p></div>
-        <div class="sarela-home-heading-actions"><span class="finora-home-period"><app-icon name="calendar" [size]="17" />{{ monthLabel() }}</span><span class="avatar" [attr.aria-label]="auth.user.name">{{auth.user.name[0]}}</span></div>
+        <div><p class="finora-home-kicker">{{ 'TU DINERO, MÁS CLARO' | t }}</p><h1>{{ 'Hola, {0}' | t: [auth.user.name.split(' ')[0]] }}<span aria-hidden="true">👋</span></h1><p>{{ 'Esto es lo que necesitas saber de tus finanzas hoy.' | t }}</p></div>
+        <div class="sarela-home-heading-actions"><span class="finora-home-period"><app-icon name="calendar" [size]="17" />{{ monthLabel() }}</span><span class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</span></div>
       </header>
-      <p class="form-error" role="alert" *ngIf="dashboardError">{{dashboardError}} <button class="ghost compact" type="button" (click)="loadDashboard()">Reintentar</button></p>
-      <label class="currency-selector finora-home-currency" *ngIf="dashboard?.availableCurrencies && dashboard!.availableCurrencies!.length > 1">Moneda del resumen<select [(ngModel)]="selectedCurrency" (ngModelChange)="loadDashboard()"><option *ngFor="let unit of dashboard?.availableCurrencies" [value]="unit">{{unit === 'UNK' ? 'Sin moneda registrada' : unit}}</option></select></label>
+      <p class="form-error" role="alert" *ngIf="dashboardError">{{ lang.errorText(dashboardError) }} <button class="ghost compact" type="button" (click)="loadDashboard()">{{ 'Reintentar' | t }}</button></p>
+      <label class="currency-selector finora-home-currency" *ngIf="dashboard?.availableCurrencies && dashboard!.availableCurrencies!.length > 1">{{ 'Moneda del resumen' | t }}<select [(ngModel)]="selectedCurrency" (ngModelChange)="loadDashboard()"><option *ngFor="let unit of dashboard?.availableCurrencies" [value]="unit">{{ unit === 'UNK' ? lang.t('Sin moneda registrada') : unit }}</option></select></label>
       <div class="sarela-home-feature-row">
         <article class="sarela-home-feature">
-          <div class="sarela-home-feature-text"><div class="sarela-home-hero-label">Has gastado este mes <app-icon name="info" [size]="17" /></div>
-            <strong>{{dashboard ? money(dashboard.expenses) : '—'}}</strong>
-            <span>{{dashboard ? dashboard.expenseCount : '—'}} movimientos de gasto registrados</span>
+          <div class="sarela-home-feature-text"><div class="sarela-home-hero-label">{{ 'Has gastado este mes' | t }} <app-icon name="info" [size]="17" /></div>
+            <strong>{{ dashboard ? money(dashboard.expenses) : '—' }}</strong>
+            <span>{{ '{0} movimientos de gasto registrados' | t: [dashboard ? dashboard.expenseCount : '—'] }}</span>
           </div>
-          <svg *ngIf="hasDailySpending()" class="sarela-home-sparkline" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Tendencia de gastos diarios registrados" role="img">
+          <svg *ngIf="hasDailySpending()" class="sarela-home-sparkline" viewBox="0 0 100 100" preserveAspectRatio="none" [attr.aria-label]="'Tendencia de gastos diarios registrados' | t" role="img">
             <defs><linearGradient id="sarelaHomeWave" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8DE0AA" stop-opacity=".75"/><stop offset="100%" stop-color="#8DE0AA" stop-opacity="0"/></linearGradient></defs>
             <polygon [attr.points]="'0,100 '+linePoints()+' 100,100'" fill="url(#sarelaHomeWave)"/>
             <polyline [attr.points]="linePoints()" fill="none" stroke="#BAEDC9" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>
@@ -78,285 +79,284 @@
           <div *ngIf="!hasDailySpending()" class="sarela-home-feature-empty"><app-icon name="trend" [size]="42"/></div>
         </article>
         <article class="sarela-home-recommendation">
-          <div class="sarela-home-recommend-title"><app-icon name="spark" [size]="24"/><h2>Sarela te recomienda</h2></div>
+          <div class="sarela-home-recommend-title"><app-icon name="spark" [size]="24"/><h2>{{ 'Sarela te recomienda' | t }}</h2></div>
           <ng-container *ngIf="dashboard && dashboard.expenses > 0; else sarelaFirstInsight">
-            <h3>{{financialInsightTitle()}}</h3><p>{{financialInsight()}}</p>
-            <small>Basado en tus movimientos registrados, no en todo tu historial bancario.</small>
+            <h3>{{ (financialInsightTitle() | t) }}</h3><p>{{ (financialInsight() | t) }}</p>
+            <small>{{ 'Basado en tus movimientos registrados, no en todo tu historial bancario.' | t }}</small>
           </ng-container>
-          <ng-template #sarelaFirstInsight><h3>Tu claridad comienza aquí.</h3><p>Registra tus primeros movimientos o conecta Gmail para analizar tus notificaciones financieras.</p><button class="finora-home-inline-action" type="button" (click)="go('import')">Conocer Gmail <app-icon name="arrow" [size]="15"/></button></ng-template>
+          <ng-template #sarelaFirstInsight><h3>{{ 'Tu claridad comienza aquí.' | t }}</h3><p>{{ 'Registra tus primeros movimientos o conecta Gmail para analizar tus notificaciones financieras.' | t }}</p><button class="finora-home-inline-action" type="button" (click)="go('import')">{{ 'Conocer Gmail' | t }} <app-icon name="arrow" [size]="15"/></button></ng-template>
         </article>
       </div>
       <div class="sarela-home-metrics finora-home-summary">
-        <article class="sarela-home-metric"><span class="sarela-home-metric-icon"><app-icon name="trend" [size]="28"/></span><div><span>Ingresos registrados</span><strong>{{dashboard ? money(dashboard.income) : '—'}}</strong></div></article>
-        <article class="sarela-home-metric"><span class="sarela-home-metric-icon"><app-icon name="wallet" [size]="28"/></span><div><span>Gastos registrados</span><strong>{{dashboard ? money(dashboard.expenses) : '—'}}</strong></div></article>
-        <article class="sarela-home-metric"><span class="sarela-home-metric-icon"><app-icon name="rows" [size]="28"/></span><div><span>Movimientos de gasto</span><strong>{{dashboard ? dashboard.expenseCount : '—'}}</strong></div></article>
+        <article class="sarela-home-metric"><span class="sarela-home-metric-icon"><app-icon name="trend" [size]="28"/></span><div><span>{{ 'Ingresos registrados' | t }}</span><strong>{{ dashboard ? money(dashboard.income) : '—' }}</strong></div></article>
+        <article class="sarela-home-metric"><span class="sarela-home-metric-icon"><app-icon name="wallet" [size]="28"/></span><div><span>{{ 'Gastos registrados' | t }}</span><strong>{{ dashboard ? money(dashboard.expenses) : '—' }}</strong></div></article>
+        <article class="sarela-home-metric"><span class="sarela-home-metric-icon"><app-icon name="rows" [size]="28"/></span><div><span>{{ 'Movimientos de gasto' | t }}</span><strong>{{ dashboard ? dashboard.expenseCount : '—' }}</strong></div></article>
       </div>
       <div class="sarela-home-content-row">
         <article class="finora-home-card finora-home-spending sarela-home-categories">
-          <div class="finora-home-card-head"><div><h2>¿En qué se fue tu dinero?</h2><p>Distribución de los gastos de {{monthLabel()}}.</p></div><span class="finora-home-card-icon"><app-icon name="grid" [size]="20"/></span></div>
+          <div class="finora-home-card-head"><div><h2>{{ '¿En qué se fue tu dinero?' | t }}</h2><p>{{ 'Distribución de los gastos de {0}.' | t: [monthLabel()] }}</p></div><span class="finora-home-card-icon"><app-icon name="grid" [size]="20"/></span></div>
           <ng-container *ngIf="dashboard && dashboard.expenses > 0 && categoryDistribution().length; else finoraEmptySpending">
             <div class="finora-home-category-layout">
-              <div class="finora-home-donut" [ngStyle]="donutStyle(categoryDistribution())" role="img" aria-label="Distribución de gastos registrados por categoría"><div><small>Gasto del mes</small><strong>{{money(dashboard.expenses)}}</strong></div></div>
+              <div class="finora-home-donut" [ngStyle]="donutStyle(categoryDistribution())" role="img" [attr.aria-label]="'Distribución de gastos registrados por categoría' | t"><div><small>{{ 'Gasto del mes' | t }}</small><strong>{{ money(dashboard.expenses) }}</strong></div></div>
               <div class="finora-home-category-list">
                 <button type="button" *ngFor="let item of categoryDistribution().slice(0, 5); trackBy: trackSpendingPoint" (click)="openCategory(item)">
-                  <span class="finora-home-category-dot" [style.background]="item.color"></span><span class="finora-home-category-name">{{item.name}}</span><strong>{{money(item.value)}}</strong><small>{{item.percentage | number:'1.0-0'}}%</small>
+                  <span class="finora-home-category-dot" [style.background]="item.color"></span><span class="finora-home-category-name">{{ categoryLabel(item.name) }}</span><strong>{{ money(item.value) }}</strong><small>{{ item.percentage | number:'1.0-0':lang.locale() }}%</small>
                 </button>
               </div>
             </div>
           </ng-container>
-          <ng-template #finoraEmptySpending><div class="finora-home-empty"><app-icon name="wallet" [size]="28"/><h3>{{dashboardLoading ? 'Cargando tus gastos...' : 'Todavía no hay gastos registrados'}}</h3><p>Registra o importa movimientos para ver aquí tus gastos por categoría.</p><button type="button" class="finora-home-inline-action" (click)="go('movements')">Ver movimientos <app-icon name="arrow" [size]="15"/></button></div></ng-template>
+          <ng-template #finoraEmptySpending><div class="finora-home-empty"><app-icon name="wallet" [size]="28"/><h3>{{ dashboardLoading ? lang.t('Cargando tus gastos...') : lang.t('Todavía no hay gastos registrados') }}</h3><p>{{ 'Registra o importa movimientos para ver aquí tus gastos por categoría.' | t }}</p><button type="button" class="finora-home-inline-action" (click)="go('movements')">{{ 'Ver movimientos' | t }} <app-icon name="arrow" [size]="15"/></button></div></ng-template>
         </article>
         <article class="finora-home-card finora-home-recent sarela-home-recent">
-          <div class="finora-home-card-head"><div><h2>Últimos movimientos</h2></div><button type="button" class="finora-home-inline-action" (click)="go('movements')">Ver todos <app-icon name="arrow" [size]="15"/></button></div>
+          <div class="finora-home-card-head"><div><h2>{{ 'Últimos movimientos' | t }}</h2></div><button type="button" class="finora-home-inline-action" (click)="go('movements')">{{ 'Ver todos' | t }} <app-icon name="arrow" [size]="15"/></button></div>
           <div class="finora-home-recent-list" *ngIf="dashboard?.transactions?.length; else finoraNoRecent">
             <div class="finora-home-recent-item" *ngFor="let tx of dashboard?.transactions?.slice(0, 4)">
               <span class="finora-home-transaction-icon"><app-icon [name]="tx.type === 'INCOME' ? 'downLeft' : 'upRight'" [size]="18"/></span>
-              <span><strong>{{movementTitle(tx)}}</strong><small>{{tx.category || tx.macroCategory || 'Sin categoría'}} · {{movementDate(tx.date)}}</small></span>
-              <b [class.income]="tx.type === 'INCOME'">{{tx.type === 'INCOME' ? '+' : tx.type === 'EXPENSE' ? '−' : ''}}{{money(tx.amount,tx.currency)}}</b>
+              <span><strong>{{ movementTitle(tx) }}</strong><small>{{ categoryLabel(tx.category || tx.macroCategory || 'Sin categoría') }} · {{ movementDate(tx.date) }}</small></span>
+              <b [class.income]="tx.type === 'INCOME'">{{ tx.type === 'INCOME' ? '+' : tx.type === 'EXPENSE' ? '−' : '' }}{{ money(tx.amount,tx.currency) }}</b>
             </div>
           </div>
-          <ng-template #finoraNoRecent><div class="finora-home-empty finora-home-empty-compact"><app-icon name="rows" [size]="26"/><h3>Tu historial comienza aquí</h3><p>Registra un movimiento o conecta Gmail.</p><button type="button" class="finora-home-inline-action" (click)="go('movements')">Registrar movimiento <app-icon name="arrow" [size]="15"/></button></div></ng-template>
+          <ng-template #finoraNoRecent><div class="finora-home-empty finora-home-empty-compact"><app-icon name="rows" [size]="26"/><h3>{{ 'Tu historial comienza aquí' | t }}</h3><p>{{ 'Registra un movimiento o conecta Gmail.' | t }}</p><button type="button" class="finora-home-inline-action" (click)="go('movements')">{{ 'Registrar movimiento' | t }} <app-icon name="arrow" [size]="15"/></button></div></ng-template>
         </article>
       </div>
       <div class="sarela-home-gmail-strip" [class.disconnected]="!gmail?.connected">
         <span class="sarela-home-gmail-icon"><app-icon name="mail" [size]="26"/></span>
-        <strong>{{gmail?.connected ? 'Gmail conectado' : 'Gmail sin conectar'}}</strong>
+        <strong>{{ gmail?.connected ? lang.t('Gmail conectado') : lang.t('Gmail sin conectar') }}</strong>
         <span class="sarela-home-gmail-check" *ngIf="gmail?.connected"><app-icon name="check" [size]="16"/></span>
         <span class="sarela-home-gmail-divider"></span>
-        <p>{{gmail?.connected ? (importActive() ? 'Estamos procesando tus notificaciones financieras.' : 'Importa o actualiza tus notificaciones financieras cuando quieras.') : 'Conectar Gmail es opcional. Puedes seguir registrando tus gastos manualmente.'}}</p>
-        <button class="ghost" type="button" (click)="gmail?.connected ? syncGmail() : go('import')" [disabled]="syncingGmail || importActive()"><app-icon name="refresh" [size]="18"/>{{gmail?.connected ? (syncingGmail ? 'Actualizando…' : 'Actualizar ahora') : 'Conectar Gmail'}}</button>
+        <p>{{ gmail?.connected ? (importActive() ? lang.t('Estamos procesando tus notificaciones financieras.') : lang.t('Importa o actualiza tus notificaciones financieras cuando quieras.')) : lang.t('Conectar Gmail es opcional. Puedes seguir registrando tus gastos manualmente.') }}</p>
+        <button class="ghost" type="button" (click)="gmail?.connected ? syncGmail() : go('import')" [disabled]="syncingGmail || importActive()"><app-icon name="refresh" [size]="18"/>{{ gmail?.connected ? (syncingGmail ? lang.t('Actualizando…') : lang.t('Actualizar ahora')) : lang.t('Conectar Gmail') }}</button>
       </div>
-      <p class="finora-home-note" *ngIf="syncResult && (syncResult.status !== 'COMPLETED' || syncResult.stale || syncResult.reviewRequired > 0 || syncResult.unsupported > 0 || syncResult.failed > 0)" role="status">{{syncResult.message}} Estos datos pueden estar incompletos; el resumen muestra solo movimientos registrados y no representa todo tu historial bancario. <span *ngIf="syncResult.reviewRequired > 0">{{syncResult.reviewRequired}} {{syncResult.reviewRequired === 1 ? 'correo por revisar' : 'correos por revisar'}}.</span> <span *ngIf="syncResult.unsupported > 0">{{syncResult.unsupported}} no interpretados.</span> Revisa tu conexión Gmail. <button type="button" (click)="go('import')">Ver estado</button></p>
+      <p class="finora-home-note" *ngIf="syncResult && (syncResult.status !== 'COMPLETED' || syncResult.stale || syncResult.reviewRequired > 0 || syncResult.unsupported > 0 || syncResult.failed > 0)" role="status">{{ '{0} Estos datos pueden estar incompletos; el resumen muestra solo movimientos registrados y no representa todo tu historial bancario.' | t: [importMessage(syncResult)] }}<span *ngIf="syncResult.reviewRequired > 0">{{ syncResult.reviewRequired }} {{ syncResult.reviewRequired === 1 ? lang.t('correo por revisar') : lang.t('correos por revisar') }}.</span> <span *ngIf="syncResult.unsupported > 0">{{ '{0} no interpretados.' | t: [syncResult.unsupported] }}</span>  {{ 'Revisa tu conexión Gmail.' | t }} <button type="button" (click)="go('import')">{{ 'Ver estado' | t }}</button></p>
     </section>
     <section *ngIf="view === 'movements'" class="view movements-view sarela-ledger">
       <header class="sarela-ledger-heading">
         <div>
-          <p class="eyebrow">TUS FINANZAS, EN ORDEN</p>
-          <h1>Tus movimientos <span aria-hidden="true" class="sarela-heading-spark">✧</span></h1>
-          <p>Consulta y analiza tus gastos, compras, pagos y otros movimientos registrados.</p>
+          <p class="eyebrow">{{ 'TUS FINANZAS, EN ORDEN' | t }}</p>
+          <h1>{{ 'Tus movimientos' | t }} <span aria-hidden="true" class="sarela-heading-spark">✧</span></h1>
+          <p>{{ 'Consulta y analiza tus gastos, compras, pagos y otros movimientos registrados.' | t }}</p>
         </div>
         <div class="sarela-ledger-heading-actions">
-          <span class="sarela-sync-chip" *ngIf="gmail?.connected"><app-icon name="check" [size]="16" /> Gmail conectado · {{lastSyncLabel()}}</span>
-          <button type="button" class="primary sarela-new-movement" (click)="openMovementEditor()"><app-icon name="plus" [size]="17" /> Agregar movimiento</button>
+          <span class="sarela-sync-chip" *ngIf="gmail?.connected"><app-icon name="check" [size]="16" /> {{ 'Gmail conectado · {0}' | t: [lastSyncLabel()] }}</span>
+          <button type="button" class="primary sarela-new-movement" (click)="openMovementEditor()"><app-icon name="plus" [size]="17" />  {{ 'Agregar movimiento' | t }}</button>
         </div>
       </header>
 
-      <div class="sarela-ledger-toolbar" role="search" aria-label="Filtrar movimientos">
-        <label class="sarela-ledger-search"><span class="sr-only">Buscar movimiento</span><app-icon name="search" [size]="19" /><input name="movementSearch" [(ngModel)]="movementFilters.search" (ngModelChange)="updateMovementFilters()" placeholder="Buscar comercio, categoría o descripción…"></label>
-        <div class="sarela-ledger-chips" role="group" aria-label="Tipo de movimiento">
-          <button type="button" [class.selected]="!movementFilters.type" [attr.aria-pressed]="!movementFilters.type" (click)="selectMovementType('')">Todos</button>
-          <button type="button" [class.selected]="movementFilters.type==='EXPENSE'" [attr.aria-pressed]="movementFilters.type==='EXPENSE'" (click)="selectMovementType('EXPENSE')">Gastos</button>
-          <button type="button" [class.selected]="movementFilters.type==='INCOME'" [attr.aria-pressed]="movementFilters.type==='INCOME'" (click)="selectMovementType('INCOME')">Ingresos</button>
-          <button type="button" [class.selected]="movementFilters.type==='TRANSFER'" [attr.aria-pressed]="movementFilters.type==='TRANSFER'" (click)="selectMovementType('TRANSFER')">Transferencias</button>
+      <div class="sarela-ledger-toolbar" role="search" [attr.aria-label]="'Filtrar movimientos' | t">
+        <label class="sarela-ledger-search"><span class="sr-only">{{ 'Buscar movimiento' | t }}</span><app-icon name="search" [size]="19" /><input name="movementSearch" [(ngModel)]="movementFilters.search" (ngModelChange)="updateMovementFilters()" [attr.placeholder]="'Buscar comercio, categoría o descripción…' | t"></label>
+        <div class="sarela-ledger-chips" role="group" [attr.aria-label]="'Tipo de movimiento' | t">
+          <button type="button" [class.selected]="!movementFilters.type" [attr.aria-pressed]="!movementFilters.type" (click)="selectMovementType('')">{{ 'Todos' | t }}</button>
+          <button type="button" [class.selected]="movementFilters.type==='EXPENSE'" [attr.aria-pressed]="movementFilters.type==='EXPENSE'" (click)="selectMovementType('EXPENSE')">{{ 'Gastos' | t }}</button>
+          <button type="button" [class.selected]="movementFilters.type==='INCOME'" [attr.aria-pressed]="movementFilters.type==='INCOME'" (click)="selectMovementType('INCOME')">{{ 'Ingresos' | t }}</button>
+          <button type="button" [class.selected]="movementFilters.type==='TRANSFER'" [attr.aria-pressed]="movementFilters.type==='TRANSFER'" (click)="selectMovementType('TRANSFER')">{{ 'Transferencias' | t }}</button>
         </div>
-        <label class="sarela-ledger-category"><span class="sr-only">Filtrar por categoría</span><select name="movementCategory" [(ngModel)]="movementFilters.category" (ngModelChange)="updateMovementFilters()"><option value="">Todas las categorías</option><option *ngFor="let c of categories" [value]="c">{{c}}</option><option value="Sin categoría">Sin categoría</option></select></label>
-        <button type="button" class="ghost sarela-ledger-more" (click)="movementMoreFiltersOpen=!movementMoreFiltersOpen" [attr.aria-expanded]="movementMoreFiltersOpen"><app-icon name="calendar" [size]="17" /> Fechas y más filtros</button>
+        <label class="sarela-ledger-category"><span class="sr-only">{{ 'Filtrar por categoría' | t }}</span><select name="movementCategory" [(ngModel)]="movementFilters.category" (ngModelChange)="updateMovementFilters()"><option value="">{{ 'Todas las categorías' | t }}</option><option *ngFor="let c of categories" [value]="c">{{ categoryLabel(c) }}</option><option value="Sin categoría">{{ 'Sin categoría' | t }}</option></select></label>
+        <button type="button" class="ghost sarela-ledger-more" (click)="movementMoreFiltersOpen=!movementMoreFiltersOpen" [attr.aria-expanded]="movementMoreFiltersOpen"><app-icon name="calendar" [size]="17" />  {{ 'Fechas y más filtros' | t }}</button>
       </div>
       <div class="sarela-ledger-extra" *ngIf="movementMoreFiltersOpen">
-        <label>Desde<input name="movementFrom" type="date" [(ngModel)]="movementFilters.from" (ngModelChange)="updateMovementFilters()"></label>
-        <label>Hasta<input name="movementTo" type="date" [(ngModel)]="movementFilters.to" (ngModelChange)="updateMovementFilters()"></label>
-        <label>Moneda<input name="movementCurrency" maxlength="3" placeholder="PEN, USD…" [(ngModel)]="movementFilters.currency" (ngModelChange)="updateMovementFilters()"></label>
-        <label>Otros tipos<select name="movementType" [(ngModel)]="movementFilters.type" (ngModelChange)="updateMovementFilters()"><option value="">Todos</option><option value="EXPENSE">Gasto</option><option value="INCOME">Ingreso</option><option value="TRANSFER">Transferencia</option><option value="SAVINGS_WITHDRAWAL">Retiro de ahorro</option><option value="SAVINGS_DEPOSIT">Aporte al ahorro</option><option value="CASH_WITHDRAWAL">Retiro en efectivo</option><option value="REFUND">Devolución</option></select></label>
-        <button type="button" class="ghost compact" (click)="resetMovementFilters()" [disabled]="!hasMovementFilters()">Restablecer filtros</button>
+        <label>{{ 'Desde' | t }}<input name="movementFrom" type="date" [(ngModel)]="movementFilters.from" (ngModelChange)="updateMovementFilters()"></label>
+        <label>{{ 'Hasta' | t }}<input name="movementTo" type="date" [(ngModel)]="movementFilters.to" (ngModelChange)="updateMovementFilters()"></label>
+        <label>{{ 'Moneda' | t }}<input name="movementCurrency" maxlength="3" [attr.placeholder]="'PEN, USD…' | t" [(ngModel)]="movementFilters.currency" (ngModelChange)="updateMovementFilters()"></label>
+        <label>{{ 'Otros tipos' | t }}<select name="movementType" [(ngModel)]="movementFilters.type" (ngModelChange)="updateMovementFilters()"><option value="">{{ 'Todos' | t }}</option><option value="EXPENSE">{{ 'Gasto' | t }}</option><option value="INCOME">{{ 'Ingreso' | t }}</option><option value="TRANSFER">{{ 'Transferencia' | t }}</option><option value="SAVINGS_WITHDRAWAL">{{ 'Retiro de ahorro' | t }}</option><option value="SAVINGS_DEPOSIT">{{ 'Aporte al ahorro' | t }}</option><option value="CASH_WITHDRAWAL">{{ 'Retiro en efectivo' | t }}</option><option value="REFUND">{{ 'Devolución' | t }}</option></select></label>
+        <button type="button" class="ghost compact" (click)="resetMovementFilters()" [disabled]="!hasMovementFilters()">{{ 'Restablecer filtros' | t }}</button>
       </div>
 
-      <div class="sarela-ledger-metrics" aria-label="Resumen financiero del mes">
-        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="wallet" [size]="23" /><span>Gastos del mes</span></div><strong>{{dashboard ? money(dashboard.expenses) : '—'}}</strong><small>Movimientos registrados</small></article>
-        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="rows" [size]="23" /><span>Operaciones de gasto</span></div><strong>{{dashboard?.expenseCount ?? '—'}}</strong><small>Durante el mes actual del resumen</small></article>
-        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="grid" [size]="23" /><span>Comercios en el resumen</span></div><strong>{{dashboard?.merchants?.length ?? '—'}}</strong><small>Listado resumido disponible</small></article>
-        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="repeat" [size]="23" /><span>Movimientos recurrentes</span></div><strong>{{dashboard?.recurring?.length ?? '—'}}</strong><small>Registros identificados, no uso de servicios</small></article>
+      <div class="sarela-ledger-metrics" [attr.aria-label]="'Resumen financiero del mes' | t">
+        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="wallet" [size]="23" /><span>{{ 'Gastos del mes' | t }}</span></div><strong>{{ dashboard ? money(dashboard.expenses) : '—' }}</strong><small>{{ 'Movimientos registrados' | t }}</small></article>
+        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="rows" [size]="23" /><span>{{ 'Operaciones de gasto' | t }}</span></div><strong>{{ dashboard?.expenseCount ?? '—' }}</strong><small>{{ 'Durante el mes actual del resumen' | t }}</small></article>
+        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="grid" [size]="23" /><span>{{ 'Comercios en el resumen' | t }}</span></div><strong>{{ dashboard?.merchants?.length ?? '—' }}</strong><small>{{ 'Listado resumido disponible' | t }}</small></article>
+        <article class="panel"><div class="sarela-ledger-metric-label"><app-icon name="repeat" [size]="23" /><span>{{ 'Movimientos recurrentes' | t }}</span></div><strong>{{ dashboard?.recurring?.length ?? '—' }}</strong><small>{{ 'Registros identificados, no uso de servicios' | t }}</small></article>
       </div>
 
       <div class="sarela-ledger-content">
         <article class="panel sarela-ledger-history">
-          <div class="sarela-ledger-card-heading"><div><h2>Movimientos <span *ngIf="!transactionsLoading">({{movementTotal}})</span></h2><p>Ordenados por fecha, desde el historial registrado.</p></div><button type="button" class="ghost compact" (click)="loadTransactions()" [disabled]="transactionsLoading"><app-icon name="refresh" [size]="15"/> Actualizar</button></div>
-          <div class="form-error" role="alert" *ngIf="movementError">{{movementError}} <button type="button" class="ghost compact" (click)="loadTransactions()">Reintentar</button></div>
-          <div class="empty" *ngIf="transactionsLoading" role="status">Cargando tus movimientos…</div>
-          <div class="empty" *ngIf="!transactionsLoading && !movementError && movementTotal === 0">{{hasMovementFilters() ? 'No encontramos movimientos con estos filtros.' : 'Aún no hay movimientos. Puedes agregar uno o conectar Gmail.'}}</div>
+          <div class="sarela-ledger-card-heading"><div><h2>{{ 'Movimientos' | t }} <span *ngIf="!transactionsLoading">({{ movementTotal }})</span></h2><p>{{ 'Ordenados por fecha, desde el historial registrado.' | t }}</p></div><button type="button" class="ghost compact" (click)="loadTransactions()" [disabled]="transactionsLoading"><app-icon name="refresh" [size]="15"/>  {{ 'Actualizar' | t }}</button></div>
+          <div class="form-error" role="alert" *ngIf="movementError">{{ lang.errorText(movementError) }} <button type="button" class="ghost compact" (click)="loadTransactions()">{{ 'Reintentar' | t }}</button></div>
+          <div class="empty" *ngIf="transactionsLoading" role="status">{{ 'Cargando tus movimientos…' | t }}</div>
+          <div class="empty" *ngIf="!transactionsLoading && !movementError && movementTotal === 0">{{ hasMovementFilters() ? lang.t('No encontramos movimientos con estos filtros.') : lang.t('Aún no hay movimientos. Puedes agregar uno o conectar Gmail.') }}</div>
           <div class="sarela-ledger-table-scroll" *ngIf="!transactionsLoading && !movementError && movementTotal>0">
             <table class="sarela-ledger-table">
-              <thead><tr><th scope="col">Fecha</th><th scope="col">Comercio</th><th scope="col">Categoría</th><th scope="col">Descripción</th><th scope="col" class="numeric">Monto</th><th scope="col" aria-label="Acciones"></th></tr></thead>
+              <thead><tr><th scope="col">{{ 'Fecha' | t }}</th><th scope="col">{{ 'Comercio' | t }}</th><th scope="col">{{ 'Categoría' | t }}</th><th scope="col">{{ 'Descripción' | t }}</th><th scope="col" class="numeric">{{ 'Monto' | t }}</th><th scope="col" [attr.aria-label]="'Acciones' | t"></th></tr></thead>
               <tbody>
                 <tr class="tx-actions" *ngFor="let tx of pagedTransactions()">
-                  <td class="date">{{movementDate(tx.date)}}</td>
-                  <td><div class="sarela-ledger-merchant"><span class="sarela-ledger-merchant-icon">{{movementMerchantInitial(tx)}}</span><strong>{{movementTitle(tx)}}</strong></div></td>
-                  <td><span class="sarela-ledger-tag">{{tx.category || tx.macroCategory || 'Sin categoría'}}</span></td>
-                  <td class="description">{{tx.description}} <small *ngIf="tx.recurring">· Recurrente</small></td>
-                  <td class="numeric" [class.income]="tx.type==='INCOME'"><strong>{{tx.type==='INCOME'?'+':tx.type==='EXPENSE'?'−':''}}{{money(tx.amount,tx.currency)}}</strong></td>
-                  <td><div class="sarela-ledger-row-actions"><button type="button" class="ghost compact" (click)="editTransaction(tx)" [attr.aria-label]="'Editar movimiento '+movementTitle(tx)">Editar</button><button type="button" class="danger compact" (click)="deleteTransaction(tx.id)" [disabled]="deletingTransactionIds.has(tx.id)" [attr.aria-label]="'Eliminar movimiento '+movementTitle(tx)">{{deletingTransactionIds.has(tx.id)?'Eliminando…':'Eliminar'}}</button></div></td>
+                  <td class="date">{{ movementDate(tx.date) }}</td>
+                  <td><div class="sarela-ledger-merchant"><span class="sarela-ledger-merchant-icon">{{ movementMerchantInitial(tx) }}</span><strong>{{ movementTitle(tx) }}</strong></div></td>
+                  <td><span class="sarela-ledger-tag">{{ categoryLabel(tx.category || tx.macroCategory || 'Sin categoría') }}</span></td>
+                  <td class="description">{{ tx.description }} <small *ngIf="tx.recurring">{{ '· Recurrente' | t }}</small></td>
+                  <td class="numeric" [class.income]="tx.type==='INCOME'"><strong>{{ tx.type==='INCOME'?'+':tx.type==='EXPENSE'?'−':'' }}{{ money(tx.amount,tx.currency) }}</strong></td>
+                  <td><div class="sarela-ledger-row-actions"><button type="button" class="ghost compact" (click)="editTransaction(tx)" [attr.aria-label]="lang.t('Editar movimiento')+movementTitle(tx)">{{ 'Editar' | t }}</button><button type="button" class="danger compact" (click)="deleteTransaction(tx.id)" [disabled]="deletingTransactionIds.has(tx.id)" [attr.aria-label]="lang.t('Eliminar movimiento')+movementTitle(tx)">{{ deletingTransactionIds.has(tx.id)?lang.t('Eliminando…'):lang.t('Eliminar') }}</button></div></td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <div class="pager" *ngIf="movementTotal>movementPageSize"><button class="ghost compact" type="button" (click)="previousMovementPage()" [disabled]="transactionsLoading || movementPage===1">Anterior</button><span>Página {{movementPage}} de {{movementTotalPages()}}</span><button class="ghost compact" type="button" (click)="nextMovementPage()" [disabled]="transactionsLoading || movementPage===movementTotalPages()">Siguiente</button></div>
+          <div class="pager" *ngIf="movementTotal>movementPageSize"><button class="ghost compact" type="button" (click)="previousMovementPage()" [disabled]="transactionsLoading || movementPage===1">{{ 'Anterior' | t }}</button><span>{{ 'Página {0} de {1}' | t: [movementPage, movementTotalPages()] }}</span><button class="ghost compact" type="button" (click)="nextMovementPage()" [disabled]="transactionsLoading || movementPage===movementTotalPages()">{{ 'Siguiente' | t }}</button></div>
         </article>
 
         <aside class="panel sarela-ledger-insights">
-          <div class="sarela-ledger-card-heading"><div><h2><app-icon name="trend" [size]="21" /> Tus patrones de gasto</h2><p>Según los movimientos registrados este mes.</p></div></div>
+          <div class="sarela-ledger-card-heading"><div><h2><app-icon name="trend" [size]="21" />  {{ 'Tus patrones de gasto' | t }}</h2><p>{{ 'Según los movimientos registrados este mes.' | t }}</p></div></div>
           <div *ngIf="dashboard && dashboard.expenses>0 && categoryDistribution().length; else sarelaNoCategories">
-            <p class="sarela-ledger-insight-intro">{{financialInsight()}}</p>
+            <p class="sarela-ledger-insight-intro">{{ (financialInsight() | t) }}</p>
             <div class="sarela-ledger-donut-row">
-              <div class="sarela-ledger-donut" [ngStyle]="donutStyle(categoryDistribution())"><div><small>Gasto registrado</small><strong>{{money(dashboard.expenses)}}</strong></div></div>
-              <div class="sarela-ledger-legend"><div *ngFor="let item of categoryDistribution()"><i [style.background]="item.color"></i><span>{{item.name}}</span><strong>{{item.percentage | number:'1.0-0'}}%</strong></div></div>
+              <div class="sarela-ledger-donut" [ngStyle]="donutStyle(categoryDistribution())"><div><small>{{ 'Gasto registrado' | t }}</small><strong>{{ money(dashboard.expenses) }}</strong></div></div>
+              <div class="sarela-ledger-legend"><div *ngFor="let item of categoryDistribution()"><i [style.background]="item.color"></i><span>{{ categoryLabel(item.name) }}</span><strong>{{ item.percentage | number:'1.0-0':lang.locale() }}%</strong></div></div>
             </div>
-            <div class="sarela-ledger-insight-note"><app-icon name="spark" [size]="18" /><div><strong>Lo más relevante</strong><p>{{financialInsightTitle()}}</p><small>El resumen no representa todo tu historial bancario.</small></div></div>
+            <div class="sarela-ledger-insight-note"><app-icon name="spark" [size]="18" /><div><strong>{{ 'Lo más relevante' | t }}</strong><p>{{ (financialInsightTitle() | t) }}</p><small>{{ 'El resumen no representa todo tu historial bancario.' | t }}</small></div></div>
           </div>
-          <ng-template #sarelaNoCategories><div class="sarela-ledger-empty"><app-icon name="bars" [size]="32" /><h3>Aquí descubrirás tus patrones</h3><p>Cuando tengas gastos registrados, podrás ver cómo se distribuyen por categoría.</p></div></ng-template>
+          <ng-template #sarelaNoCategories><div class="sarela-ledger-empty"><app-icon name="bars" [size]="32" /><h3>{{ 'Aquí descubrirás tus patrones' | t }}</h3><p>{{ 'Cuando tengas gastos registrados, podrás ver cómo se distribuyen por categoría.' | t }}</p></div></ng-template>
         </aside>
       </div>
 
       <div class="sarela-ledger-editor-backdrop" *ngIf="movementEditorOpen">
         <section class="panel sarela-ledger-editor" role="dialog" aria-modal="true" aria-labelledby="sarela-movement-editor-title" appFocusTrap>
-          <div class="sarela-ledger-editor-heading"><div><p class="eyebrow">MOVIMIENTO MANUAL</p><h2 id="sarela-movement-editor-title">{{editingId ? 'Editar movimiento' : 'Agregar movimiento'}}</h2></div><button type="button" class="ghost compact" (click)="closeMovementEditor()" aria-label="Cerrar formulario">Cerrar</button></div>
+          <div class="sarela-ledger-editor-heading"><div><p class="eyebrow">{{ 'MOVIMIENTO MANUAL' | t }}</p><h2 id="sarela-movement-editor-title">{{ editingId ? lang.t('Editar movimiento') : lang.t('Agregar movimiento') }}</h2></div><button type="button" class="ghost compact" (click)="closeMovementEditor()" [attr.aria-label]="'Cerrar formulario' | t">{{ 'Cerrar' | t }}</button></div>
           <form (ngSubmit)="saveTransaction()">
-            <div class="type-toggle"><button type="button" [class.active]="txForm.type==='EXPENSE'" (click)="txForm.type='EXPENSE'">Gasto</button><button type="button" [class.active]="txForm.type==='INCOME'" (click)="txForm.type='INCOME'">Ingreso</button></div>
-            <label>Descripción<input name="description" [(ngModel)]="txForm.description" required></label>
-            <label>Monto<input name="amount" type="number" min="0.01" step="0.01" [(ngModel)]="txForm.amount" required></label>
-            <label>Fecha<input name="date" type="date" [(ngModel)]="txForm.date" required></label>
-            <label>Categoría<select name="category" [(ngModel)]="txForm.category"><option *ngFor="let c of categories">{{c}}</option></select></label>
-            <label class="check"><input name="recurring" type="checkbox" [(ngModel)]="txForm.recurring"> Es recurrente</label>
-            <div class="sarela-ledger-editor-actions"><button class="ghost" type="button" (click)="closeMovementEditor()">Cancelar</button><button class="primary" type="submit" [disabled]="savingTransaction">{{savingTransaction ? 'Guardando…' : editingId ? 'Actualizar' : 'Guardar movimiento'}}</button></div>
+            <div class="type-toggle"><button type="button" [class.active]="txForm.type==='EXPENSE'" (click)="txForm.type='EXPENSE'">{{ 'Gasto' | t }}</button><button type="button" [class.active]="txForm.type==='INCOME'" (click)="txForm.type='INCOME'">{{ 'Ingreso' | t }}</button></div>
+            <label>{{ 'Descripción' | t }}<input name="description" [(ngModel)]="txForm.description" required></label>
+            <label>{{ 'Monto' | t }}<input name="amount" type="number" min="0.01" step="0.01" [(ngModel)]="txForm.amount" required></label>
+            <label>{{ 'Fecha' | t }}<input name="date" type="date" [(ngModel)]="txForm.date" required></label>
+            <label>{{ 'Categoría' | t }}<select name="category" [(ngModel)]="txForm.category"><option *ngFor="let c of categories" [value]="c">{{ categoryLabel(c) }}</option></select></label>
+            <label class="check"><input name="recurring" type="checkbox" [(ngModel)]="txForm.recurring">  {{ 'Es recurrente' | t }}</label>
+            <div class="sarela-ledger-editor-actions"><button class="ghost" type="button" (click)="closeMovementEditor()">{{ 'Cancelar' | t }}</button><button class="primary" type="submit" [disabled]="savingTransaction">{{ savingTransaction ? lang.t('Guardando…') : editingId ? lang.t('Actualizar') : lang.t('Guardar movimiento') }}</button></div>
           </form>
         </section>
       </div>
     </section>
 
     <section *ngIf="view === 'import'" class="view connection-view">
-      <header class="sarela-section-header sarela-gmail-heading"><div><p class="eyebrow">CONEXIÓN OPCIONAL Y SEGURA</p><h1>Conecta tu Gmail</h1><p>Encuentra notificaciones financieras compatibles y organiza tus movimientos automáticamente.</p></div><span class="sarela-gmail-illustration" aria-hidden="true"><app-icon name="mail" [size]="44" /></span></header>
+      <header class="sarela-section-header sarela-gmail-heading"><div><p class="eyebrow">{{ 'CONEXIÓN OPCIONAL Y SEGURA' | t }}</p><h1>{{ 'Conecta tu Gmail' | t }}</h1><p>{{ 'Encuentra notificaciones financieras compatibles y organiza tus movimientos automáticamente.' | t }}</p></div><span class="sarela-gmail-illustration" aria-hidden="true"><app-icon name="mail" [size]="44" /></span></header>
       <article class="gmail-card panel" [class.connected]="gmail?.connected">
         <div class="connection-status"><app-icon [name]="gmail?.connected ? 'check' : 'mail'" [size]="28" /></div>
         <div>
-          <p class="eyebrow dark">MOVIMIENTOS AUTOMÁTICOS</p>
-          <h2>Tus movimientos, conectados.</h2><span class="status-badge" [class.neutral]="!gmail?.connected">{{ gmailConnectionLabel() }}</span>
-          <p *ngIf="gmail?.connected">{{ gmailStatusCopy() }}</p>
-          <p *ngIf="!gmail?.connected">Sarela busca movimientos en las notificaciones financieras de formatos compatibles, principalmente BCP en soles. No todos los bancos ni operaciones están soportados.</p>
-          <small *ngIf="gmail?.connected">{{ gmailUpdateStatus || 'Listo para actualizar cuando tú lo pidas.' }}</small>
-          <small *ngIf="!gmail?.connected">{{ gmailStatusCopy() }}</small>
+          <p class="eyebrow dark">{{ 'MOVIMIENTOS AUTOMÁTICOS' | t }}</p>
+          <h2>{{ 'Tus movimientos, conectados.' | t }}</h2><span class="status-badge" [class.neutral]="!gmail?.connected">{{ (gmailConnectionLabel() | t) }}</span>
+          <p *ngIf="gmail?.connected">{{ (gmailStatusCopy() | t) }}</p>
+          <p *ngIf="!gmail?.connected">{{ 'Sarela busca movimientos en las notificaciones financieras de formatos compatibles, principalmente BCP en soles. No todos los bancos ni operaciones están soportados.' | t }}</p>
+          <small *ngIf="gmail?.connected">{{ gmailUpdateStatus ? lang.errorText(gmailUpdateStatus) : lang.t('Listo para actualizar cuando tú lo pidas.') }}</small>
+          <small *ngIf="!gmail?.connected">{{ (gmailStatusCopy() | t) }}</small>
         </div>
         <div class="connection-actions">
-          <button class="primary" *ngIf="!gmail?.connected && gmail?.configured" (click)="connectGmail()">Conectar Gmail</button>
-          <button class="primary" *ngIf="gmail?.connected" (click)="syncGmail()" [disabled]="syncingGmail || importActive()">{{ syncingGmail ? 'Actualizando...' : 'Actualizar movimientos' }}</button>
-          <button class="ghost" *ngIf="gmail?.connected" (click)="disconnectGmail()">Desconectar</button>
+          <button class="primary" *ngIf="!gmail?.connected && gmail?.configured" (click)="connectGmail()">{{ 'Conectar Gmail' | t }}</button>
+          <button class="primary" *ngIf="gmail?.connected" (click)="syncGmail()" [disabled]="syncingGmail || importActive()">{{ syncingGmail ? 'Actualizando...' : lang.t('Actualizar movimientos') }}</button>
+          <button class="ghost" *ngIf="gmail?.connected" (click)="disconnectGmail()">{{ 'Desconectar' | t }}</button>
         </div>
-        <p class="setup-note" *ngIf="gmail && !gmail.connected && !gmail.configured">La conexión estará disponible cuando se complete la configuración.</p>
+        <p class="setup-note" *ngIf="gmail && !gmail.connected && !gmail.configured">{{ 'La conexión estará disponible cuando se complete la configuración.' | t }}</p>
       </article>
-      <div class="sarela-gmail-metrics" *ngIf="gmail?.connected && syncResult" aria-label="Resumen de la importación">
-        <article class="panel"><small>Última sincronización</small><strong>{{lastSyncLabel()}}</strong></article>
-        <article class="panel"><small>Mensajes procesados</small><strong>{{syncResult.messagesProcessed}}</strong></article>
-        <article class="panel"><small>Movimientos creados</small><strong>{{syncResult.transactionsCreated}}</strong></article>
-        <article class="panel"><small>Duplicados omitidos</small><strong>{{syncResult.duplicatesSkipped}}</strong></article>
+      <div class="sarela-gmail-metrics" *ngIf="gmail?.connected && syncResult" [attr.aria-label]="'Resumen de la importación' | t">
+        <article class="panel"><small>{{ 'Última sincronización' | t }}</small><strong>{{ lastSyncLabel() }}</strong></article>
+        <article class="panel"><small>{{ 'Mensajes procesados' | t }}</small><strong>{{ syncResult.messagesProcessed }}</strong></article>
+        <article class="panel"><small>{{ 'Movimientos creados' | t }}</small><strong>{{ syncResult.transactionsCreated }}</strong></article>
+        <article class="panel"><small>{{ 'Duplicados omitidos' | t }}</small><strong>{{ syncResult.duplicatesSkipped }}</strong></article>
       </div>
       <section class="panel gmail-job" *ngIf="syncResult as job" aria-live="polite">
-        <p class="eyebrow">IMPORTACIÓN DE NOTIFICACIONES</p><h3>{{importProcessingLabel()}}</h3>
-        <div class="sarela-import-progress" *ngIf="importActive()" role="status" aria-label="Importación en curso"><span></span></div>
-        <p *ngIf="importActive()" class="sarela-import-hint">El análisis continúa en el servidor. Mostramos actividad, no un porcentaje inventado.</p>
-        <p>{{job.message}}</p><p>Periodo consultado: {{importDate(job.periodFrom)}} a {{importDate(job.periodUntil)}}</p>
-        <p>Última actividad: {{importDate(job.updatedAt)}}<span *ngIf="job.stale"> · Información pendiente de actualizar</span></p>
-        <dl class="import-counts"><div><dt>Correos revisados</dt><dd>{{job.messagesFound}}</dd></div><div><dt>Movimientos nuevos</dt><dd>{{job.transactionsCreated}}</dd></div><div><dt>Duplicados evitados</dt><dd>{{job.duplicatesSkipped}}</dd></div><div><dt>Por revisar</dt><dd>{{job.reviewRequired}}</dd></div><div><dt>No interpretados</dt><dd>{{job.unsupported}}</dd></div><div><dt>Fallidos</dt><dd>{{job.failed}}</dd></div></dl>
-        <p *ngIf="job.status==='COMPLETED' && job.messagesFound===0">No encontramos correos candidatos en este periodo. Esto no representa todo tu historial bancario.</p>
-        <p *ngIf="job.nextAttemptAt">Próximo reintento: {{importDate(job.nextAttemptAt)}}</p>
-        <p *ngIf="job.status==='PARTIAL' || job.status==='ERROR'">La información está incompleta. Revisa los pendientes y vuelve a actualizar.</p>
-        <button class="ghost" (click)="loadGmailReview()">Ver correos no interpretados o pendientes</button>
-        <button class="ghost" (click)="go('dashboard')">Ver resumen registrado</button>
+        <p class="eyebrow">{{ 'IMPORTACIÓN DE NOTIFICACIONES' | t }}</p><h3>{{ (importProcessingLabel() | t) }}</h3>
+        <div class="sarela-import-progress" *ngIf="importActive()" role="status" [attr.aria-label]="'Importación en curso' | t"><span></span></div>
+        <p *ngIf="importActive()" class="sarela-import-hint">{{ 'El análisis continúa en el servidor. Mostramos actividad, no un porcentaje inventado.' | t }}</p>
+        <p>{{ importMessage(job) }}</p><p>{{ 'Periodo consultado: {0} a {1}' | t: [importDate(job.periodFrom), importDate(job.periodUntil)] }}</p>
+        <p>{{ 'Última actividad: {0}' | t: [importDate(job.updatedAt)] }}<span *ngIf="job.stale">  {{ '· Información pendiente de actualizar' | t }}</span></p>
+        <dl class="import-counts"><div><dt>{{ 'Correos revisados' | t }}</dt><dd>{{ job.messagesFound }}</dd></div><div><dt>{{ 'Movimientos nuevos' | t }}</dt><dd>{{ job.transactionsCreated }}</dd></div><div><dt>{{ 'Duplicados evitados' | t }}</dt><dd>{{ job.duplicatesSkipped }}</dd></div><div><dt>{{ 'Por revisar' | t }}</dt><dd>{{ job.reviewRequired }}</dd></div><div><dt>{{ 'No interpretados' | t }}</dt><dd>{{ job.unsupported }}</dd></div><div><dt>{{ 'Fallidos' | t }}</dt><dd>{{ job.failed }}</dd></div></dl>
+        <p *ngIf="job.status==='COMPLETED' && job.messagesFound===0">{{ 'No encontramos correos candidatos en este periodo. Esto no representa todo tu historial bancario.' | t }}</p>
+        <p *ngIf="job.nextAttemptAt">{{ 'Próximo reintento: {0}' | t: [importDate(job.nextAttemptAt)] }}</p>
+        <p *ngIf="job.status==='PARTIAL' || job.status==='ERROR'">{{ 'La información está incompleta. Revisa los pendientes y vuelve a actualizar.' | t }}</p>
+        <button class="ghost" (click)="loadGmailReview()">{{ 'Ver correos no interpretados o pendientes' | t }}</button>
+        <button class="ghost" (click)="go('dashboard')">{{ 'Ver resumen registrado' | t }}</button>
       </section>
-      <p class="form-error" role="alert" *ngIf="gmailJobError">{{gmailJobError}} <button class="ghost" (click)="loadGmailJob()">Reintentar consulta</button></p>
-      <section class="panel gmail-review" *ngIf="gmailReview as review"><h3>Correos pendientes o no compatibles</h3><p>Consulta el correo original en Gmail para revisar su información. No se han inventado movimientos para estos casos.</p><ul><li *ngFor="let item of review.items">{{item.subject || 'Sin asunto'}} · {{item.status}} · {{importDate(item.receivedAt)}}</li></ul><p *ngIf="!review.items.length">No hay correos pendientes en esta página.</p><button class="ghost" [disabled]="review.page===0" (click)="loadGmailReview(review.page-1)">Anterior</button><button class="ghost" [disabled]="review.page+1>=review.totalPages" (click)="loadGmailReview(review.page+1)">Siguiente</button></section>
-      <section class="panel privacy-actions"><h3>Tus datos</h3><p>Desconectar Gmail conserva los movimientos ya importados. Puedes eliminar definitivamente tu cuenta de Sarela, tus movimientos y la conexión Gmail de manera automática. Si vuelves en el futuro, comenzarás desde cero. Las copias de seguridad se gestionan según la política de conservación.</p><button class="ghost danger" (click)="requestDataDeletion()" [disabled]="deletingAccount">{{ deletingAccount ? 'Eliminando cuenta…' : 'Eliminar mi cuenta y mis datos' }}</button><p role="status" *ngIf="deletionMessage">{{deletionMessage}}</p><a href="/eliminar-datos.html" target="_blank" rel="noopener">Cómo se tramita la eliminación</a></section>
-      <div class="connection-benefits"><article><app-icon name="search" /><h3>Menos trabajo manual</h3><p>Encuentra movimientos en tus notificaciones bancarias.</p></article><article><app-icon name="refresh" /><h3>A tu ritmo</h3><p>Actualiza tus movimientos cuando lo necesites.</p></article><article><app-icon name="shield" /><h3>Tú tienes el control</h3><p>Puedes desconectar tu cuenta desde esta pantalla.</p></article></div>
+      <p class="form-error" role="alert" *ngIf="gmailJobError">{{ lang.errorText(gmailJobError) }} <button class="ghost" (click)="loadGmailJob()">{{ 'Reintentar consulta' | t }}</button></p>
+      <section class="panel gmail-review" *ngIf="gmailReview as review"><h3>{{ 'Correos pendientes o no compatibles' | t }}</h3><p>{{ 'Consulta el correo original en Gmail para revisar su información. No se han inventado movimientos para estos casos.' | t }}</p><ul><li *ngFor="let item of review.items">{{ item.subject || lang.t('Sin asunto') }} · {{ item.status | t }} · {{ importDate(item.receivedAt) }}</li></ul><p *ngIf="!review.items.length">{{ 'No hay correos pendientes en esta página.' | t }}</p><button class="ghost" [disabled]="review.page===0" (click)="loadGmailReview(review.page-1)">{{ 'Anterior' | t }}</button><button class="ghost" [disabled]="review.page+1>=review.totalPages" (click)="loadGmailReview(review.page+1)">{{ 'Siguiente' | t }}</button></section>
+      <section class="panel privacy-actions"><h3>{{ 'Tus datos' | t }}</h3><p>{{ 'Desconectar Gmail conserva los movimientos ya importados. Puedes eliminar definitivamente tu cuenta de Sarela, tus movimientos y la conexión Gmail de manera automática. Si vuelves en el futuro, comenzarás desde cero. Las copias de seguridad se gestionan según la política de conservación.' | t }}</p><button class="ghost danger" (click)="requestDataDeletion()" [disabled]="deletingAccount">{{ deletingAccount ? lang.t('Eliminando cuenta…') : lang.t('Eliminar mi cuenta y mis datos') }}</button><p role="status" *ngIf="deletionMessage">{{ (deletionMessage | t) }}</p><a [href]="lang.language() === 'en' ? '/en-eliminar-datos.html' : '/eliminar-datos.html'" target="_blank" rel="noopener">{{ 'Cómo se tramita la eliminación' | t }}</a></section>
+      <div class="connection-benefits"><article><app-icon name="search" /><h3>{{ 'Menos trabajo manual' | t }}</h3><p>{{ 'Encuentra movimientos en tus notificaciones bancarias.' | t }}</p></article><article><app-icon name="refresh" /><h3>{{ 'A tu ritmo' | t }}</h3><p>{{ 'Actualiza tus movimientos cuando lo necesites.' | t }}</p></article><article><app-icon name="shield" /><h3>{{ 'Tú tienes el control' | t }}</h3><p>{{ 'Puedes desconectar tu cuenta desde esta pantalla.' | t }}</p></article></div>
       <div class="update-summary" *ngIf="syncResult && (syncResult.status==='COMPLETED' || syncResult.status==='PARTIAL')">
-        Encontramos {{ syncResult.transactionsCreated }} movimientos nuevos. Omitimos {{ syncResult.duplicatesSkipped }} que ya estaban registrados.
-      </div>
+        {{ 'Encontramos {0} movimientos nuevos. Omitimos {1} que ya estaban registrados.' | t: [syncResult.transactionsCreated, syncResult.duplicatesSkipped] }}</div>
       <form class="panel dev-tools" *ngIf="showDevTools" (ngSubmit)="importEmail()">
-        <h3>Herramienta interna de detección</h3><label>Fecha verificada<input type="date" name="verifiedDate" [(ngModel)]="importForm.date" required></label>
-        <label>Remitente <input name="sender" [(ngModel)]="importForm.sender"></label>
-        <label>Contenido <textarea name="content" rows="6" [(ngModel)]="importForm.content"></textarea></label>
-        <button class="primary" type="submit">Revisar movimiento</button>
+        <h3>{{ 'Herramienta interna de detección' | t }}</h3><label>{{ 'Fecha verificada' | t }}<input type="date" name="verifiedDate" [(ngModel)]="importForm.date" required></label>
+        <label>{{ 'Remitente' | t }} <input name="sender" [(ngModel)]="importForm.sender"></label>
+        <label>{{ 'Contenido' | t }} <textarea name="content" rows="6" [(ngModel)]="importForm.content"></textarea></label>
+        <button class="primary" type="submit">{{ 'Revisar movimiento' | t }}</button>
       </form>
     </section>
 
     <section *ngIf="view === 'feedback'" class="view feedback-view">
-      <header class="sarela-section-header"><div><p class="eyebrow">CRECEMOS CONTIGO</p><h1>Tu opinión nos ayuda a mejorar</h1><p>Cuéntanos qué funciona y qué te gustaría mejorar.</p></div><app-icon name="message" [size]="38" /></header>
+      <header class="sarela-section-header"><div><p class="eyebrow">{{ 'CRECEMOS CONTIGO' | t }}</p><h1>{{ 'Tu opinión nos ayuda a mejorar' | t }}</h1><p>{{ 'Cuéntanos qué funciona y qué te gustaría mejorar.' | t }}</p></div><app-icon name="message" [size]="38" /></header>
       <div class="sarela-feedback-grid">
       <form class="panel feedback-form" (ngSubmit)="submitFeedback()" *ngIf="!feedbackSubmitted; else thanks">
-        <div class="feedback-symbol"><app-icon name="message" [size]="26" /></div><p class="eyebrow">TE ESCUCHAMOS</p>
-        <h2>Una Sarela mejor, contigo.</h2><p class="section-copy">Cuéntanos cómo te está ayudando y qué podemos mejorar.</p>
-        <div class="sarela-rating"><p id="sarela-rating-label">¿Qué tan útil te resultó Sarela?</p><div class="sarela-rating-options" role="group" aria-labelledby="sarela-rating-label"><button *ngFor="let value of [1,2,3,4,5]" type="button" [class.selected]="feedbackForm.rating===value" [attr.aria-pressed]="feedbackForm.rating===value" (click)="feedbackForm.rating=value"><span>{{ value===1?'😞':value===2?'🙁':value===3?'😐':value===4?'🙂':'😍' }}</span><small>{{ value===1?'Nada útil':value===2?'Poco útil':value===3?'Regular':value===4?'Útil':'Muy útil' }}</small></button></div></div>
-        <label>¿Sarela te ayudó a entender mejor en qué estás gastando?
+        <div class="feedback-symbol"><app-icon name="message" [size]="26" /></div><p class="eyebrow">{{ 'TE ESCUCHAMOS' | t }}</p>
+        <h2>{{ 'Una Sarela mejor, contigo.' | t }}</h2><p class="section-copy">{{ 'Cuéntanos cómo te está ayudando y qué podemos mejorar.' | t }}</p>
+        <div class="sarela-rating"><p id="sarela-rating-label">{{ '¿Qué tan útil te resultó Sarela?' | t }}</p><div class="sarela-rating-options" role="group" aria-labelledby="sarela-rating-label"><button *ngFor="let value of [1,2,3,4,5]" type="button" [class.selected]="feedbackForm.rating===value" [attr.aria-pressed]="feedbackForm.rating===value" (click)="feedbackForm.rating=value"><span>{{ value===1?'😞':value===2?'🙁':value===3?'😐':value===4?'🙂':'😍' }}</span><small>{{ value===1?lang.t('Nada útil'):value===2?lang.t('Poco útil'):value===3?lang.t('Regular'):value===4?lang.t('Útil'):lang.t('Muy útil') }}</small></button></div></div>
+        <label>{{ '¿Sarela te ayudó a entender mejor en qué estás gastando?' | t }}
           <select name="understoodSpending" [(ngModel)]="feedbackForm.understoodSpending" required>
-            <option value="">Selecciona una opción</option>
-            <option value="YES">Sí</option>
-            <option value="PARTIALLY">Parcialmente</option>
-            <option value="NO">No</option>
+            <option value="">{{ 'Selecciona una opción' | t }}</option>
+            <option value="YES">{{ 'Sí' | t }}</option>
+            <option value="PARTIALLY">{{ 'Parcialmente' | t }}</option>
+            <option value="NO">{{ 'No' | t }}</option>
           </select>
         </label>
-        <label>¿Qué fue lo que más te gustó?
+        <label>{{ '¿Qué fue lo que más te gustó?' | t }}
           <textarea name="liked" rows="3" maxlength="1000" [(ngModel)]="feedbackForm.liked"></textarea>
         </label>
-        <label>¿Qué mejorarías?
+        <label>{{ '¿Qué mejorarías?' | t }}
           <textarea name="improvement" rows="3" maxlength="1000" [(ngModel)]="feedbackForm.improvement"></textarea>
         </label>
-        <label>¿Qué te gustaría que Sarela hiciera por ti?
+        <label>{{ '¿Qué te gustaría que Sarela hiciera por ti?' | t }}
           <textarea name="wantedFeature" rows="3" maxlength="1000" [(ngModel)]="feedbackForm.wantedFeature"></textarea>
         </label>
-        <p class="form-error" role="alert" *ngIf="feedbackError">{{ feedbackError }}</p>
-        <button class="primary" type="submit" [disabled]="feedbackSubmitting">{{ feedbackSubmitting ? 'Enviando...' : 'Enviar opinión' }}</button>
+        <p class="form-error" role="alert" *ngIf="feedbackError">{{ lang.errorText(feedbackError) }}</p>
+        <button class="primary" type="submit" [disabled]="feedbackSubmitting">{{ feedbackSubmitting ? 'Enviando...' : lang.t('Enviar opinión') }}</button>
       </form>
       <ng-template #thanks>
         <article class="panel feedback-thanks">
-          <app-icon name="check" [size]="36" /><h2>Gracias por compartir.</h2><p class="section-copy">Tu opinión nos ayuda a construir una Sarela más útil para ti.</p>
-          <button class="ghost" type="button" (click)="feedbackSubmitted = false">Enviar otro comentario</button>
+          <app-icon name="check" [size]="36" /><h2>{{ 'Gracias por compartir.' | t }}</h2><p class="section-copy">{{ 'Tu opinión nos ayuda a construir una Sarela más útil para ti.' | t }}</p>
+          <button class="ghost" type="button" (click)="feedbackSubmitted = false">{{ 'Enviar otro comentario' | t }}</button>
         </article>
       </ng-template>
-      <aside class="panel sarela-feedback-info"><div class="sarela-feedback-info-icon"><app-icon name="spark" [size]="29" /></div><h2>Tu opinión hace crecer Sarela</h2><p>Revisamos tus comentarios para mejorar la claridad de los movimientos, la experiencia de Gmail y las funciones de la aplicación.</p><p>Evita incluir contraseñas, datos de tarjetas o información bancaria sensible en tus comentarios.</p><a href="/privacidad.html" target="_blank" rel="noopener">Cómo protegemos tu información</a></aside>
+      <aside class="panel sarela-feedback-info"><div class="sarela-feedback-info-icon"><app-icon name="spark" [size]="29" /></div><h2>{{ 'Tu opinión hace crecer Sarela' | t }}</h2><p>{{ 'Revisamos tus comentarios para mejorar la claridad de los movimientos, la experiencia de Gmail y las funciones de la aplicación.' | t }}</p><p>{{ 'Evita incluir contraseñas, datos de tarjetas o información bancaria sensible en tus comentarios.' | t }}</p><a [href]="lang.language() === 'en' ? '/en-privacidad.html' : '/privacidad.html'" target="_blank" rel="noopener">{{ 'Cómo protegemos tu información' | t }}</a></aside>
       </div>
     </section>
   </main>
-  <nav class="mobile-nav" aria-label="Navegación móvil"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Resumen</span></button>
-      <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>Movimientos</span></button>
-      <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>Gmail</span></button>
-      <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>Opinión</span></button></nav>
+  <nav class="mobile-nav" [attr.aria-label]="'Navegación móvil' | t"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>{{ 'Resumen' | t }}</span></button>
+      <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>{{ 'Movimientos' | t }}</span></button>
+      <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>{{ 'Gmail' | t }}</span></button>
+      <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>{{ 'Opinión' | t }}</span></button></nav>
 </div>
 <div class="sarela-consent-overlay" *ngIf="gmailConsentOpen && auth.user" role="presentation">
   <section class="sarela-consent-dialog" role="dialog" aria-modal="true" aria-labelledby="sarela-consent-title" appFocusTrap>
-    <button type="button" class="sarela-consent-close" (click)="dismissGmailConsent()" aria-label="Cerrar invitación"><app-icon name="close" [size]="18" /></button>
+    <button type="button" class="sarela-consent-close" (click)="dismissGmailConsent()" [attr.aria-label]="'Cerrar invitación' | t"><app-icon name="close" [size]="18" /></button>
     <div class="sarela-consent-icon" aria-hidden="true"><app-icon name="mail" [size]="35" /></div>
-    <p class="eyebrow">TU INFORMACIÓN, TÚ DECIDES</p><h2 id="sarela-consent-title">Conecta Gmail para descubrir tus gastos</h2>
-    <p>Con tu autorización, Sarela podrá leer los correos de tu buzón Gmail para buscar notificaciones financieras de compras, pagos, ingresos y transferencias de los últimos {{gmail?.initialSyncDays || 90}} días.</p>
-    <div class="sarela-consent-disclosure"><app-icon name="shield" [size]="22" /><p><strong>¿Qué autorizarás?</strong> Google concede acceso de <b>solo lectura a todo tu Gmail</b>, no solo a correos bancarios. Sarela busca mensajes candidatos y procesa formatos compatibles; no envía, modifica ni borra correos.</p></div>
-    <p class="sarela-consent-small">La conexión es opcional. Se guardan movimientos y metadatos de procesamiento; puedes desconectar Gmail después, pero los movimientos ya importados se conservan. <a href="/privacidad.html" target="_blank" rel="noopener">Ver política de privacidad</a>.</p>
-    <div class="sarela-consent-actions"><button type="button" class="primary" (click)="authorizeGmail()" [disabled]="gmailConsentLoading">{{gmailConsentLoading?'Redirigiendo a Google…':'Conectar Gmail'}}</button><button type="button" class="ghost" (click)="dismissGmailConsent()">Ahora no</button></div>
+    <p class="eyebrow">{{ 'TU INFORMACIÓN, TÚ DECIDES' | t }}</p><h2 id="sarela-consent-title">{{ 'Conecta Gmail para descubrir tus gastos' | t }}</h2>
+    <p>{{ 'Con tu autorización, Sarela podrá leer los correos de tu buzón Gmail para buscar notificaciones financieras de compras, pagos, ingresos y transferencias de los últimos {0} días.' | t: [gmail?.initialSyncDays || 90] }}</p>
+    <div class="sarela-consent-disclosure"><app-icon name="shield" [size]="22" /><p><strong>{{ '¿Qué autorizarás?' | t }}</strong>  {{ 'Google concede acceso de' | t }} <b>{{ 'solo lectura a todo tu Gmail' | t }}</b>{{ ', no solo a correos bancarios. Sarela busca mensajes candidatos y procesa formatos compatibles; no envía, modifica ni borra correos.' | t }}</p></div>
+    <p class="sarela-consent-small">{{ 'La conexión es opcional. Se guardan movimientos y metadatos de procesamiento; puedes desconectar Gmail después, pero los movimientos ya importados se conservan.' | t }} <a [href]="lang.language() === 'en' ? '/en-privacidad.html' : '/privacidad.html'" target="_blank" rel="noopener">{{ 'Ver política de privacidad' | t }}</a>.</p>
+    <div class="sarela-consent-actions"><button type="button" class="primary" (click)="authorizeGmail()" [disabled]="gmailConsentLoading">{{ gmailConsentLoading?lang.t('Redirigiendo a Google…'):lang.t('Conectar Gmail') }}</button><button type="button" class="ghost" (click)="dismissGmailConsent()">{{ 'Ahora no' | t }}</button></div>
   </section>
 </div>
 <div class="drawer-backdrop" *ngIf="selectedCategory || selectedMerchant" (click)="closeDrawer()"></div>
-<aside class="category-drawer" *ngIf="selectedCategory" appFocusTrap role="dialog" aria-modal="true" aria-label="Detalle de categoria">
-  <button class="drawer-close" type="button" aria-label="Cerrar detalle de categoría" (click)="closeCategory()"><app-icon name="close" /></button>
-  <p class="eyebrow dark">DETALLE DE CATEGORÍA</p>
-  <h2>{{ selectedCategory.label }}</h2>
-  <strong>{{ money(selectedCategory.total) }} este mes</strong>
-  <h3>Distribución</h3>
+<aside class="category-drawer" *ngIf="selectedCategory" appFocusTrap role="dialog" aria-modal="true" [attr.aria-label]="'Detalle de categoria' | t">
+  <button class="drawer-close" type="button" [attr.aria-label]="'Cerrar detalle de categoría' | t" (click)="closeCategory()"><app-icon name="close" /></button>
+  <p class="eyebrow dark">{{ 'DETALLE DE CATEGORÍA' | t }}</p>
+  <h2>{{ lang.language() === 'es' ? selectedCategory.label : lang.t(selectedCategory.macroCategory) }}</h2>
+  <strong>{{ '{0} este mes' | t: [money(selectedCategory.total)] }}</strong>
+  <h3>{{ 'Distribución' | t }}</h3>
   <div class="subcategory-row" *ngFor="let item of selectedCategory.subcategories">
-    <span>{{ item.name }}</span>
+    <span>{{ categoryLabel(item.name) }}</span>
     <b>{{ money(item.total) }}</b>
   </div>
-  <h3>Movimientos</h3>
+  <h3>{{ 'Movimientos' | t }}</h3>
   <div class="drawer-tx" *ngFor="let tx of selectedCategory.transactions">
     <span><b>{{ movementTitle(tx) }}</b><small>{{ movementDate(tx.date) }} - {{ tx.description }}</small></span>
     <strong>{{ money(tx.amount,tx.currency) }}</strong>
   </div>
 </aside>
 
-<aside class="category-drawer" *ngIf="selectedMerchant" appFocusTrap role="dialog" aria-modal="true" aria-label="Detalle de comercio">
-  <button class="drawer-close" type="button" aria-label="Cerrar detalle de comercio" (click)="closeMerchant()"><app-icon name="close" /></button>
-  <p class="eyebrow dark">DETALLE DE COMERCIO</p>
+<aside class="category-drawer" *ngIf="selectedMerchant" appFocusTrap role="dialog" aria-modal="true" [attr.aria-label]="'Detalle de comercio' | t">
+  <button class="drawer-close" type="button" [attr.aria-label]="'Cerrar detalle de comercio' | t" (click)="closeMerchant()"><app-icon name="close" /></button>
+  <p class="eyebrow dark">{{ 'DETALLE DE COMERCIO' | t }}</p>
   <h2>{{ selectedMerchant.label }}</h2>
-  <strong>{{ money(selectedMerchant.total) }} este mes</strong>
-  <h3>Movimientos</h3>
+  <strong>{{ '{0} este mes' | t: [money(selectedMerchant.total)] }}</strong>
+  <h3>{{ 'Movimientos' | t }}</h3>
   <div class="drawer-tx" *ngFor="let tx of selectedMerchant.transactions">
-    <span><b>{{ movementDate(tx.date) }} | {{ movementTitle(tx) }}</b><small>{{ tx.description }} - {{ tx.category }}</small></span>
+    <span><b>{{ movementDate(tx.date) }} | {{ movementTitle(tx) }}</b><small>{{ tx.description }} - {{ categoryLabel(tx.category) }}</small></span>
     <strong>{{ money(tx.amount,tx.currency) }}</strong>
   </div>
 </aside>
 
-<div class="toast" role="status" *ngIf="toast"><app-icon name="info" />{{ toast }}<button type="button" aria-label="Cerrar mensaje" (click)="toast = ''"><app-icon name="close" [size]="16" /></button></div>
+<div class="toast" role="status" *ngIf="toast"><app-icon name="info" />{{ lang.errorText(toast) }}<button type="button" [attr.aria-label]="'Cerrar mensaje' | t" (click)="toast = ''"><app-icon name="close" [size]="16" /></button></div>
 
-<div class="detail-loading" role="status" *ngIf="loadingCategory || loadingMerchant"><app-icon name="clock" [size]="16" />Cargando detalle…</div>
+<div class="detail-loading" role="status" *ngIf="loadingCategory || loadingMerchant"><app-icon name="clock" [size]="16" />{{ 'Cargando detalle…' | t }}</div>

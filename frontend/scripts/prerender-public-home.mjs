@@ -163,7 +163,29 @@ try {
 
   if (!next.includes('data-sarela-prerender="anonymous-landing"')) throw new Error('Failed to install prerender snapshot.');
   if (next.length > 800000) throw new Error('Prerender index exceeded 800 KB; investigate asset inlining.');
-  await writeFile(indexFile, next, 'utf8');
+  const alternateLinks = '<link rel="alternate" hreflang="es" href="https://sarelaapp.com/"><link rel="alternate" hreflang="en" href="https://sarelaapp.com/en.html"><link rel="alternate" hreflang="x-default" href="https://sarelaapp.com/">';
+  await writeFile(indexFile, next.replace('</head>', alternateLinks + '</head>'), 'utf8');
+
+  // Capture English independently, using the same anonymous shell and blocked API host.
+  const englishRendered = await dumpDom(chrome, url + '?lang=en', profile);
+  const englishRoot = englishRendered.match(/<app-root\b[^>]*>([\s\S]*?)<\/app-root>/i)?.[1];
+  if (!englishRoot || !englishRoot.includes('Where did') || englishRoot.includes('class="dashboard-view"')) throw new Error('English anonymous landing was not rendered correctly.');
+  let englishIndex = html.replace('<html lang="es">', '<html lang="en">')
+    .replace('<app-root></app-root>', '<app-root data-sarela-prerender="anonymous-landing">' + englishRoot.replace(/<!--[\s\S]*?-->/g, '') + '</app-root>')
+    .replace('</head>', styleTags.join('\n') + alternateLinks + '</head>')
+    .replace(/<title>[\s\S]*?<\/title>/, englishRendered.match(/<title>[\s\S]*?<\/title>/)?.[0] || '<title>Sarela</title>');
+  for (const name of ['description','og:title','og:description','og:image:alt','og:locale']) {
+    const pattern = new RegExp('<meta[^>]+(?:name|property)="' + name + '"[^>]*>');
+    const translated = englishRendered.match(pattern)?.[0];
+    if (translated) englishIndex = englishIndex.replace(pattern, translated);
+  }
+  englishIndex = englishIndex.replace('rel="canonical" href="https://sarelaapp.com/"', 'rel="canonical" href="https://sarelaapp.com/en.html"')
+    .replace('property="og:url" content="https://sarelaapp.com/"','property="og:url" content="https://sarelaapp.com/en.html"');
+  englishIndex = englishIndex.replace(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g, (_, data) => '<script type="application/ld+json">' + data.replace(/"inLanguage":"es(?:-PE)?"/g, '"inLanguage":"en"').replace(/"url":"https:\/\/sarelaapp.com\/"/g,'"url":"https://sarelaapp.com/en.html"') + '</script>');
+  await writeFile(resolve(build, 'en.html'), englishIndex, 'utf8');
+  // Restore Spanish preference before checking the original Spanish artifact.
+  await dumpDom(chrome, url + '?lang=es', profile);
+  console.log('PASS: English anonymous landing, canonical and reciprocal language alternatives.');
 
   // Final built artifact check: Google and other non-JavaScript crawlers must
   // receive content from index.html even when scripts cannot execute.

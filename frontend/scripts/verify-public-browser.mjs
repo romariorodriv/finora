@@ -12,13 +12,19 @@ const paths=[
   {path:'/calculadora-suscripciones.html',expect:'74.00'},
   {path:'/aprende.html',expect:''},
   {path:'/mis-finanzas.html',expect:''},
-  {path:'/guia-donde-se-va-mi-dinero.html',expect:''}
+  {path:'/guia-donde-se-va-mi-dinero.html',expect:''},
+  {path:'/en-calculadora-presupuesto.html',expect:'600.00'},
+  {path:'/en-calculadora-gastos-hormiga.html',expect:'260.00'},
+  {path:'/en-calculadora-suscripciones.html',expect:'74.00'},
+  {path:'/en-aprende.html',expect:''}
 ];
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml'};
 const auditInjection='<script>' + [
 "window.addEventListener('load',()=>{",
 "const result=document.getElementById('results');",
-"const report={width:window.innerWidth,scroll:document.documentElement.scrollWidth,title:document.title,h1:document.querySelectorAll('h1').length,lime:getComputedStyle(document.documentElement).getPropertyValue('--lime').trim(),learn:!!document.querySelector('a[href=\"/aprende.html\"]'),calculators:!!document.querySelector('a[href=\"/calculadoras.html\"]'),result:result?result.textContent.replace(/\\s+/g,' ').trim():'',fields:document.querySelectorAll('#calc input').length};",
+"const prefix=location.pathname.startsWith('/en-')?'/en-':'/';",
+"if(prefix==='/en-'&&document.getElementById('add-service'))document.getElementById('add-service').click();",
+"const report={width:window.innerWidth,scroll:document.documentElement.scrollWidth,title:document.title,h1:document.querySelectorAll('h1').length,lime:getComputedStyle(document.documentElement).getPropertyValue('--lime').trim(),learn:!!document.querySelector('a[href=\"'+prefix+'aprende.html\"]'),calculators:!!document.querySelector('a[href=\"'+prefix+'calculadoras.html\"]'),result:result?result.textContent.replace(/\\s+/g,' ').trim():'',fields:document.querySelectorAll('#calc input').length};",
 "const node=document.createElement('pre');node.id='sarela-audit-dom-result';node.textContent=JSON.stringify(report);document.body.append(node);",
 "});"
 ].join('')+'</script>';

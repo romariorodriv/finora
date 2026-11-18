@@ -36,7 +36,7 @@ const publicLandingLinks = [
   '/como-funciona.html','/guia-donde-se-va-mi-dinero.html','/calculadora-gastos-hormiga.html'
 ];
 for (const target of publicLandingLinks) {
-  if (!landing.includes('href="'+target+'"')) problems.push('Landing link missing '+target);
+  if (!landing.includes('href="'+target+'"') && !landing.includes("'"+target+"'")) problems.push('Landing link missing '+target);
 }
 for (const id of ['productos','como-funciona','aprende']) {
   if (!landing.includes('id="'+id+'"')) problems.push('Landing anchor missing #'+id);

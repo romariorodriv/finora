@@ -87,10 +87,10 @@ Get-ChildItem -LiteralPath $sarelaBackupContent -Recurse -File | ForEach-Object 
 @{FormatVersion=1;Account=$sarelaIdentity.Account;Domain=$DomainName;Distribution=$sarelaDistribution.Id;Target=$sarelaTarget;LegalOnly=[bool]$LegalOnly;CreatedAt=(Get-Date).ToUniversalTime().ToString('o');Hashes=$sarelaHashes} | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $BackupDirectory 'release.json') -Encoding UTF8
 # Keep old chunks; open tabs may still need them. No --delete.
 if(-not $LegalOnly){
-  Invoke-SarelaAws @('s3','sync',$BuildDirectory,$sarelaTarget,'--exclude','*.html','--exclude','sarela-legal.css','--exclude','sarela-seo.css','--exclude','sarela-icon.svg','--exclude','robots.txt','--exclude','sitemap.xml','--cache-control','public,max-age=31536000,immutable','--no-follow-symlinks') | Out-Null
+  Invoke-SarelaAws @('s3','sync',$BuildDirectory,$sarelaTarget,'--exclude','*.html','--exclude','public-language.js','--exclude','language-switcher.css','--exclude','sarela-legal.css','--exclude','sarela-seo.css','--exclude','sarela-icon.svg','--exclude','robots.txt','--exclude','sitemap.xml','--cache-control','public,max-age=31536000,immutable','--no-follow-symlinks') | Out-Null
 }
-foreach($sarelaAsset in @('sarela-legal.css','sarela-icon.svg','sarela-seo.css')){
-  $sarelaType=if($sarelaAsset.EndsWith('.css')){'text/css; charset=utf-8'}else{'image/svg+xml'}
+foreach($sarelaAsset in @('sarela-legal.css','sarela-icon.svg','sarela-seo.css','language-switcher.css','public-language.js')){
+  $sarelaType=if($sarelaAsset.EndsWith('.css')){'text/css; charset=utf-8'}elseif($sarelaAsset.EndsWith('.js')){'application/javascript; charset=utf-8'}else{'image/svg+xml'}
   Invoke-SarelaAws @('s3','cp',(Join-Path $BuildDirectory $sarelaAsset),($sarelaTarget+$sarelaAsset),'--content-type',$sarelaType,'--cache-control','no-cache,no-store,must-revalidate') | Out-Null
 }
 foreach($sarelaAsset in @('robots.txt','sitemap.xml')){
@@ -98,12 +98,15 @@ foreach($sarelaAsset in @('robots.txt','sitemap.xml')){
   Invoke-SarelaAws @('s3','cp',(Join-Path $BuildDirectory $sarelaAsset),($sarelaTarget+$sarelaAsset),'--content-type',$sarelaType,'--cache-control','no-cache,no-store,must-revalidate') | Out-Null
 }
 $sarelaHtmlFiles=@('privacidad.html','terminos.html','eliminar-datos.html')
-if(-not $LegalOnly){$sarelaHtmlFiles+= @('index.html','404.html')+$sarelaSeoFiles}
+if(-not $LegalOnly){$sarelaHtmlFiles+= @('index.html','404.html','en.html')+$sarelaSeoFiles}
+$sarelaHtmlFiles+= @($sarelaHtmlFiles | Where-Object { $_ -ne 'index.html' -and $_ -ne 'en.html' } | ForEach-Object { 'en-'+$_ })
+foreach($sarelaPage in $sarelaHtmlFiles){if(-not (Test-Path -LiteralPath (Join-Path $BuildDirectory $sarelaPage))){throw "Missing bilingual page: $sarelaPage. Run npm run build."}}
 foreach($sarelaPage in $sarelaHtmlFiles){
   Invoke-SarelaAws @('s3','cp',(Join-Path $BuildDirectory $sarelaPage),($sarelaTarget+$sarelaPage),'--content-type','text/html; charset=utf-8','--cache-control','no-cache,no-store,must-revalidate') | Out-Null
 }
 $sarelaPaths=@('/privacidad.html','/terminos.html','/eliminar-datos.html','/sarela-legal.css','/sarela-icon.svg','/robots.txt','/sitemap.xml')
 if(-not $LegalOnly){$sarelaPaths+=@('/','/index.html','/404.html');$sarelaPaths+=@($sarelaSeoFiles | ForEach-Object { '/'+$_ });$sarelaPaths+='/sarela-seo.css'}
+$sarelaPaths+=@('/en.html','/en-*','/public-language.js','/language-switcher.css')
 Invoke-SarelaAws (@('cloudfront','create-invalidation','--distribution-id',$sarelaDistribution.Id,'--paths')+$sarelaPaths) | Out-Null
 Write-Output "Frontend files published. Backup: $BackupDirectory"
 Write-Output 'Rollback: run rollback-google-frontend.ps1 with this BackupDirectory and the same ProfileName; preview first, then -Apply.'
