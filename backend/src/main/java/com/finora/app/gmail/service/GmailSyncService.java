@@ -32,7 +32,13 @@ public class GmailSyncService {
         do{GmailClient.Page result=gmail.search(token,query,page);found+=result.messages().size();for(GmailClient.MessageRef ref:result.messages()){
             if(imported.existsByUserIdAndExternalMessageId(userId,ref.id())){dupes++;continue;}
             ImportedMessage row=new ImportedMessage();row.userId=userId;row.gmailConnectionId=c.id;row.externalMessageId=ref.id();row.threadId=ref.threadId();row.processingStatus=ImportedMessage.Status.PROCESSING;imported.save(row);
-            try{GmailClient.Message m=gmail.getMessage(token,ref.id());row.sender=trim(m.sender(),500);row.subject=trim(m.subject(),500);row.receivedAt=m.receivedAt();row.contentHash=sha256(m.subject()+"|"+m.plainText());processed++;
+            try{GmailClient.Message metadata=gmail.getMessageMetadata(token,ref.id());
+                if(!com.finora.app.gmail.jobs.GmailMessageProcessor.isRecognizedNotificationSender(metadata.sender())){
+                    row.sender=trim(metadata.sender(),500);row.subject=trim(metadata.subject(),500);row.receivedAt=metadata.receivedAt();
+                    row.processingStatus=ImportedMessage.Status.REVIEW_REQUIRED;row.errorCode="UNSUPPORTED_SENDER_BODY_NOT_READ";review++;processed++;
+                    row.updatedAt=Instant.now();imported.save(row);continue;
+                }
+                GmailClient.Message m=gmail.getMessage(token,ref.id());row.sender=trim(m.sender(),500);row.subject=trim(m.subject(),500);row.receivedAt=m.receivedAt();row.contentHash=sha256(m.subject()+"|"+m.plainText());processed++;
                 Optional<BankEmailParser.Parsed> parsed=parser.tryParse(m.sender(),m.subject()+" "+m.plainText());
                 if(parsed.isEmpty()){row.processingStatus=ImportedMessage.Status.IGNORED;}
                 else{BankEmailParser.Parsed p=parsed.get();if(p.status()==BankEmailParser.OperationStatus.REJECTED){row.processingStatus=ImportedMessage.Status.REJECTED;row.confidence=p.confidence();row.parserName="PeruBankParser";row.parserVersion="1.2";rejected++;}

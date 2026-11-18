@@ -33,6 +33,11 @@ class GmailSyncServiceTest {
   @Mock private ImportedMessageRepository importedMessages;
   @Mock private TransactionRepository transactions;
 
+  @org.junit.jupiter.api.BeforeEach void metadata() {
+    org.mockito.Mockito.lenient().when(gmail.getMessageMetadata(any(),any())).thenAnswer(invocation ->
+      new GmailClient.Message(invocation.getArgument(1),"thread-id","notificaciones@notificacionesbcp.com.pe","Notification",null,Instant.parse("2026-09-10T15:00:00Z")));
+  }
+
   @Test
   void rejectedPurchaseIsTrackedButDoesNotCreateTransaction() {
     GmailConnection connection = new GmailConnection();

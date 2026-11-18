@@ -35,12 +35,25 @@ public class GoogleGmailClient implements GmailClient {
     private Tokens token(Map<String,String> form){JsonNode n=postForm("https://oauth2.googleapis.com/token",form);return new Tokens(required(n,"access_token"),n.path("refresh_token").asText(null),n.path("expires_in").asLong(3600));}
     public Profile profile(String accessToken){JsonNode n=get("https://gmail.googleapis.com/gmail/v1/users/me/profile",accessToken);return new Profile(required(n,"emailAddress"));}
     public Page search(String accessToken,String query,String pageToken){String url="https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults="+Math.max(1,Math.min(100,pageSize))+"&q="+enc(query);if(pageToken!=null&&!pageToken.isBlank())url+="&pageToken="+enc(pageToken);JsonNode n=get(url,accessToken);List<MessageRef> list=new ArrayList<>();n.path("messages").forEach(m->list.add(new MessageRef(m.path("id").asText(),m.path("threadId").asText())));return new Page(list,n.path("nextPageToken").asText(null));}
-    public Message getMessage(String accessToken,String id){JsonNode n=get("https://gmail.googleapis.com/gmail/v1/users/me/messages/"+enc(id)+"?format=full",accessToken);JsonNode payload=n.path("payload");return new Message(id,n.path("threadId").asText(),header(payload,"From"),header(payload,"Subject"),extractText(payload),receivedAt(n));}
+    public Message getMessageMetadata(String accessToken,String id){
+        String fields="id,threadId,internalDate,payload(headers)";
+        JsonNode n=get("https://gmail.googleapis.com/gmail/v1/users/me/messages/"+enc(id)
+            +"?format=metadata&metadataHeaders=From&metadataHeaders=Subject&fields="+enc(fields),accessToken);
+        JsonNode payload=n.path("payload");
+        return new Message(id,n.path("threadId").asText(),header(payload,"From"),header(payload,"Subject"),null,receivedAt(n));
+    }
+    public Message getMessage(String accessToken,String id){
+        // Keep the recursive MIME tree for nested text parts, omit snippet/raw/history/labels.
+        String fields="id,threadId,internalDate,payload(mimeType,filename,headers,body(data),parts)";
+        JsonNode n=get("https://gmail.googleapis.com/gmail/v1/users/me/messages/"+enc(id)+"?format=full&fields="+enc(fields),accessToken);
+        JsonNode payload=n.path("payload");
+        return new Message(id,n.path("threadId").asText(),header(payload,"From"),header(payload,"Subject"),extractText(payload),receivedAt(n));
+    }
     private Instant receivedAt(JsonNode message){
         try{long timestamp=Long.parseLong(message.path("internalDate").asText());return timestamp>0?Instant.ofEpochMilli(timestamp):null;}catch(Exception ignored){return null;}
     }
     public void revoke(String token){if(token==null||token.isBlank())return;postForm("https://oauth2.googleapis.com/revoke",Map.of("token",token));}
-    private String extractText(JsonNode part){String mime=part.path("mimeType").asText();String data=part.path("body").path("data").asText();if((mime.equals("text/plain")||mime.equals("text/html"))&&!data.isBlank()){String s=new String(Base64.getUrlDecoder().decode(data),StandardCharsets.UTF_8);return mime.equals("text/html")?s.replaceAll("(?s)<[^>]*>"," ").replaceAll("\\s+"," ").trim():s;}for(JsonNode child:part.path("parts")){String s=extractText(child);if(!s.isBlank())return s;}return "";}
+    private String extractText(JsonNode part){if(!part.path("filename").asText().isBlank())return "";String mime=part.path("mimeType").asText();String data=part.path("body").path("data").asText();if((mime.equals("text/plain")||mime.equals("text/html"))&&!data.isBlank()){String s=new String(Base64.getUrlDecoder().decode(data),StandardCharsets.UTF_8);return mime.equals("text/html")?s.replaceAll("(?s)<[^>]*>"," ").replaceAll("\\s+"," ").trim():s;}for(JsonNode child:part.path("parts")){String s=extractText(child);if(!s.isBlank())return s;}return "";}
     private String header(JsonNode payload,String name){for(JsonNode h:payload.path("headers"))if(name.equalsIgnoreCase(h.path("name").asText()))return h.path("value").asText();return "";}
     private JsonNode get(String url,String token){return send(HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(20)).header("Authorization","Bearer "+token).GET().build());}
     private JsonNode postForm(String url,Map<String,String> form){String body=form.entrySet().stream().map(e->enc(e.getKey())+"="+enc(e.getValue())).reduce((a,b)->a+"&"+b).orElse("");return send(HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(20)).header("Content-Type","application/x-www-form-urlencoded").POST(HttpRequest.BodyPublishers.ofString(body)).build());}

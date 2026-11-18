@@ -13,6 +13,7 @@ public interface GmailClient {
     Tokens refresh(String refreshToken);
     Profile profile(String accessToken);
     Page search(String accessToken, String query, String pageToken);
+    Message getMessageMetadata(String accessToken, String messageId);
     Message getMessage(String accessToken, String messageId);
     void revoke(String token);
 }

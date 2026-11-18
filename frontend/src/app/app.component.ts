@@ -429,6 +429,18 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   financialInsightTitle(): string {
+    // Use the API's structured summaries, never parse a sentence to recover a category.
+    const categories = this.dashboard?.macroCategories;
+    if (categories) {
+      const largest = categories[0];
+      if (!largest) return this.lang.t('Una senal para este mes');
+      if (largest.macroCategory === 'UNCATEGORIZED') return this.lang.t('Podemos entender mejor tus gastos');
+      const merchant = this.dashboard?.merchants?.[0];
+      if (merchant && merchant.merchant !== '__OTHER_MERCHANTS__') {
+        return this.lang.t('Tu mayor comercio fue {0}', [merchant.label]);
+      }
+      return this.lang.t('Tu categoría con mayor gasto es {0}.', [this.categoryLabel(largest.label)]);
+    }
     return this.lang.text(this.dashboard?.insightTitle || 'Una senal para este mes');
   }
 
@@ -762,6 +774,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   gmailReviewReason(reason: string | undefined, status: string): string {
     const reasons: Record<string, string> = {
+      UNSUPPORTED_SENDER_BODY_NOT_READ: 'No se leyó el cuerpo: remitente no admitido. Revisa el original en Gmail; no se creó un movimiento.',
       SENDER_NOT_TRUSTED: 'El remitente no está entre los admitidos. No se creó un movimiento.',
       AMBIGUOUS_MESSAGE: 'No pudimos confirmar los datos necesarios. Revisa el correo original.',
       MESSAGE_TOO_LARGE: 'El mensaje supera el tamaño admitido y requiere revisión.',

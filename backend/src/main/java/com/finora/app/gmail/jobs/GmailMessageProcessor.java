@@ -18,6 +18,12 @@ public class GmailMessageProcessor {
   this.jobs=jobs;this.items=items;this.imported=imported;this.transactions=transactions;this.parser=parser;this.classification=classification;this.users=users;
  }
  @Transactional public void process(GmailSyncJob claim,GmailClient.Message message){
+  process(claim,message,false);
+ }
+ @Transactional public void processMetadata(GmailSyncJob claim,GmailClient.Message metadata){
+  process(claim,metadata,true);
+ }
+ private void process(GmailSyncJob claim,GmailClient.Message message,boolean bodyNotRead){
   // Same lock order as account deletion: user before Gmail job.
   // This prevents an in-flight import from recreating rows after removal.
   users.locked(claim.userId).orElseThrow(() -> new com.finora.app.shared.error.ApiException(409,"ACCOUNT_DELETED","La cuenta fue eliminada."));
@@ -33,7 +39,8 @@ public class GmailMessageProcessor {
   row.sender=truncate(message.sender(),500);row.subject=truncate(message.subject(),500);row.receivedAt=message.receivedAt();row.updatedAt=Instant.now();row.errorCode=null;
   String text=(message.subject()==null?"":message.subject())+" "+(message.plainText()==null?"":message.plainText());
   String outcome;
-  if(text.length()>200000){row.processingStatus=ImportedMessage.Status.REVIEW_REQUIRED;row.errorCode="MESSAGE_TOO_LARGE";outcome="REVIEW";}
+  if(bodyNotRead){row.processingStatus=ImportedMessage.Status.REVIEW_REQUIRED;row.errorCode="UNSUPPORTED_SENDER_BODY_NOT_READ";outcome="REVIEW";}
+  else if(text.length()>200000){row.processingStatus=ImportedMessage.Status.REVIEW_REQUIRED;row.errorCode="MESSAGE_TOO_LARGE";outcome="REVIEW";}
   else if(!isRecognizedNotificationSender(message.sender()) && parser.supports(message.sender(),text)){
    // Unknown sender with financial-looking content: do not create a movement.
    // From matching alone is not verified authenticity; see QA follow-up for auth signals.
@@ -76,7 +83,7 @@ public class GmailMessageProcessor {
   row.errorCode=row.processingAttempts>=3?"PROCESSING_REVIEW_REQUIRED":"PROCESSING_ERROR";row.updatedAt=Instant.now();imported.saveAndFlush(row);
   record(claim,messageId,row.processingAttempts>=3?"REVIEW":"FAILED",row.errorCode);
  }
- private boolean isRecognizedNotificationSender(String sender){
+ public static boolean isRecognizedNotificationSender(String sender){
   if(sender==null)return false;
   // A From header is not authenticated proof; this is a conservative preliminary filter.
   String value=sender.trim();
