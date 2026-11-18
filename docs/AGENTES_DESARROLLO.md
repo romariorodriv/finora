@@ -50,6 +50,25 @@ Python + FastAPI (agent_service/main.py)
 4. Revisa `finance.py` y prueba un escenario a mano; luego `search.py` y sus fuentes.
 5. Sigue la respuesta JSON de vuelta a `housing-agent.component.ts`.
 
+## Acceso simplificado para desarrollo local (sin Google OAuth)
+
+El login de Google se conserva. Para probar las pantallas en tu PC existe un **modo demo explícito**, sin contraseña, exclusivamente en el perfil `local` y desde `localhost`.
+
+Desde una terminal CMD abierta en `backend`:
+
+```cmd
+set "JWT_SECRET=clave-larga-para-pruebas-locales-no-produccion"
+set "DB_URL=jdbc:h2:file:./data/sarela-agentes-test;MODE=PostgreSQL;AUTO_SERVER=TRUE"
+set "SARELA_DEV_LOGIN_ENABLED=true"
+mvn spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+Abre Angular en `http://localhost:4200`, presiona el botón de acceso y selecciona **Entrar en modo demo (local)**. Se crea una cuenta ficticia `demo@sarela.invalid` con permisos normales (`USER`) y una cookie de sesión que gestiona Java, igual que con Google. Puedes entrar en Vivienda sin conectar Gmail.
+
+**Protecciones**: el endpoint solo existe si se cumple **perfil local** + **SARELA_DEV_LOGIN_ENABLED=true**; además rechaza peticiones cuya IP no sea loopback o cuyo Origin no coincida con el frontend local. `app.dev-login.enabled` está desactivado por defecto. Nunca activar en instancias públicas ni copiar esta variable a AWS. La cuenta demo **no es tu cuenta real de Google** y sus datos no se sincronizan.
+
+Si el navegador indica que modo demo está deshabilitado, reinicia Java desde la misma ventana CMD donde definiste la variable. Si Angular ya estaba en ejecución, actualiza `http://localhost:4200`.
+
 ## 4. Ejecutar Python localmente
 
 Requiere Python >= 3.11. Desde la raíz de Finora:
