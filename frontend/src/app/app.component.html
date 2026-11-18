@@ -1,4 +1,4 @@
-<app-landing *ngIf="!auth.user && publicView === 'landing'" (accessRequested)="openAccess($event); continueWithGoogle()"></app-landing>
+<app-landing *ngIf="!auth.user && publicView === 'landing'" (accessRequested)="openAccess($event)"></app-landing>
 <section *ngIf="!auth.user && publicView === 'access'" class="auth">
   <button class="auth-back" type="button" (click)="returnToLanding()" [disabled]="authSubmitting"><app-icon name="arrow" [size]="15" />Volver a Sarela</button>
   <div class="auth-copy">
@@ -13,9 +13,11 @@
   <div class="login-card">
     <ng-container *ngIf="!linkRequired">
       <p class="eyebrow">TU ESPACIO PERSONAL</p><h2>Bienvenido a Sarela.</h2>
-      <p class="form-intro">Usamos Google para verificar tu identidad. El permiso para leer Gmail se solicita después y es opcional.</p>
+      <p class="form-intro">Elige cómo ingresar. Google sigue disponible y el acceso a Gmail se solicita por separado.</p>
+      <button *ngIf="localDemoAvailable" class="primary full local-demo-access" type="button" (click)="continueWithDemo()" [disabled]="authSubmitting">{{authSubmitting ? 'Ingresando…' : 'Entrar en modo demo (local)'}}</button>
+      <p *ngIf="localDemoAvailable" class="form-intro">Solo para pruebas en tu computadora. No conecta Gmail ni accede a cuentas reales.</p>
       <button class="primary full google-access" type="button" (click)="continueWithGoogle()" [disabled]="authSubmitting"><img src="images/google-mark.svg" width="22" height="22" alt="" aria-hidden="true">{{authSubmitting ? 'Conectando…' : 'Continuar con Google'}}</button>
-      <p class="form-intro">¿Ya tenías una cuenta? Podrás vincularla y conservar tus movimientos.</p>
+      <p class="form-intro">¿Ya tenías una cuenta de Google? Podrás vincularla y conservar tus movimientos.</p>
     </ng-container>
     <form *ngIf="linkRequired" (ngSubmit)="linkGoogleAccount()">
       <h2>Conserva tu cuenta anterior.</h2>
