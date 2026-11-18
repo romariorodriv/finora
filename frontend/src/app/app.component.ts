@@ -138,6 +138,22 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void { this.movementsRequest?.unsubscribe(); this.gmailPoll?.unsubscribe(); this.routeSubscription?.unsubscribe(); }
 
+  readonly localDemoAvailable = typeof location !== 'undefined' && ['localhost', '127.0.0.1'].includes(location.hostname);
+
+  continueWithDemo(): void {
+    if (this.authSubmitting || !this.localDemoAvailable) return;
+    this.authSubmitting = true; this.error = '';
+    this.auth.demoLogin().pipe(finalize(() => this.authSubmitting = false)).subscribe({
+      next: () => this.auth.refreshCurrent().subscribe({
+        next: () => { this.linkRequired = false; this.onboardingRequested = false; this.loadApp(); },
+        error: err => this.error = this.message(err)
+      }),
+      error: err => this.error = err?.status === 404 || err?.status === 403
+        ? 'Modo demo deshabilitado. Activa SARELA_DEV_LOGIN_ENABLED=true en el backend local y reinícialo.'
+        : this.message(err)
+    });
+  }
+
   continueWithGoogle(): void {
     if (this.authSubmitting) return;
     this.authSubmitting = true; this.error = '';
