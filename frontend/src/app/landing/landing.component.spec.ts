@@ -24,7 +24,7 @@ describe('Public Sarela landing and access flow', () => {
   afterEach(()=>history.replaceState({},'',previousUrl));
   it('shows the landing before access and does not request private data',()=>{
     expect(root().querySelector('app-landing')).not.toBeNull();expect(root().querySelector('.auth')).toBeNull();
-    expect(root().querySelector('h1')?.textContent).toContain('¿En qué se fue');
+    expect(root().querySelector('h1')?.textContent).toContain('Mejora tus finanzas');
     expect(services.api.dashboard).not.toHaveBeenCalled();
     expect(root().querySelector('app-landing')?.textContent).not.toContain('S/ 3,240');
   });
@@ -99,7 +99,7 @@ describe('Public Sarela landing and access flow', () => {
       expect(landing.querySelector('a[href="'+href+'"]')).withContext(href).not.toBeNull();
     }
     expect(landing.querySelector('#productos .steps-grid')).not.toBeNull();
-    expect(landing.querySelectorAll('#productos .step a[href$=".html"]').length).toBe(3);
+    expect(landing.querySelectorAll('#productos .step a[href$=".html"]').length).toBe(2);
     expect(landing.querySelector('#como-funciona .landing-process-grid')).not.toBeNull();
     expect(landing.querySelector('#aprende .landing-learn-grid')).not.toBeNull();
     expect(landing.querySelector('a[href="/guia-donde-se-va-mi-dinero.html"]')).not.toBeNull();

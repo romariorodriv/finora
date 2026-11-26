@@ -1,0 +1,24 @@
+# Optional local/staging overlay. Never use production secrets or the production database.
+# Start: docker compose -f docker-compose.yml -f docker-compose.agents.yml up --build
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: agent_service/Dockerfile
+    environment:
+      SARELA_AGENT_INTERNAL_KEY: ${SARELA_AGENT_INTERNAL_KEY:?Set SARELA_AGENT_INTERNAL_KEY in .env}
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+    expose:
+      - "8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      retries: 5
+  app:
+    environment:
+      SARELA_AGENT_URL: http://agent:8001
+      SARELA_AGENT_INTERNAL_KEY: ${SARELA_AGENT_INTERNAL_KEY:?Set SARELA_AGENT_INTERNAL_KEY in .env}
+    depends_on:
+      agent:
+        condition: service_healthy

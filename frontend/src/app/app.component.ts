@@ -1,4 +1,5 @@
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { DebtAgentComponent } from './agents/debt-agent.component';
 import { LandingComponent } from './landing/landing.component';
 import { IconComponent } from './shared/icon.component';
 import { FocusTrapDirective } from './shared/focus-trap.directive';
@@ -29,12 +30,12 @@ import {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, IconComponent, FocusTrapDirective, LandingComponent, RouterOutlet],
+  imports: [CommonModule, FormsModule, IconComponent, FocusTrapDirective, LandingComponent, DebtAgentComponent, RouterOutlet],
   templateUrl: './app.component.html',
   styleUrls: ['./dashboard/dashboard.styles.css', './app.component.css']
 })
 export class AppComponent implements OnInit, OnDestroy {
-  view: 'dashboard' | 'movements' | 'import' | 'feedback' | 'admin' = 'dashboard';
+  view: 'dashboard' | 'movements' | 'import' | 'feedback' | 'agent' | 'admin' = 'dashboard';
   dashboardLoading = false;
   dashboardError = '';
   transactionsLoading = false;

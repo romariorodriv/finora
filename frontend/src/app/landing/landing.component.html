@@ -16,10 +16,9 @@
 <main id="landing-content" tabindex="-1">
     <section class="hero section-wrap" id="inicio" aria-labelledby="hero-title">
         <div class="hero-copy">
-            <p class="eyebrow-pill">TU DINERO, MÁS CLARO</p>
-            <h1 id="hero-title">¿En qué se fue<br>tu dinero?<span>Ahora puedes verlo.</span></h1>
-            <p class="hero-description">Organiza los movimientos que llegan a tu Gmail y entiende tus gastos sin hacerlo
-                a mano.</p>
+            <p class="eyebrow-pill">TU COACH FINANCIERO PERSONAL</p>
+            <h1 id="hero-title">Mejora tus finanzas<span>con inteligencia artificial.</span></h1>
+            <p class="hero-description">Conoce Sarela, tu coach financiero. Empieza con un agente que te ayuda a analizar tus deudas y explorar alternativas para reducir su costo.</p>
             <div class="hero-actions"><button class="google-button primary" type="button"
                     (click)="accessRequested.emit('register')"><img src="images/google-mark.svg" width="24" height="24"
                         alt="">Continuar con Google</button><a class="secondary-button" href="#como-funciona">Ver cómo
@@ -40,8 +39,8 @@
     </div>
     <section class="how-section section-wrap" id="productos" aria-labelledby="how-title">
         <p class="landing-section-eyebrow">EXPLORA SARELA</p>
-        <h2 id="how-title">Tres formas de cuidar tu dinero.</h2>
-        <p class="landing-section-lead">Empieza entendiendo tus gastos y descubre recursos gratuitos para tomar mejores decisiones.</p>
+        <h2 id="how-title">Agentes y herramientas para cuidar tu dinero.</h2>
+        <p class="landing-section-lead">Empieza con el agente de deudas. Conserva tus herramientas de gastos y descubre nuevas capacidades a medida que estén disponibles.</p>
         <div class="steps-grid">
             <article class="step"><span class="step-icon"><app-icon name="user" [size]="30" /></span><span
                     class="step-index">01</span>
@@ -51,9 +50,9 @@
             </article>
             <article class="step"><span class="step-icon"><app-icon name="mail" [size]="30" /></span><span
                     class="step-index">02</span>
-                <h3>Suscripciones</h3>
-                <p>Aprende a identificar tus pagos recurrentes y calcula cuánto representan al año.</p>
-                <a class="landing-card-link" href="/suscripciones.html" aria-label="Explorar Suscripciones">Explorar Suscripciones <span aria-hidden="true">→</span></a>
+                <h3>Agente de deudas · Beta</h3>
+                <p>Analiza tu deuda y consulta alternativas preliminares. Próximamente, seguimiento automático.</p>
+                <a class="landing-card-link" href="#como-funciona" aria-label="Conocer agente de deudas">Conocer agente de deudas <span aria-hidden="true">→</span></a>
             </article>
             <article class="step"><span class="step-icon"><app-icon name="bars" [size]="30" /></span><span
                     class="step-index">03</span>
@@ -67,12 +66,12 @@
         <div class="landing-process-heading">
             <p class="landing-section-eyebrow">SIN COMPLICACIONES</p>
             <h2 id="process-title">Cómo funciona Sarela</h2>
-            <p class="landing-section-lead">Inicia sesión y decide si quieres conectar Gmail. Son permisos diferentes.</p>
+            <p class="landing-section-lead">Inicia sesión para acceder al agente. Conectar Gmail sigue siendo opcional.</p>
         </div>
         <div class="landing-process-grid">
             <div><span>01</span><h3>Entra con Google</h3><p>Crea tu espacio financiero personal.</p></div>
-            <div><span>02</span><h3>Conecta Gmail si quieres</h3><p>Autoriza la lectura para identificar notificaciones financieras compatibles.</p></div>
-            <div><span>03</span><h3>Revisa tus gastos</h3><p>Consulta los movimientos reconocidos por comercio y categoría.</p></div>
+            <div><span>02</span><h3>Elige tu objetivo</h3><p>Abre Mi agente y proporciona las condiciones de tu deuda.</p></div>
+            <div><span>03</span><h3>Explora alternativas</h3><p>Revisa escenarios y fuentes preliminares antes de tomar decisiones.</p></div>
         </div>
         <p class="flow-note"><app-icon name="info" [size]="21" /><span>Conectarlo es opcional. Google concede acceso de lectura al buzón para identificar notificaciones financieras compatibles; no hay conexión bancaria directa ni garantía de que todos los gastos aparezcan.</span></p>
         <a class="landing-inline-link" href="/como-funciona.html">Conocer el funcionamiento y los límites <span aria-hidden="true">→</span></a>
@@ -138,7 +137,7 @@
         </div>
     </section>
     <section class="final-cta section-wrap" aria-labelledby="cta-title">
-        <h2 id="cta-title">Que fin de mes no sea un misterio.</h2><button class="google-button primary" type="button"
+        <h2 id="cta-title">Da el primer paso hacia mejores finanzas.</h2><button class="google-button primary" type="button"
             (click)="accessRequested.emit('register')"><img src="images/google-mark.svg" width="24" height="24"
                 alt="">Continuar con Google</button>
     </section>
