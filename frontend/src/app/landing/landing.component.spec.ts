@@ -24,7 +24,7 @@ describe('Public Sarela landing and access flow', () => {
   afterEach(()=>history.replaceState({},'',previousUrl));
   it('shows the landing before access and does not request private data',()=>{
     expect(root().querySelector('app-landing')).not.toBeNull();expect(root().querySelector('.auth')).toBeNull();
-    expect(root().querySelector('h1')?.textContent).toContain('¿En qué se fue');
+    expect(root().querySelector('h1')?.textContent).toContain('Mejora tus finanzas');
     expect(services.api.dashboard).not.toHaveBeenCalled();
     expect(root().querySelector('app-landing')?.textContent).not.toContain('S/ 3,240');
   });
@@ -78,7 +78,7 @@ describe('Public Sarela landing and access flow', () => {
       (services.auth as unknown as {user:AuthService['user']}).user=null;return of(undefined);
     });
     fixture.detectChanges();
-    expect(root().querySelector('.dashboard-view')).not.toBeNull();
+    expect(root().querySelector('app-debt-agent')).not.toBeNull();
     fixture.componentInstance.logout();fixture.detectChanges();expect(root().querySelector('app-landing')).not.toBeNull();
   });
   it('provides working section anchors, legal links and honest Gmail and pricing copy',()=>{
@@ -86,31 +86,20 @@ describe('Public Sarela landing and access flow', () => {
       expect(root().querySelector(link.getAttribute('href')!)).withContext(link.textContent||'anchor').not.toBeNull();
     }
     expect(root().querySelector('#precio')?.textContent).toContain('El precio se anunciará antes de cualquier cobro');
-    expect(root().querySelector('.flow-note')?.textContent).toContain('Conectarlo es opcional');
+    expect(root().querySelector('.flow-note')?.textContent).toContain('Conectar Gmail será opcional');
     expect(root().querySelector('.permission-card')?.textContent).toContain('No todos tus gastos llegan por correo');
     expect(root().querySelector('a[href="/privacidad.html"]')).not.toBeNull();
     expect(root().querySelector('a[href="/terminos.html"]')).not.toBeNull();
     expect(root().querySelectorAll('figcaption').length).toBe(2);
     for(const caption of Array.from(root().querySelectorAll('figcaption'))) expect(caption.textContent).toContain('Datos de ejemplo');
   });
-  it('lets visitors discover products, calculators, Learn and how Sarela works',()=>{
-    const landing=root().querySelector('app-landing') as HTMLElement;
-    for (const href of ['/mis-finanzas.html','/suscripciones.html','/calculadoras.html','/aprende.html']) {
-      expect(landing.querySelector('a[href="'+href+'"]')).withContext(href).not.toBeNull();
-    }
-    expect(landing.querySelector('#productos .steps-grid')).not.toBeNull();
-    expect(landing.querySelectorAll('#productos .step a[href$=".html"]').length).toBe(3);
-    expect(landing.querySelector('#como-funciona .landing-process-grid')).not.toBeNull();
-    expect(landing.querySelector('#aprende .landing-learn-grid')).not.toBeNull();
-    expect(landing.querySelector('a[href="/guia-donde-se-va-mi-dinero.html"]')).not.toBeNull();
-    expect(landing.querySelector('a[href="/calculadora-gastos-hormiga.html"]')).not.toBeNull();
-  });
+  it('shows the debt agent and disabled Gmail without calculator navigation',()=>{const landing=root().querySelector('app-landing')!;expect(landing.querySelector('#productos')?.textContent).toContain('Agente de deudas');expect(landing.querySelector('#productos button[disabled]')?.textContent).toContain('Próximamente');expect(landing.querySelector('a[href="/calculadoras.html"]')).toBeNull();});
   it('loads local Google marks without depending on decorative images',async()=>{
     const images=Array.from(root().querySelectorAll<HTMLImageElement>('app-landing img'));
     const googleMarks=images.filter(image=>image.getAttribute('src')?.includes('google-mark.svg'));
     const learnImages=images.filter(image=>image.closest('.landing-learn-card'));
     expect(googleMarks.length).toBe(3);
-    expect(learnImages.length).toBe(2);
+    expect(learnImages.length).toBe(0);
     // Browser defers off-screen loading=lazy images; decode only eagerly loaded Google icons.
     await Promise.all(googleMarks.map(image=>image.decode()));
     for(const image of googleMarks) expect(image.naturalWidth).toBeGreaterThan(0);

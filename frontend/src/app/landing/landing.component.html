@@ -5,8 +5,6 @@
                 aria-hidden="true"></span>sarela</a>
         <nav class="section-nav" aria-label="Secciones de Sarela">
             <a href="#productos">Productos</a>
-            <a href="/calculadoras.html">Calculadoras</a>
-            <a href="/aprende.html">Aprende</a>
             <a href="#como-funciona">Cómo funciona</a>
         </nav>
         <button class="google-button nav-google" type="button" (click)="accessRequested.emit('login')"><img
@@ -16,15 +14,14 @@
 <main id="landing-content" tabindex="-1">
     <section class="hero section-wrap" id="inicio" aria-labelledby="hero-title">
         <div class="hero-copy">
-            <p class="eyebrow-pill">TU DINERO, MÁS CLARO</p>
-            <h1 id="hero-title">¿En qué se fue<br>tu dinero?<span>Ahora puedes verlo.</span></h1>
-            <p class="hero-description">Organiza los movimientos que llegan a tu Gmail y entiende tus gastos sin hacerlo
-                a mano.</p>
+            <p class="eyebrow-pill">TU COACH FINANCIERO PERSONAL</p>
+            <h1 id="hero-title">Mejora tus finanzas<span>con inteligencia artificial.</span></h1>
+            <p class="hero-description">Conoce Sarela, tu coach financiero. Empieza con un agente que te ayuda a analizar tus deudas y explorar alternativas para reducir su costo.</p>
             <div class="hero-actions"><button class="google-button primary" type="button"
                     (click)="accessRequested.emit('register')"><img src="images/google-mark.svg" width="24" height="24"
                         alt="">Continuar con Google</button><a class="secondary-button" href="#como-funciona">Ver cómo
                     funciona</a></div>
-            <p class="consent-note"><app-icon name="lock" [size]="18" />Tú decides cuándo conectar Gmail.</p>
+            <p class="consent-note"><app-icon name="lock" [size]="18" />No necesitas conectar Gmail.</p>
         </div>
         <!-- Product illustration built in code; decorative assets can be replaced independently. -->
         <figure class="hero-art" aria-labelledby="hero-preview-caption">
@@ -36,46 +33,29 @@
         </figure>
     </section>
     <div class="clarity-divider section-wrap"><span></span>
-        <p>Menos correos sueltos. Más claridad.</p><span></span>
+        <p>Un objetivo: ayudarte a salir de deudas.</p><span></span>
     </div>
     <section class="how-section section-wrap" id="productos" aria-labelledby="how-title">
         <p class="landing-section-eyebrow">EXPLORA SARELA</p>
-        <h2 id="how-title">Tres formas de cuidar tu dinero.</h2>
-        <p class="landing-section-lead">Empieza entendiendo tus gastos y descubre recursos gratuitos para tomar mejores decisiones.</p>
+        <h2 id="how-title">Agentes y herramientas para cuidar tu dinero.</h2>
+        <p class="landing-section-lead">Empieza con el agente de deudas. Gmail estará disponible próximamente.</p>
         <div class="steps-grid">
-            <article class="step"><span class="step-icon"><app-icon name="user" [size]="30" /></span><span
-                    class="step-index">01</span>
-                <h3>Mis finanzas</h3>
-                <p>Revisa los gastos detectados y organízalos por comercio y categoría.</p>
-                <a class="landing-card-link" href="/mis-finanzas.html" aria-label="Conocer Mis Finanzas">Conocer Mis Finanzas <span aria-hidden="true">→</span></a>
-            </article>
-            <article class="step"><span class="step-icon"><app-icon name="mail" [size]="30" /></span><span
-                    class="step-index">02</span>
-                <h3>Suscripciones</h3>
-                <p>Aprende a identificar tus pagos recurrentes y calcula cuánto representan al año.</p>
-                <a class="landing-card-link" href="/suscripciones.html" aria-label="Explorar Suscripciones">Explorar Suscripciones <span aria-hidden="true">→</span></a>
-            </article>
-            <article class="step"><span class="step-icon"><app-icon name="bars" [size]="30" /></span><span
-                    class="step-index">03</span>
-                <h3>Calculadoras</h3>
-                <p>Calcula tu presupuesto, tus gastos pequeños y el costo de tus suscripciones.</p>
-                <a class="landing-card-link" href="/calculadoras.html" aria-label="Usar calculadoras gratuitas">Usar calculadoras <span aria-hidden="true">→</span></a>
-            </article>
-        </div>
-    </section>
+<article class="step"><span class="step-icon"><app-icon name="spark" [size]="30" /></span><h3>Agente de deudas · Beta</h3><p>Analiza tus deudas y explora alternativas para reducir su costo.</p><button class="google-button" type="button" (click)="accessRequested.emit('register')">Comenzar</button></article>
+<article class="step" aria-disabled="true"><span class="step-icon"><app-icon name="lock" [size]="30" /></span><h3>Mis finanzas con Gmail</h3><p>Organiza tus movimientos financieros automáticamente.</p><button class="google-button" type="button" disabled>Próximamente</button></article>
+</div></section>
     <section class="landing-how-process section-wrap" id="como-funciona" aria-labelledby="process-title">
         <div class="landing-process-heading">
             <p class="landing-section-eyebrow">SIN COMPLICACIONES</p>
             <h2 id="process-title">Cómo funciona Sarela</h2>
-            <p class="landing-section-lead">Inicia sesión y decide si quieres conectar Gmail. Son permisos diferentes.</p>
+            <p class="landing-section-lead">Inicia sesión para acceder al agente. Gmail estará disponible próximamente.</p>
         </div>
         <div class="landing-process-grid">
             <div><span>01</span><h3>Entra con Google</h3><p>Crea tu espacio financiero personal.</p></div>
-            <div><span>02</span><h3>Conecta Gmail si quieres</h3><p>Autoriza la lectura para identificar notificaciones financieras compatibles.</p></div>
-            <div><span>03</span><h3>Revisa tus gastos</h3><p>Consulta los movimientos reconocidos por comercio y categoría.</p></div>
+            <div><span>02</span><h3>Elige tu objetivo</h3><p>Abre Mi agente y proporciona las condiciones de tu deuda.</p></div>
+            <div><span>03</span><h3>Explora alternativas</h3><p>Revisa escenarios y fuentes preliminares antes de tomar decisiones.</p></div>
         </div>
-        <p class="flow-note"><app-icon name="info" [size]="21" /><span>Conectarlo es opcional. Google concede acceso de lectura al buzón para identificar notificaciones financieras compatibles; no hay conexión bancaria directa ni garantía de que todos los gastos aparezcan.</span></p>
-        <a class="landing-inline-link" href="/como-funciona.html">Conocer el funcionamiento y los límites <span aria-hidden="true">→</span></a>
+        <p class="flow-note"><app-icon name="info" [size]="21" /><span>Conectar Gmail será opcional cuando esté disponible. Google concede acceso de lectura al buzón para identificar notificaciones financieras compatibles; no hay conexión bancaria directa ni garantía de que todos los gastos aparezcan.</span></p>
+        
     </section>
     <section class="benefit-section section-wrap" id="beneficios" aria-labelledby="benefit-title">
         <figure class="benefit-art" aria-labelledby="benefit-caption">
@@ -85,8 +65,8 @@
             <figcaption id="benefit-caption">Vista ilustrativa · Datos de ejemplo</figcaption>
         </figure>
         <div class="benefit-copy">
-            <h2 id="benefit-title">Reconoce tus gastos. Recupera el control.</h2>
-            <p>Movimientos organizados por comercio y categoría.</p>
+            <h2 id="benefit-title">Gmail: próximamente</h2>
+            <p>Una herramienta adicional para organizar tus movimientos cuando esté disponible.</p>
             <ul class="benefit-categories">
                 <li><app-icon name="utensils" [size]="25" /><span>Alimentación</span></li>
                 <li><app-icon name="car" [size]="25" /><span>Transporte</span></li>
@@ -114,37 +94,15 @@
                     [size]="15" /></a>
         </section>
     </div>
-    <section class="landing-learn section-wrap" id="aprende" aria-labelledby="learn-title">
-        <div class="landing-learn-heading">
-            <div><p class="landing-section-eyebrow">APRENDE DE FINANZAS</p>
-                <h2 id="learn-title">Pequeños cambios, mejores decisiones.</h2>
-                <p class="landing-section-lead">Guías sencillas y herramientas gratuitas, sin necesidad de crear una cuenta.</p>
-            </div>
-            <a class="landing-inline-link" href="/aprende.html">Ver todos los recursos <span aria-hidden="true">→</span></a>
-        </div>
-        <div class="landing-learn-grid">
-            <a class="landing-learn-card" href="/guia-donde-se-va-mi-dinero.html">
-                <img src="images/sarela-calm-desk-640.webp" width="640" height="427" loading="lazy" alt="Escritorio ordenado para planificar gastos personales">
-                <span class="landing-learn-label">GUÍA</span>
-                <h3>¿En qué se va mi dinero?</h3><p>Descubre gastos que pasan desapercibidos y cómo revisar tus movimientos.</p>
-                <span class="landing-card-link">Leer guía <span aria-hidden="true">→</span></span>
-            </a>
-            <a class="landing-learn-card" href="/calculadora-gastos-hormiga.html">
-                <img src="images/sarela-emerald-sculpture-640.webp" width="640" height="427" loading="lazy" alt="Ilustración verde de Sarela para una calculadora financiera">
-                <span class="landing-learn-label">CALCULADORA</span>
-                <h3>¿Cuánto cuestan tus gastos pequeños?</h3><p>Descubre cuánto suman en un mes y un año.</p>
-                <span class="landing-card-link">Calcular gratis <span aria-hidden="true">→</span></span>
-            </a>
-        </div>
-    </section>
+    
     <section class="final-cta section-wrap" aria-labelledby="cta-title">
-        <h2 id="cta-title">Que fin de mes no sea un misterio.</h2><button class="google-button primary" type="button"
+        <h2 id="cta-title">Da el primer paso hacia mejores finanzas.</h2><button class="google-button primary" type="button"
             (click)="accessRequested.emit('register')"><img src="images/google-mark.svg" width="24" height="24"
                 alt="">Continuar con Google</button>
     </section>
 </main>
 <footer class="landing-footer section-wrap"><a class="wordmark" href="#inicio"
         aria-label="Volver al inicio de Sarela"><span class="brand-ring" aria-hidden="true"></span>sarela</a>
-    <nav aria-label="Enlaces de Sarela"><a href="/mis-finanzas.html">Mis Finanzas</a><a href="/suscripciones.html">Suscripciones</a><a href="/calculadoras.html">Calculadoras</a><a href="/aprende.html">Aprende</a><a href="/como-funciona.html">Cómo funciona</a><a href="/seguridad.html">Seguridad</a><a href="/acerca-de-sarela.html">Sobre Sarela</a><a href="/privacidad.html">Privacidad</a><a href="/terminos.html">Términos</a>
+    <nav aria-label="Enlaces de Sarela"><a href="#como-funciona">Cómo funciona</a><a href="/seguridad.html">Seguridad</a><a href="/acerca-de-sarela.html">Sobre Sarela</a><a href="/privacidad.html">Privacidad</a><a href="/terminos.html">Términos</a>
     </nav>
 </footer>

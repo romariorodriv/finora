@@ -1,4 +1,5 @@
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { DebtAgentComponent } from './agents/debt-agent.component';
 import { LandingComponent } from './landing/landing.component';
 import { IconComponent } from './shared/icon.component';
 import { FocusTrapDirective } from './shared/focus-trap.directive';
@@ -29,12 +30,12 @@ import {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, IconComponent, FocusTrapDirective, LandingComponent, RouterOutlet],
+  imports: [CommonModule, FormsModule, IconComponent, FocusTrapDirective, LandingComponent, DebtAgentComponent, RouterOutlet],
   templateUrl: './app.component.html',
   styleUrls: ['./dashboard/dashboard.styles.css', './app.component.css']
 })
 export class AppComponent implements OnInit, OnDestroy {
-  view: 'dashboard' | 'movements' | 'import' | 'feedback' | 'admin' = 'dashboard';
+  view: 'dashboard' | 'movements' | 'import' | 'feedback' | 'agent' | 'admin' = 'agent';
   dashboardLoading = false;
   dashboardError = '';
   transactionsLoading = false;
@@ -53,6 +54,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly showDevTools = false;
   linkRequired = false;
   linkPassword = '';
+  readonly gmailFeatureEnabled = false;
   gmailConsentOpen = false;
   gmailConsentLoading = false;
   gmailJobError = '';
@@ -119,7 +121,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (authResult === 'cancelled') this.error = 'No autorizaste el acceso. Puedes intentarlo cuando quieras.';
     if (location.pathname === '/admin') this.view = 'admin';
     if (gmailResult) {
-      this.view = 'import';
+      this.view = 'agent';
       this.showToast(gmailResult === 'connected' ? 'Gmail conectado. La importación está en cola.'
         : gmailResult === 'cancelled' ? 'Puedes usar Sarela sin autorizar Gmail y conectarlo más adelante.'
         : 'No se completó la conexión con Gmail. Revisa su estado e intenta nuevamente.');
@@ -189,7 +191,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.selectedCategory = undefined; this.selectedMerchant = undefined;
         this.gmail = undefined; this.syncResult = undefined;
         void this.router.navigateByUrl('/');
-        this.returnToLanding(); this.view = 'dashboard';
+        this.returnToLanding(); this.view = 'agent';
       },
       error: error => this.showToast('No se pudo cerrar la sesión: ' + this.message(error))
     });
@@ -271,7 +273,7 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  connectGmail(): void { this.gmailConsentOpen = true; }
+  connectGmail(): void { /* Temporarily unavailable. */ }
 
   dismissGmailConsent(): void {
     this.gmailConsentOpen = false;
@@ -279,6 +281,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   authorizeGmail(): void {
+    if (!this.gmailFeatureEnabled) return;
     if (this.gmailConsentLoading) return;
     this.gmailConsentLoading = true;
     this.api.gmailAuthorizationUrl().pipe(finalize(() => this.gmailConsentLoading = false)).subscribe({
@@ -608,8 +611,8 @@ export class AppComponent implements OnInit, OnDestroy {
           this.onboardingRequested = false;
           const id = this.auth.user?.userId;
           const dismissed = id ? localStorage.getItem(`sarela:gmail-onboarding-dismissed:${id}`) === '1' : false;
-          if (!status.connected && status.configured && !dismissed) this.gmailConsentOpen = true;
-          this.view = 'dashboard';
+          // Gmail onboarding is temporarily disabled.
+          this.view = 'agent';
         }
         if (status.connected) this.loadGmailJob();
       },
@@ -626,7 +629,7 @@ export class AppComponent implements OnInit, OnDestroy {
         if (this.importActive()) this.gmailPoll = timer(3000).subscribe(() => this.loadGmailJob());
         else if (job.status === 'COMPLETED' || job.status === 'PARTIAL') {
           if (previous?.status !== job.status || previous?.runId !== job.runId) this.loadDashboard();
-          if (this.autoOpenSummary && job.status === 'COMPLETED') { this.view = 'dashboard'; this.autoOpenSummary = false; }
+          if (this.autoOpenSummary && job.status === 'COMPLETED') { this.view = 'agent'; this.autoOpenSummary = false; }
         }
         if (job.errorCode === 'GMAIL_RECONNECT_REQUIRED') this.api.gmailStatus().subscribe({next: state => this.gmail = state});
       },

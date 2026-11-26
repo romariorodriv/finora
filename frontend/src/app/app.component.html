@@ -5,7 +5,7 @@
     <div class="auth-wordmark"><span class="finora-brand-ring" aria-hidden="true"></span><span>sarela</span></div>
     <p class="eyebrow">TU DINERO, MÁS CLARO</p>
     <h1>Tu dinero,<br>más claro.</h1>
-    <p>Organiza los movimientos que llegan a tu Gmail y entiende tus gastos sin hacerlo a mano.</p>
+    <p>Tu coach financiero personal. Empieza con el agente de deudas.</p>
     <div class="auth-steps"><div><app-icon name="wallet" /><span>Confirma tu saldo</span></div><div><app-icon name="calendar" /><span>Anticipa tus pagos</span></div><div><app-icon name="spark" /><span>Decide con claridad</span></div></div>
     <small class="auth-footnote"><app-icon name="lock" [size]="14" /> Tu espacio financiero personal.</small>
   </div>
@@ -33,20 +33,17 @@
 <a class="skip-link" href="#main-content" *ngIf="auth.user">Ir al contenido</a>
 <div *ngIf="auth.user" class="app sarela-home-shell" [class.sarela-home-active]="view === 'dashboard'">
   <aside class="sidebar">
-    <button class="logo finora-app-logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al inicio"><span class="finora-app-ring" aria-hidden="true"></span><span>sarela</span></button>
+    <button class="logo finora-app-logo" type="button" (click)="go('agent')" aria-label="Sarela, ir al inicio"><span class="finora-app-ring" aria-hidden="true"></span><span>sarela</span></button>
     <p class="sidebar-caption">TU ESPACIO</p>
-    <nav aria-label="Navegación principal"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Inicio</span></button>
-      <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>Movimientos</span></button>
-      <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>Conexión Gmail</span></button>
-      <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>Tu opinión</span></button></nav>
+    <nav aria-label="Navegación principal"><button type="button" [class.active]="view === 'agent'" (click)="go('agent')"><app-icon name="spark"/><span>Mi agente</span></button><button type="button" disabled><app-icon name="lock"/><span>Gmail · Próximamente</span></button></nav>
     <button class="ghost admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()"><app-icon name="shield" [size]="17" />Administración</button>
     <div class="sidebar-footer"><div class="profile"><div class="avatar">{{ auth.user.name[0] }}</div><div><b>{{ auth.user.name }}</b><small>Mi cuenta · Sarela</small></div></div><button class="logout" type="button" (click)="logout()"><app-icon name="logout" [size]="17" />Cerrar sesión</button></div>
   </aside>
   <main id="main-content" tabindex="-1">
     <header class="topbar">
-      <button class="mobile-brand logo" type="button" (click)="go('dashboard')" aria-label="Sarela, ir al resumen"><span class="brand">S</span><span>Sarela.</span></button>
-      <div class="breadcrumb">Mi espacio <span>/</span><b>{{ view === 'dashboard' ? 'Resumen' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conexión Gmail' : view === 'admin' ? 'Administración' : 'Tu opinión' }}</b></div>
-      <div class="topbar-actions"><button class="ghost compact admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()" aria-label="Abrir administración"><app-icon name="shield" [size]="17" /><span>Administrar</span></button><button class="connection-pill" type="button" (click)="go('import')"><span class="status-dot" [class.connected]="gmail?.connected"></span><span>{{ !gmail ? 'Consultando Gmail' : gmail.connected ? 'Gmail conectado' : 'Gmail sin conectar' }}</span><app-icon name="down" [size]="14" /></button><div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div><button class="mobile-logout" type="button" aria-label="Cerrar sesión" (click)="logout()"><app-icon name="logout" [size]="18" /></button></div>
+      <button class="mobile-brand logo" type="button" (click)="go('agent')" aria-label="Sarela, ir al resumen"><span class="brand">S</span><span>Sarela.</span></button>
+      <div class="breadcrumb">Mi espacio <span>/</span><b>{{ view === 'dashboard' ? 'Resumen' : view === 'movements' ? 'Movimientos' : view === 'import' ? 'Conexión Gmail' : view === 'admin' ? 'Administración' : view === 'agent' ? 'Mi agente' : 'Tu opinión' }}</b></div>
+      <div class="topbar-actions"><button class="ghost compact admin-entry" type="button" *ngIf="auth.isAdmin" (click)="openAdmin()" aria-label="Abrir administración"><app-icon name="shield" [size]="17" /><span>Administrar</span></button><button class="connection-pill" type="button" disabled>Gmail · Próximamente</button><div class="avatar" [attr.aria-label]="auth.user.name">{{ auth.user.name[0] }}</div><button class="mobile-logout" type="button" aria-label="Cerrar sesión" (click)="logout()"><app-icon name="logout" [size]="18" /></button></div>
     </header>
     <router-outlet></router-outlet>
     <section class="panel import-wait" *ngIf="view==='dashboard' && waitingForImport()" role="status">
@@ -255,7 +252,7 @@
         <p *ngIf="job.nextAttemptAt">Próximo reintento: {{importDate(job.nextAttemptAt)}}</p>
         <p *ngIf="job.status==='PARTIAL' || job.status==='ERROR'">La información está incompleta. Revisa los pendientes y vuelve a actualizar.</p>
         <button class="ghost" (click)="loadGmailReview()">Ver correos no interpretados o pendientes</button>
-        <button class="ghost" (click)="go('dashboard')">Ver resumen registrado</button>
+        <button class="ghost" (click)="go('agent')">Ver resumen registrado</button>
       </section>
       <p class="form-error" role="alert" *ngIf="gmailJobError">{{gmailJobError}} <button class="ghost" (click)="loadGmailJob()">Reintentar consulta</button></p>
       <section class="panel gmail-review" *ngIf="gmailReview as review"><h3>Correos pendientes o no compatibles</h3><p>Consulta el correo original en Gmail para revisar su información. No se han inventado movimientos para estos casos.</p><ul><li *ngFor="let item of review.items">{{item.subject || 'Sin asunto'}} · {{item.status}} · {{importDate(item.receivedAt)}}</li></ul><p *ngIf="!review.items.length">No hay correos pendientes en esta página.</p><button class="ghost" [disabled]="review.page===0" (click)="loadGmailReview(review.page-1)">Anterior</button><button class="ghost" [disabled]="review.page+1>=review.totalPages" (click)="loadGmailReview(review.page+1)">Siguiente</button></section>
@@ -272,6 +269,7 @@
       </form>
     </section>
 
+    <app-debt-agent *ngIf="view === 'agent'"></app-debt-agent>
     <section *ngIf="view === 'feedback'" class="view feedback-view">
       <header class="sarela-section-header"><div><p class="eyebrow">CRECEMOS CONTIGO</p><h1>Tu opinión nos ayuda a mejorar</h1><p>Cuéntanos qué funciona y qué te gustaría mejorar.</p></div><app-icon name="message" [size]="38" /></header>
       <div class="sarela-feedback-grid">
@@ -309,12 +307,9 @@
       </div>
     </section>
   </main>
-  <nav class="mobile-nav" aria-label="Navegación móvil"><button type="button" [class.active]="view === 'dashboard'" [attr.aria-current]="view === 'dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="grid" /><span>Resumen</span></button>
-      <button type="button" [class.active]="view === 'movements'" [attr.aria-current]="view === 'movements' ? 'page' : null" (click)="go('movements')"><app-icon name="rows" /><span>Movimientos</span></button>
-      <button type="button" [class.active]="view === 'import'" [attr.aria-current]="view === 'import' ? 'page' : null" (click)="go('import')"><app-icon name="mail" /><span>Gmail</span></button>
-      <button type="button" [class.active]="view === 'feedback'" [attr.aria-current]="view === 'feedback' ? 'page' : null" (click)="go('feedback')"><app-icon name="message" /><span>Opinión</span></button></nav>
+  <nav class="mobile-nav" aria-label="Navegación móvil"><button type="button" [class.active]="view === 'agent'" (click)="go('agent')"><app-icon name="spark"/><span>Mi agente</span></button><button type="button" disabled><app-icon name="lock"/><span>Gmail · Próximamente</span></button></nav>
 </div>
-<div class="sarela-consent-overlay" *ngIf="gmailConsentOpen && auth.user" role="presentation">
+<div class="sarela-consent-overlay" *ngIf="gmailFeatureEnabled && gmailConsentOpen && auth.user" role="presentation">
   <section class="sarela-consent-dialog" role="dialog" aria-modal="true" aria-labelledby="sarela-consent-title" appFocusTrap>
     <button type="button" class="sarela-consent-close" (click)="dismissGmailConsent()" aria-label="Cerrar invitación"><app-icon name="close" [size]="18" /></button>
     <div class="sarela-consent-icon" aria-hidden="true"><app-icon name="mail" [size]="35" /></div>
